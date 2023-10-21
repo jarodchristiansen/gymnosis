@@ -1,14 +1,11 @@
-import NextAuth, { NextAuthOptions } from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
-import FacebookProvider from "next-auth/providers/facebook";
-import GithubProvider from "next-auth/providers/github";
-import TwitterProvider from "next-auth/providers/twitter";
-import Auth0Provider from "next-auth/providers/auth0";
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
+import NextAuth from "next-auth";
+import GithubProvider from "next-auth/providers/github";
+import GoogleProvider from "next-auth/providers/google";
 // import AppleProvider from "next-auth/providers/apple"
 // import EmailProvider from "next-auth/providers/email"
-import clientPromise from "../../../lib/mongodb";
 import User from "../../../db/models/user";
+import clientPromise from "../../../lib/mongodb";
 
 function makeid(length) {
   var result = "";
@@ -43,10 +40,6 @@ export const authOptions = {
       },
     }),
     */
-    // FacebookProvider({
-    //   clientId: process.env.FACEBOOK_ID,
-    //   clientSecret: process.env.FACEBOOK_SECRET,
-    // }),
     GithubProvider({
       clientId: process.env.GITHUB_ID,
       clientSecret: process.env.GITHUB_SECRET,
@@ -55,28 +48,19 @@ export const authOptions = {
       clientId: process.env.GOOGLE_ID,
       clientSecret: process.env.GOOGLE_SECRET,
     }),
-    // TwitterProvider({
-    //   clientId: process.env.TWITTER_ID,
-    //   clientSecret: process.env.TWITTER_SECRET,
-    // }),
-    // Auth0Provider({
-    //   clientId: process.env.AUTH0_ID,
-    //   clientSecret: process.env.AUTH0_SECRET,
-    //   issuer: process.env.AUTH0_ISSUER,
-    // }),
   ],
   theme: {
     colorScheme: "light",
   },
   callbacks: {
     async jwt({ token }) {
-      token.userRole = "admin";
+      token.userRole = token.role || "client"; // Default role
       return token;
     },
     async session({ session, token, user }) {
       session.user.username = user.username;
+      session.user.role = user.role;
       session.user.favorites = user.favorites;
-
       return session;
     },
     async signIn({ user, account, profile, email, credentials }) {
@@ -84,13 +68,22 @@ export const authOptions = {
       let existingUser = await User.findOne({ email: userEmail });
 
       if (existingUser) {
+        // Handle role-specific logic here
+        // if (user.role === "trainer") {
+        //   // Add logic for trainers here
+        // } else if (user.role === "client") {
+        //   // Add logic for clients here
+        // }
+
         if (!existingUser?.username) {
           let newId = makeid(12).toString() + "!@$";
           existingUser.username = newId;
           await existingUser.save();
         }
       } else if (!existingUser) {
-        return;
+        user.role = "client";
+
+        return true;
       }
 
       return user;

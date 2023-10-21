@@ -10,7 +10,7 @@ import client from "apollo-client";
 import LandingCard from "components/commons/info-cards/landing-card";
 import CTACard from "components/ctas/CTACard";
 import ProgressMeter from "components/progressmeter/ProgressMeter";
-// import { useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import styled from "styled-components";
 
@@ -22,7 +22,7 @@ import SEOHead from "../components/seo/SEOHead";
  * @returns Landing page with Info/Sign Up Pages
  */
 export default function Home({ data }) {
-  // const { data: session, status } = useSession();
+  const { data: session, status } = useSession();
 
   const cardContent = [
     {

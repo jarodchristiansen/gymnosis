@@ -1,7 +1,30 @@
+import { FILTER_CONSTS, SEARCH_VALUE_CONSTS } from "@/helpers/Consts";
 import User from "../../models/user";
 
 export const UserResolver = {
   queries: {
+    getUsers: async (_, { filter, value }) => {
+      if (filter === FILTER_CONSTS.ADMIN && value === SEARCH_VALUE_CONSTS.ALL) {
+        let users = await User.find({}).catch((err) => new Error(err));
+
+        return users;
+      } else if (
+        filter === FILTER_CONSTS.CLIENT_BY_ROLE &&
+        value === SEARCH_VALUE_CONSTS.ROLE_CLIENT
+      ) {
+        let users = await User.find({ role: "client" }).catch(
+          (err) => new Error(err)
+        );
+
+        return users;
+      } else if (filter === FILTER_CONSTS.CLIENT_BY_ID && value) {
+        let users = await User.find({ id: value }).catch(
+          (err) => new Error(err)
+        );
+
+        return users;
+      }
+    },
     getAssetPriceData: async (_, { tickers, exchange_data }) => {
       if (tickers) {
         try {

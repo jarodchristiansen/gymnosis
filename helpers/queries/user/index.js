@@ -18,6 +18,25 @@ export const GET_USER = gql`
   }
 `;
 
+export const GET_USERS = gql`
+  query GET_USERS($filter: String, $value: String) {
+    getUsers(filter: $filter, value: $value) {
+      id
+      email
+      name
+      username
+      image
+      createAt
+      role
+      favorites {
+        title
+        symbol
+        image
+      }
+    }
+  }
+`;
+
 export const GET_USER_HOLDINGS = gql`
   query getUserExchangeData($input: UserExchangeInput) {
     getUserExchangeData(input: $input) {

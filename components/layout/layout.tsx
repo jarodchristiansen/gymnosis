@@ -45,7 +45,7 @@ interface LayoutProps {
 }
 
 const PageWrapper = styled.main`
-  padding: 48px 0;
+  padding: 88px 0;
 `;
 
 const LayoutContainer = styled.div<LayoutProps>`
