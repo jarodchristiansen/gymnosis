@@ -1,4 +1,3 @@
-import { FormatUnixTime } from "@/helpers/formatters/time";
 import { GET_NEWS_FEED } from "@/helpers/queries/news-feed";
 import {
   Colors,
@@ -11,10 +10,8 @@ import client from "apollo-client";
 import LandingCard from "components/commons/info-cards/landing-card";
 import CTACard from "components/ctas/CTACard";
 import ProgressMeter from "components/progressmeter/ProgressMeter";
-import { useSession } from "next-auth/react";
+// import { useSession } from "next-auth/react";
 import Image from "next/image";
-import Link from "next/link";
-import { useMemo } from "react";
 import styled from "styled-components";
 
 import SEOHead from "../components/seo/SEOHead";
@@ -25,53 +22,7 @@ import SEOHead from "../components/seo/SEOHead";
  * @returns Landing page with Info/Sign Up Pages
  */
 export default function Home({ data }) {
-  const { data: session, status } = useSession();
-
-  const newsFeedContent = useMemo(() => {
-    if (!data?.getNewsFeed?.length) return [];
-
-    return data.getNewsFeed.slice(0, 5).map((story) => {
-      return (
-        <NewsItem key={story?.guid}>
-          <Link href={story?.guid} passHref legacyBehavior>
-            <a target="_blank">
-              <h4 className="partner-header">
-                {story.title.slice(0, 40) + "..."}
-              </h4>
-            </a>
-          </Link>
-
-          <div className="source-container">
-            <div className="image-container">
-              <Image
-                src={story.source_info?.img}
-                height={70}
-                width={70}
-                alt="block-logo"
-                className="source-image"
-                unoptimized={true}
-              />
-            </div>
-
-            <span className="source-name">{story?.source_info?.name}</span>
-          </div>
-
-          <Image
-            src={story.imageurl}
-            height={190}
-            width={190}
-            alt="block-logo"
-            className="article-image"
-            unoptimized={true}
-          />
-
-          <span>Published: {FormatUnixTime(story?.published_on)}</span>
-        </NewsItem>
-      );
-    });
-  }, [data]);
-
-  let id = session?.user?.id;
+  // const { data: session, status } = useSession();
 
   const cardContent = [
     {
@@ -105,7 +56,6 @@ export default function Home({ data }) {
           <div className={"landing-svg"}>
             <LandingCard
               headerText={"Gymnosis"}
-              // header2Text="Your All-in-One Crypto Companion."
               bodyText="Your All-in-One Gym Management Solution."
               renderSignIn={false}
               renderLearnMore={true}
@@ -147,14 +97,6 @@ export default function Home({ data }) {
       <div>
         <ProgressMeter currentStep={1} />
       </div>
-
-      {/* <div>
-        <FeatureGrid />
-      </div> */}
-
-      {/* <div>
-        <ReviewList />
-      </div> */}
 
       <div className="intro-paragraph">
         <p>
