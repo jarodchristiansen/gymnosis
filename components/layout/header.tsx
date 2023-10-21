@@ -1,4 +1,4 @@
-import { checkIsAdminOrTrainer } from "@/helpers/auth/auth";
+import { checkIsAdmin, checkIsAdminOrTrainer } from "@/helpers/auth/auth";
 import { Colors, MediaQueries } from "@/styles/variables";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Image from "next/image";
@@ -39,7 +39,7 @@ function Header() {
   const routes = [
     { key: 2, route: `/user/${id}`, guarded: false, text: "Profile" },
     // @ts-ignore: next-auth type issue v3
-    session?.user?.role === "admin" && {
+    checkIsAdmin(session?.user?.role) && {
       key: 3,
       route: "/admin",
       guarded: true,

@@ -1,6 +1,8 @@
 import { FILTER_CONSTS, SEARCH_VALUE_CONSTS } from "@/helpers/Consts";
+import { checkIsAdminOrTrainer } from "@/helpers/auth/auth";
 import { GET_USERS } from "@/helpers/queries/user";
 import { useLazyQuery } from "@apollo/client";
+import { getSession } from "next-auth/react";
 import Link from "next/link";
 import { useEffect, useMemo } from "react";
 import styled from "styled-components";
@@ -69,5 +71,23 @@ const PageContainer = styled.div`
     justify-content: space-between;
   }
 `;
+
+export async function getServerSideProps(context) {
+  const session = await getSession(context);
+
+  // @ts-ignore
+  if (!checkIsAdminOrTrainer(session?.user?.role)) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: { session },
+  };
+}
 
 export default ClientPage;

@@ -4,8 +4,6 @@ import User from "../../models/user";
 export const UserResolver = {
   queries: {
     getUsers: async (_, { filter, value }) => {
-      console.log({ filter, value });
-
       if (filter === FILTER_CONSTS.ADMIN && value === SEARCH_VALUE_CONSTS.ALL) {
         let users = await User.find({}).catch((err) => new Error(err));
 
