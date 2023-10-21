@@ -1,5 +1,4 @@
 import SideMenu from "@/components/commons/sidebar-nav";
-import PortfolioMain from "@/components/portfolio/PortfolioMain";
 // import PriceScreener from "@/components/commons/screener";
 import EditUserDetails from "@/components/user/edit-user-details";
 import { GET_USER } from "@/helpers/queries/user/index";
@@ -153,7 +152,7 @@ const ProfilePage = () => {
   return (
     <PageWrapper>
       <Head>
-        <link rel="icon" type="image/png" href="/images/cube-svgrepo-com.svg" />
+        <link rel="icon" type="image/png" href="/images/dumbbell.svg" />
         <title>Profile</title>
       </Head>
 
@@ -283,10 +282,6 @@ const ProfilePage = () => {
                 <button className="standardized-button" onClick={routeEditUser}>
                   Edit Profile
                 </button>
-              </div>
-
-              <div>
-                <PortfolioMain />
               </div>
             </>
           )}
