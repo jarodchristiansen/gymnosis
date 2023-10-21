@@ -36,7 +36,11 @@ function Header() {
   let id = session?.user?.username;
 
   const routes = [
+    { key: 1, route: "/assets", guarded: false, text: "Assets" },
     { key: 2, route: `/user/${id}`, guarded: false, text: "Profile" },
+    { key: 3, route: "/news", guarded: false, text: "News" },
+    // { key: 4, route: "/simulator", guarded: false, text: "Simulator" },
+    { key: 4, route: "/education", guarded: false, text: "Background" },
     !session && {
       key: 5,
       route: "/auth?path=SignIn",
@@ -107,7 +111,7 @@ function Header() {
         <Navbar.Brand onClick={() => setSelectedRoute("")}>
           <Link href={"/"} passHref legacyBehavior>
             <Image
-              src={"/assets/dumbbell.svg"}
+              src={"/assets/cube-svgrepo-com.svg"}
               className={"pointer-link"}
               height={50}
               width={50}

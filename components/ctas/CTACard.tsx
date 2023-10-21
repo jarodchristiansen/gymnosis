@@ -47,12 +47,12 @@ const CTAButton = styled.button`
 const CTACard: React.FC = () => {
   return (
     <CallToActionContainer>
-      <Title>Get started with Gymnosis today!</Title>
+      <Title>Get started with Mesh today!</Title>
       <Description>
-        Take control of your training journey with Gymnosis today! Sign up now
-        to explore the power of simplified data insights, seamless fitness
-        tracking, and a vibrant community of fitness enthusiasts. Join the
-        Gymnosis family and unleash the full potential of your time!
+        Take control of your crypto journey with Mesh today! Sign up now to
+        explore the power of simplified data insights, seamless portfolio
+        tracking, and a vibrant community of crypto enthusiasts. Join the Mesh
+        family and unleash the full potential of your crypto investments!
       </Description>
       <CTAButton>Sign up now</CTAButton>
     </CallToActionContainer>

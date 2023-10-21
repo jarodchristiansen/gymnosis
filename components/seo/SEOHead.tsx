@@ -20,7 +20,7 @@ const SEOHead = ({
   return (
     <Head>
       <meta name="viewport" content="width=device-width, initial-scale=1" />
-      <link rel="icon" type="image/png" href="/images/dumbbell.svg" />
+      <link rel="icon" type="image/png" href="/images/cube-svgrepo-com.svg" />
 
       <title>{metaTitle && metaTitle}</title>
       {isHomePage && (
@@ -39,7 +39,7 @@ const SEOHead = ({
       {pathname && (
         <meta
           property="og:url"
-          content={`https://gymnosis.vercel.app/${pathname}`}
+          content={`https://hodl-watch.vercel.app${pathname}`}
         />
       )}
 
@@ -48,31 +48,23 @@ const SEOHead = ({
 
       <meta
         property="og:title"
-        content={metaTitle ? metaTitle : "Gymnosis: Gym Management Software"}
+        content={metaTitle ? metaTitle : "Mesh: Web3 data explorer"}
       />
 
       <meta
         name="description"
-        content={
-          metaDescription
-            ? metaDescription
-            : "Gymnosis: Gym Management Software"
-        }
+        content={metaDescription ? metaDescription : "Web3 data explorer"}
       />
       <meta
         name="twitter:card"
-        content={metaTitle ? metaTitle : "Gymnosis: Gym Management Software"}
+        content={metaTitle ? metaTitle : "Mesh: Web3 data explorer"}
       />
 
       {pathname && <meta name="twitter:site" content={pathname} />}
 
       <meta
         property="og:description"
-        content={
-          metaDescription
-            ? metaDescription
-            : "Gymnosis: Gym Management Software"
-        }
+        content={metaDescription ? metaDescription : "Web3 data explorer"}
       />
       <meta property="og:image" content={previewImage && previewImage} />
       <meta property="og:image:width" content="400" />
