@@ -37,6 +37,13 @@ function Header() {
 
   const routes = [
     { key: 2, route: `/user/${id}`, guarded: false, text: "Profile" },
+    // @ts-ignore: next-auth type issue v3
+    session?.user?.role === "admin" && {
+      key: 3,
+      route: "/admin",
+      guarded: true,
+      text: "Admin",
+    },
     !session && {
       key: 5,
       route: "/auth?path=SignIn",

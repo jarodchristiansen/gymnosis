@@ -2,6 +2,13 @@ import User from "../../models/user";
 
 export const UserResolver = {
   queries: {
+    getUsers: async () => {
+      let users = await User.find({}).catch((err) => new Error(err));
+
+      console.log({ users }, "IN get USERS");
+
+      return users;
+    },
     getAssetPriceData: async (_, { tickers, exchange_data }) => {
       if (tickers) {
         try {

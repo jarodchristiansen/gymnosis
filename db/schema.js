@@ -127,6 +127,7 @@ const typeDefs = gql`
     image: String
     createAt: Date
     favorites: [FavoritesData]
+    role: String
   }
 
   input UsernameInput {
@@ -374,6 +375,7 @@ const typeDefs = gql`
   }
 
   type Query {
+    getUsers: [User]
     getAssets(offset: Int, limit: Int): [Asset]
     getAssetsByName(symbol: String, offset: Int, limit: Int): [Asset]
     getAssetSocialData(symbol: String!): [SocialStats]

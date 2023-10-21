@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { stringify } from "querystring";
 
 const { Schema } = mongoose;
 
@@ -33,6 +32,11 @@ const UsersSchema = new Schema({
   favorites: {
     type: [{ title: String, symbol: String, image: String }],
     default: [],
+  },
+  role: {
+    type: String,
+    enum: ["admin", "trainer", "client"],
+    default: "client",
   },
 });
 
