@@ -22,15 +22,6 @@ import "bootstrap/dist/css/bootstrap.css";
  * @returns
  */
 function MyApp({ Component, pageProps: { session, ...pageProps } }) {
-  // const config = {
-  //   projectId: `${process.env.WALLET_CONNECT_ID}`,
-  //   theme: "dark",
-  //   accentColor: "default",
-  //   ethereum: {
-  //     appName: "web3Modal",
-  //   },
-  // };
-
   const router = useRouter();
 
   useEffect(() => {
@@ -58,7 +49,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
     <>
       <Script
         strategy="afterInteractive"
-        src="https://www.googletagmanager.com/gtag/js?id=G-L0KCFED511"
+        src="https://www.googletagmanager.com/gtag/js?id=G-76XSR5BMS5"
         nonce="90123lkjasdfmnsdljkasdpoi0"
       />
       <Script
@@ -69,7 +60,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
-          gtag('config', 'G-L0KCFED511', {
+          gtag('config', 'G-76XSR5BMS5', {
             page_path: window.location.pathname,
           });
         `,
@@ -80,7 +71,6 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
         <ApolloProvider client={client}>
           <Layout>
             <Component {...pageProps} />
-            {/* <Web3Modal config={config} /> */}
           </Layout>
         </ApolloProvider>
       </SessionProvider>
