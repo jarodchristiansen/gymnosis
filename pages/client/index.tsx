@@ -1,12 +1,11 @@
 import { FILTER_CONSTS, SEARCH_VALUE_CONSTS } from "@/helpers/Consts";
-import { checkIsAdmin } from "@/helpers/auth/auth";
 import { GET_USERS } from "@/helpers/queries/user";
 import { useLazyQuery } from "@apollo/client";
-import { getSession } from "next-auth/react";
+import Link from "next/link";
 import { useEffect, useMemo } from "react";
 import styled from "styled-components";
 
-const AdminPage = () => {
+const ClientPage = () => {
   const [
     fetchUserDetails,
     {
@@ -22,8 +21,8 @@ const AdminPage = () => {
   useEffect(() => {
     fetchUserDetails({
       variables: {
-        filter: FILTER_CONSTS.ADMIN,
-        value: SEARCH_VALUE_CONSTS.ALL,
+        filter: FILTER_CONSTS.CLIENT_BY_ROLE,
+        value: SEARCH_VALUE_CONSTS.ROLE_CLIENT,
       },
     });
   }, []);
@@ -34,9 +33,11 @@ const AdminPage = () => {
     return userData.getUsers.map((user) => {
       return (
         <div data-testid={`user-card`} key={user.id} className="user-row">
-          <h6>User Name: {user?.name}</h6>
-          <h6>Email: {user?.email}</h6>
-          <h6>role: {user?.role}</h6>
+          <Link href={`client/${user?.id}`}>
+            <h6>User Name: {user?.name}</h6>
+            <h6>Email: {user?.email}</h6>
+            <h6>role: {user?.role}</h6>
+          </Link>
         </div>
       );
     });
@@ -44,9 +45,9 @@ const AdminPage = () => {
 
   return (
     <PageContainer>
-      <h1>Admin Page</h1>
+      <h1>Client Search Page</h1>
 
-      <div>{UserCards}</div>
+      {UserCards}
     </PageContainer>
   );
 };
@@ -69,22 +70,4 @@ const PageContainer = styled.div`
   }
 `;
 
-export async function getServerSideProps(context) {
-  const session = await getSession(context);
-
-  // @ts-ignore
-  if (!checkIsAdmin(session?.user?.role)) {
-    return {
-      redirect: {
-        destination: "/",
-        permanent: false,
-      },
-    };
-  }
-
-  return {
-    props: { session },
-  };
-}
-
-export default AdminPage;
+export default ClientPage;

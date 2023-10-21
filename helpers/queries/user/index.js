@@ -19,8 +19,8 @@ export const GET_USER = gql`
 `;
 
 export const GET_USERS = gql`
-  query GET_USERS {
-    getUsers {
+  query GET_USERS($filter: String, $value: String) {
+    getUsers(filter: $filter, value: $value) {
       id
       email
       name

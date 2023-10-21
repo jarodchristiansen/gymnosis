@@ -1,3 +1,4 @@
+import { checkIsAdminOrTrainer } from "@/helpers/auth/auth";
 import { Colors, MediaQueries } from "@/styles/variables";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Image from "next/image";
@@ -44,6 +45,15 @@ function Header() {
       guarded: true,
       text: "Admin",
     },
+
+    // @ts-ignore: next-auth type issue v3
+    checkIsAdminOrTrainer(session?.user?.role) && {
+      key: 4,
+      route: "/client",
+      guarded: true,
+      text: "Client Dashboard",
+    },
+
     !session && {
       key: 5,
       route: "/auth?path=SignIn",

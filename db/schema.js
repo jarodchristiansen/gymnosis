@@ -375,7 +375,7 @@ const typeDefs = gql`
   }
 
   type Query {
-    getUsers: [User]
+    getUsers(filter: String, value: String): [User]
     getAssets(offset: Int, limit: Int): [Asset]
     getAssetsByName(symbol: String, offset: Int, limit: Int): [Asset]
     getAssetSocialData(symbol: String!): [SocialStats]
