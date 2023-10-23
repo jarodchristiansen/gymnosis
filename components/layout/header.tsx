@@ -34,10 +34,10 @@ function Header() {
   };
 
   // @ts-ignore: next-auth type issue v3
-  let id = session?.user?.username;
+  let id = session?.user?.id;
 
   const routes = [
-    { key: 2, route: `/user/${id}`, guarded: false, text: "Profile" },
+    id && { key: 2, route: `/client/${id}`, guarded: false, text: "Profile" },
     // @ts-ignore: next-auth type issue v3
     checkIsAdmin(session?.user?.role) && {
       key: 3,
@@ -67,7 +67,7 @@ function Header() {
   }, [asPath]);
 
   const setRouterAsPath = () => {
-    let matchingRoute = routes.filter((item) => asPath.includes(item.route));
+    let matchingRoute = routes.filter((item) => asPath.includes(item?.route));
 
     if (matchingRoute.length) {
       setSelectedRoute(matchingRoute[0].key);

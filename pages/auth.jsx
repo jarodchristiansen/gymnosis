@@ -34,9 +34,7 @@ const AuthPage = () => {
       <SEOHead
         isHomePage={true}
         metaTitle={isSignIn ? "Sign In" : "Sign Up"}
-        metaDescription={
-          "Sign in to access everything that Mesh Web3 & Crypto has to offer"
-        }
+        metaDescription={"Sign in to access everything that Gymnosis"}
         previewImage="/assets/assets-page.png"
       />
 
@@ -44,8 +42,6 @@ const AuthPage = () => {
         <div className="form-container">
           {providers && <SignInForm providers={providers} />}
         </div>
-
-        <div className="image-container"></div>
       </div>
     </PageWrapper>
   );
@@ -67,19 +63,11 @@ const PageWrapper = styled.div`
     width: 100%;
     margin: auto;
 
-    .image-container {
-      background-size: cover;
-      width: 100%;
-      background-position: center;
-      background-image: url("/assets/bitcoin-charts-signin.jpg");
-    }
-
     @media ${MediaQueries.MD} {
       border: 1px solid black;
       display: flex;
-      flex-direction: row;
-      justify-content: stretch;
-      width: 100%;
+      justify-content: center;
+      width: 80%;
     }
   }
 `;

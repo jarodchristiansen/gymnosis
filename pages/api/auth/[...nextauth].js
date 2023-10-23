@@ -61,6 +61,9 @@ export const authOptions = {
       session.user.username = user.username;
       session.user.role = user.role;
       session.user.favorites = user.favorites;
+      session.user.facilities = user?.facilities || [];
+      session.user.workoutHistory = user?.workoutHistory || [];
+      session.user.id = user.id;
       return session;
     },
     async signIn({ user, account, profile, email, credentials }) {
@@ -68,6 +71,9 @@ export const authOptions = {
       let existingUser = await User.findOne({ email: userEmail });
 
       if (existingUser) {
+        user.facilities = user?.facilities || []; // Initialize facilities array
+        user.workoutHistory = user?.workoutHistory || []; // Initialize workout history
+
         // Handle role-specific logic here
         // if (user.role === "trainer") {
         //   // Add logic for trainers here
@@ -82,6 +88,8 @@ export const authOptions = {
         }
       } else if (!existingUser) {
         user.role = "client";
+        user.facilities = []; // Initialize facilities array
+        user.workoutHistory = []; // Initialize workout history
 
         return true;
       }

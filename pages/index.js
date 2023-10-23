@@ -24,6 +24,8 @@ import SEOHead from "../components/seo/SEOHead";
 export default function Home({ data }) {
   const { data: session, status } = useSession();
 
+  console.log({ session });
+
   const cardContent = [
     {
       image: "/landing/avatar-icon.svg",

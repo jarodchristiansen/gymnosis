@@ -38,6 +38,18 @@ const UsersSchema = new Schema({
     enum: ["admin", "trainer", "client"],
     default: "client",
   },
+  facilities: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Facility",
+    },
+  ],
+  workoutHistory: [
+    {
+      date: Date,
+      workoutData: Schema.Types.Mixed, // Store historical workout data here
+    },
+  ],
 });
 
 UsersSchema.index({ name: "text" });
