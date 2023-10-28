@@ -76,19 +76,21 @@ export const UserResolver = {
       console.log({ data, choices, message, content });
 
       if (content[Object.keys(content)[0]]) {
-        content[Object.keys(content)[0]] = content[Object.keys(content)[0]].map(
-          (day) => {
-            if (day.exercises) {
-              day.exercises = day.exercises.map((exercise) => {
-                exercise.sets = parseInt(exercise.sets);
-                exercise.reps = parseInt(exercise.reps);
-                return exercise;
-              });
-            }
+        console.log(content[Object.keys(content)[0]], "OBJECT BEFORE MAPPING");
 
-            return day;
+        content[Object.keys(content)[0]] = content[
+          Object.keys(content)[0]
+        ]?.map((day) => {
+          if (day.exercises) {
+            day.exercises = day.exercises.map((exercise) => {
+              exercise.sets = parseInt(exercise.sets);
+              exercise.reps = parseInt(exercise.reps);
+              return exercise;
+            });
           }
-        );
+
+          return day;
+        });
 
         console.log(content[Object.keys(content)[0]], "ROUTINE");
 
@@ -230,6 +232,29 @@ export const UserResolver = {
         return "user not found";
       } catch (err) {
         throw new Error("Error in removeFavorite!!", err);
+      }
+    },
+
+    addWorkoutRoutine: async (_, { input }) => {
+      const { id, routine } = input;
+      try {
+        let user = await User.findOne({ _id: id });
+
+        if (user) {
+          const newRoutine = {
+            date: new Date(), // You can set the date to the current date or as needed
+            routine: routine, // Ensure routine follows the correct structure
+          };
+
+          user.workoutHistory.push(newRoutine);
+          await user.save();
+
+          return user;
+        } else {
+          throw new Error("User not found");
+        }
+      } catch (err) {
+        throw new Error("Error in addWorkoutRoutine: " + err.message);
       }
     },
 

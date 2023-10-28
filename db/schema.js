@@ -380,10 +380,27 @@ const typeDefs = gql`
     exercises: [exercise]
   }
 
+  input WorkoutRoutineInput {
+    day: Int
+    bodyPart: String
+    exercises: [ExerciseInput]
+  }
+
+  input ExerciseInput {
+    exercise: String
+    sets: Int
+    reps: Int
+  }
+
   type exercise {
     exercise: String
     sets: Int
     reps: Int
+  }
+
+  input WorkoutInput {
+    routine: [WorkoutRoutineInput]
+    id: String
   }
 
   type Query {
@@ -413,6 +430,7 @@ const typeDefs = gql`
   }
 
   type Mutation {
+    addWorkoutRoutine(input: WorkoutInput): User
     removeFavorite(input: FavoriteInput): User
     addFavorite(input: FavoriteInput): User
     updateUsername(input: UsernameInput): User

@@ -47,7 +47,19 @@ const UsersSchema = new Schema({
   workoutHistory: [
     {
       date: Date,
-      workoutData: Schema.Types.Mixed, // Store historical workout data here
+      routine: [
+        {
+          day: Number,
+          bodyPart: String,
+          exercises: [
+            {
+              exercise: String,
+              sets: Number,
+              reps: Number,
+            },
+          ],
+        },
+      ],
     },
   ],
 });

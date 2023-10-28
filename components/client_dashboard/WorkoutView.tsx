@@ -1,12 +1,13 @@
 import { useState } from "react";
 import styled from "styled-components";
 import WorkoutBuilder from "./WorkoutBuilder";
+import WorkoutHistory from "./WorkoutHistory";
 
 interface TabButtonProps {
   active: boolean;
 }
 
-const WorkoutView = () => {
+const WorkoutView = ({ id }) => {
   const [view, setView] = useState<string>("history");
 
   const handleTabChange = (tab) => {
@@ -20,6 +21,7 @@ const WorkoutView = () => {
           {/* Display workout plan history */}
           <h3>Workout Plan History</h3>
           {/* Add code to fetch and display workout plan history */}
+          <WorkoutHistory />
         </div>
       );
     } else if (view === "builder") {
@@ -28,7 +30,7 @@ const WorkoutView = () => {
           {/* Create a new workout plan */}
           <h3>Workout Plan Builder</h3>
 
-          <WorkoutBuilder />
+          <WorkoutBuilder id={id} />
           {/* Add code for building a new workout plan */}
         </div>
       );

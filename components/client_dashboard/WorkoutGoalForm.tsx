@@ -63,7 +63,14 @@ Weight Training Frequency: ${weightTrainingFrequency}`;
         "sets": [Exercise4Sets],
         "reps": [Exercise4Reps]
       }
-    }
+    ]
+  },
+ {
+    "day": 3,
+    "bodyPart": "Rest",
+    "exercises": [
+    
+    ]
   }
 ]
 `;

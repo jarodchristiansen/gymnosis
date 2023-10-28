@@ -8,14 +8,16 @@ import WorkoutView from "./WorkoutView";
 const DashboardContainer = ({ session: data }) => {
   const [activeTab, setActiveTab] = useState("Workouts");
 
-  const { name, email, role, image, workoutHistory } = data?.user;
+  const { name, email, role, image, workoutHistory, id } = data?.user;
+
+  console.log({ id, workoutHistory });
 
   const renderTabContent = () => {
     switch (activeTab) {
       case "Workouts":
         return (
           <div>
-            <WorkoutView />
+            <WorkoutView id={id} />
           </div>
         );
       case "MealPlan":
