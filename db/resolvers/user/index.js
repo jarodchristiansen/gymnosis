@@ -1,6 +1,10 @@
 import { FILTER_CONSTS, SEARCH_VALUE_CONSTS } from "@/helpers/Consts";
 import User from "../../models/user";
 
+// const openai = new OpenAI({
+//   apiKey: process.env.OPENAI_API_KEY,
+// });
+
 export const UserResolver = {
   queries: {
     getUsers: async (_, { filter, value }) => {
@@ -25,6 +29,75 @@ export const UserResolver = {
         return users;
       }
     },
+
+    createWorkout: async (_, { prompt }) => {
+      console.log({ prompt }, "IN REDUCER");
+
+      const url = "https://api.openai.com/v1/chat/completions";
+
+      const headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      };
+
+      const requestData = {
+        model: "gpt-3.5-turbo",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are an expert personal trainer with years of experience working with JavaScript as well. You output responses solely as a JavaScript Object when queried for workout routines matching the example in the prompt structure precisely.",
+          },
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+      };
+
+      const data = await fetch(url, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(requestData),
+      }).then((response) => response.json());
+
+      const { choices } = data;
+
+      let message;
+      let content;
+
+      if (choices.length) {
+        message = choices[0].message;
+        content = choices[0].message.content;
+      }
+
+      content = JSON.parse(content);
+
+      console.log({ data, choices, message, content });
+
+      if (content[Object.keys(content)[0]]) {
+        console.log(content[Object.keys(content)[0]], "OBJECT BEFORE MAPPING");
+
+        content[Object.keys(content)[0]] = content[
+          Object.keys(content)[0]
+        ]?.map((day) => {
+          if (day.exercises) {
+            day.exercises = day.exercises.map((exercise) => {
+              exercise.sets = parseInt(exercise.sets);
+              exercise.reps = parseInt(exercise.reps);
+              return exercise;
+            });
+          }
+
+          return day;
+        });
+
+        console.log(content[Object.keys(content)[0]], "ROUTINE");
+
+        return content[Object.keys(content)[0]];
+      }
+    },
+
     getAssetPriceData: async (_, { tickers, exchange_data }) => {
       if (tickers) {
         try {
@@ -159,6 +232,29 @@ export const UserResolver = {
         return "user not found";
       } catch (err) {
         throw new Error("Error in removeFavorite!!", err);
+      }
+    },
+
+    addWorkoutRoutine: async (_, { input }) => {
+      const { id, routine } = input;
+      try {
+        let user = await User.findOne({ _id: id });
+
+        if (user) {
+          const newRoutine = {
+            date: new Date(), // You can set the date to the current date or as needed
+            routine: routine, // Ensure routine follows the correct structure
+          };
+
+          user.workoutHistory.push(newRoutine);
+          await user.save();
+
+          return user;
+        } else {
+          throw new Error("User not found");
+        }
+      } catch (err) {
+        throw new Error("Error in addWorkoutRoutine: " + err.message);
       }
     },
 

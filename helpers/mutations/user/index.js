@@ -46,6 +46,22 @@ export const ADD_FAVORITE = gql`
   }
 `;
 
+export const ADD_WORKOUT_ROUTINE = gql`
+  mutation addWorkoutRoutine($input: WorkoutInput) {
+    addWorkoutRoutine(input: $input) {
+      email
+      id
+      name
+      username
+      favorites {
+        title
+        symbol
+        image
+      }
+    }
+  }
+`;
+
 export const UPDATE_USERNAME = gql`
   mutation updateUsername($input: UsernameInput) {
     updateUsername(input: $input) {

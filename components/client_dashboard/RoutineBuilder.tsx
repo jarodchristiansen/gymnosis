@@ -1,12 +1,16 @@
+import { ADD_WORKOUT_ROUTINE } from "@/helpers/mutations/user";
+import { useMutation } from "@apollo/client";
 import { useRef, useState } from "react";
 import styled from "styled-components";
 import { dummyRoutine } from "../../helpers/dummyData/dummyRoutine";
 
-const RoutineBuilder = () => {
-  const [routineData, setRoutineData] = useState(dummyRoutine);
+const RoutineBuilder = ({ aiWorkoutData, id }) => {
+  const [routineData, setRoutineData] = useState(aiWorkoutData || dummyRoutine);
   const [isFormValid, setIsFormValid] = useState(true);
   const [firstInvalidExercise, setFirstInvalidExercise] = useState(null); // State to store the first invalid exercise
   const scrollRef = useRef(null); // Reference for scrolling
+
+  const [addRoutine, { loading, error }] = useMutation(ADD_WORKOUT_ROUTINE);
 
   const handleExerciseChange = (day, exerciseIndex, property, value) => {
     const updatedRoutine = [...routineData];
@@ -59,6 +63,28 @@ const RoutineBuilder = () => {
       // Use the 'routineData' state to access the data.
       // You may send this data via GraphQL or use any other method based on your backend setup.
       console.log("Routine is valid. Save to the database:", routineData);
+      let tempRoutineData = routineData.map((day) => {
+        return {
+          day: day.day,
+          bodyPart: day.bodyPart,
+          exercises: day.exercises.map((exercise) => {
+            return {
+              exercise: exercise.exercise,
+              sets: exercise.sets,
+              reps: exercise.reps,
+            };
+          }),
+        };
+      });
+
+      addRoutine({
+        variables: {
+          input: {
+            id: id,
+            routine: tempRoutineData,
+          },
+        },
+      });
     }
   };
 

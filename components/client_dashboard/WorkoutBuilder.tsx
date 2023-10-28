@@ -3,16 +3,22 @@ import styled from "styled-components";
 import RoutineBuilder from "./RoutineBuilder";
 import WorkoutGoalForm from "./WorkoutGoalForm";
 
-const WorkoutBuilder = () => {
+const WorkoutBuilder = ({ id }) => {
   const [formIsOpen, setFormIsOpen] = useState(true);
+  const [aiWorkoutData, setAiWorkoutData] = useState(null);
 
   return (
     <WorkoutBuilderContainer>
       <h2>Client Goal</h2>
 
-      {formIsOpen && <WorkoutGoalForm setFormIsOpen={setFormIsOpen} />}
+      {formIsOpen && !aiWorkoutData && (
+        <WorkoutGoalForm
+          setFormIsOpen={setFormIsOpen}
+          setAiWorkoutData={setAiWorkoutData}
+        />
+      )}
 
-      {!formIsOpen && <RoutineBuilder />}
+      {!formIsOpen && <RoutineBuilder aiWorkoutData={aiWorkoutData} id={id} />}
     </WorkoutBuilderContainer>
   );
 };
