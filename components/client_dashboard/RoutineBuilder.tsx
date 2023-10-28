@@ -2,8 +2,8 @@ import { useRef, useState } from "react";
 import styled from "styled-components";
 import { dummyRoutine } from "../../helpers/dummyData/dummyRoutine";
 
-const RoutineBuilder = () => {
-  const [routineData, setRoutineData] = useState(dummyRoutine);
+const RoutineBuilder = ({ aiWorkoutData }) => {
+  const [routineData, setRoutineData] = useState(aiWorkoutData || dummyRoutine);
   const [isFormValid, setIsFormValid] = useState(true);
   const [firstInvalidExercise, setFirstInvalidExercise] = useState(null); // State to store the first invalid exercise
   const scrollRef = useRef(null); // Reference for scrolling

@@ -49,3 +49,17 @@ export const GET_USER_HOLDINGS = gql`
     }
   }
 `;
+
+export const CREATE_WORKOUT = gql`
+  query createWorkout($prompt: String) {
+    createWorkout(prompt: $prompt) {
+      day
+      bodyPart
+      exercises {
+        exercise
+        sets
+        reps
+      }
+    }
+  }
+`;

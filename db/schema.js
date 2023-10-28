@@ -374,7 +374,20 @@ const typeDefs = gql`
     code_repo_contributors: Float
   }
 
+  type WorkoutRoutine {
+    day: Int
+    bodyPart: String
+    exercises: [exercise]
+  }
+
+  type exercise {
+    exercise: String
+    sets: Int
+    reps: Int
+  }
+
   type Query {
+    createWorkout(prompt: String): [WorkoutRoutine]
     getUsers(filter: String, value: String): [User]
     getAssets(offset: Int, limit: Int): [Asset]
     getAssetsByName(symbol: String, offset: Int, limit: Int): [Asset]

@@ -1,8 +1,10 @@
+import { CREATE_WORKOUT } from "@/helpers/queries/user";
 import { MediaQueries } from "@/styles/variables";
-import { useState } from "react";
+import { useLazyQuery } from "@apollo/client";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 
-const WorkoutGoalForm = ({ setFormIsOpen }) => {
+const WorkoutGoalForm = ({ setFormIsOpen, setAiWorkoutData }) => {
   const [clientGoal, setClientGoal] = useState("");
   const [clientWeight, setClientWeight] = useState("");
   const [clientHeight, setClientHeight] = useState("");
@@ -11,6 +13,9 @@ const WorkoutGoalForm = ({ setFormIsOpen }) => {
   const [sports, setSports] = useState([]);
   const [weightTraining, setWeightTraining] = useState(false);
   const [weightTrainingFrequency, setWeightTrainingFrequency] = useState("");
+
+  const [createWorkout, { data, loading, error }] =
+    useLazyQuery(CREATE_WORKOUT);
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
@@ -75,16 +80,26 @@ Based on the client's details provided above, create a workout plan. Replace the
 
 ${workoutPlanPlaceholders}
 
-Please provide a workout plan in the format of the JavaScript object array above. Complete the entire plan in the object and don't use placeholder data as this will be used in an application. I need all 5 days to have your recommended routine and can't use  things like "continue this pattern for the remaining days". Please only provide the JavaScript Object output as the workout routine and no additional text`;
+Please provide a workout plan in the format of the JavaScript object array above. Complete the entire plan in the object and don't use placeholder data as this will be used in an application. The plan must include ${weightTrainingFrequency} weight training days days to have your recommended routine and can't use things like "continue this pattern for the remaining days". Please also include rest days to fill the remainder of the days that are not used for weight training. Please only provide the JavaScript Object output as the workout routine and no additional text`;
 
     // Send this prompt to the OpenAI API and use the response, which should be a JavaScript object array.
 
     // Send this prompt to the OpenAI API and use the response to generate the workout plan.
-
-    console.log({ prompt });
-
-    setFormIsOpen(false);
+    createWorkout({
+      variables: {
+        prompt,
+      },
+    });
   };
+
+  useEffect(() => {
+    console.log({ data }, "IN USE EFFECT");
+
+    if (data?.createWorkout) {
+      setAiWorkoutData(data.createWorkout);
+      setFormIsOpen(false);
+    }
+  }, [data]);
 
   return (
     <div>
