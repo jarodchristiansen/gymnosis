@@ -1,5 +1,5 @@
 import { MediaQueries } from "@/styles/variables";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import styled from "styled-components";
 
 interface Slide {
@@ -20,64 +20,66 @@ interface MarkerProps {
 const CarouselMarkers = ({ slides, activeIndex }: CarouselMarkersProps) => {
   return (
     <MarkersContainer>
-      {slides.map((_, index) => (
-        <Marker key={index} isActive={index === activeIndex} />
+      {slides.map((slide, index) => (
+        <Marker
+          key={slide.title}
+          isActive={index === activeIndex}
+          aria-hidden={true}
+        />
       ))}
     </MarkersContainer>
   );
 };
 
+const CAROUSEL_SLIDES: Slide[] = [
+  {
+    title: "Portfolio Tracking",
+    text: "Monitor real-time prices, performance, and allocation across multiple assets.",
+    image: "/assets/chartScreenshot.png",
+  },
+  {
+    title: "Comprehensive Metrics",
+    text: "Dive deep into financial and on-chain metrics to gain valuable insights into crypto assets.",
+    image: "/landing/growth-chart-icon.svg",
+  },
+  {
+    title: "Social Community",
+    text: "Connect with a vibrant community of crypto enthusiasts and investors.",
+    image: "/landing/connected-icon.svg",
+  },
+  {
+    title: "News and Updates",
+    text: "Access a curated feed of crypto news, articles, and market updates in real-time.",
+    image: "/assets/chartScreenshot.png",
+  },
+  {
+    title: "User-friendly Interface",
+    text: "Enjoy a sleek and intuitive interface designed for seamless user experience.",
+    image: "/assets/chartScreenshot.png",
+  },
+  {
+    title: "Security and Privacy",
+    text: "Rest assured knowing that your data and assets are protected with robust security measures.",
+    image: "/landing/avatar-icon.svg",
+  },
+];
+
 const LandingCarousel = () => {
-  // Still needs controller to prevent useEffect firing if user toggles slide.
   const [activeIndex, setActiveIndex] = useState(0);
+  const len = CAROUSEL_SLIDES.length;
 
-  const nextSlide = () => {
-    setActiveIndex((prevIndex) => (prevIndex + 1) % slides.length);
-  };
+  const nextSlide = useCallback(() => {
+    setActiveIndex((prevIndex) => (prevIndex + 1) % len);
+  }, [len]);
 
-  const prevSlide = () => {
-    setActiveIndex(
-      (prevIndex) => (prevIndex - 1 + slides.length) % slides.length
-    );
-  };
-
-  const slides = [
-    {
-      title: "Portfolio Tracking",
-      text: "Monitor real-time prices, performance, and allocation across multiple assets.",
-      image: "/assets/chartScreenshot.png",
-    },
-    {
-      title: "Comprehensive Metrics",
-      text: "Dive deep into financial and on-chain metrics to gain valuable insights into crypto assets.",
-      image: "/landing/growth-chart-icon.svg",
-    },
-    {
-      title: "Social Community",
-      text: "Connect with a vibrant community of crypto enthusiasts and investors.",
-      image: "/landing/connected-icon.svg",
-    },
-    {
-      title: "News and Updates",
-      text: "Access a curated feed of crypto news, articles, and market updates in real-time.",
-      image: "/assets/chartScreenshot.png",
-    },
-    {
-      title: "User-friendly Interface",
-      text: "Enjoy a sleek and intuitive interface designed for seamless user experience.",
-      image: "/assets/chartScreenshot.png",
-    },
-    {
-      title: "Security and Privacy",
-      text: "Rest assured knowing that your data and assets are protected with robust security measures.",
-      image: "/landing/avatar-icon.svg",
-    },
-  ];
+  const prevSlide = useCallback(() => {
+    setActiveIndex((prevIndex) => (prevIndex - 1 + len) % len);
+  }, [len]);
 
   useEffect(() => {
-    const interval = setInterval(nextSlide, 12000); // Switch slide every 7 seconds
-    return () => clearInterval(interval); // Clean up the interval on unmount
-  }, []);
+    const interval = setInterval(nextSlide, 12000);
+    return () => clearInterval(interval);
+  }, [nextSlide]);
 
   return (
     <CarouselContainer>
@@ -86,9 +88,9 @@ const LandingCarousel = () => {
           transform: `translateX(-${activeIndex * 100}%)`,
         }}
       >
-        {slides.map((slide, index) => (
-          <Slide key={index}>
-            <Image src={slide.image} alt={`Slide ${index}`} />
+        {CAROUSEL_SLIDES.map((slide) => (
+          <Slide key={slide.title}>
+            <Image src={slide.image} alt={slide.title} />
             <Content>
               <HeaderText>{slide.title}</HeaderText>
               <Paragraph>{slide.text}</Paragraph>
@@ -97,10 +99,18 @@ const LandingCarousel = () => {
         ))}
       </Slider>
       <NavButtonsContainer>
-        <NavButton onClick={prevSlide}>&#8249;</NavButton>
-        <NavButton onClick={nextSlide}>&#8250;</NavButton>
+        <NavButton
+          type="button"
+          onClick={prevSlide}
+          aria-label="Previous slide"
+        >
+          &#8249;
+        </NavButton>
+        <NavButton type="button" onClick={nextSlide} aria-label="Next slide">
+          &#8250;
+        </NavButton>
       </NavButtonsContainer>
-      <CarouselMarkers slides={slides} activeIndex={activeIndex} />
+      <CarouselMarkers slides={CAROUSEL_SLIDES} activeIndex={activeIndex} />
     </CarouselContainer>
   );
 };

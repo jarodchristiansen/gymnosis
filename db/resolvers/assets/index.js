@@ -2,8 +2,48 @@ const CoinGecko = require("coingecko-api");
 import Asset from "../../models/asset";
 import btc_macros from "../../models/btc_macro";
 
+async function fetchHistodayPriceSeries(symbol, time) {
+  const priceData = await fetch(
+    `https://min-api.cryptocompare.com/data/v2/histoday?fsym=${symbol.toUpperCase()}&tsym=USD&limit=${time}`
+  ).then((response) => response.json());
+  return priceData.Data?.Data;
+}
+
+async function fetchBlockchainSeriesIfMajor(symbol, time) {
+  const upper = symbol.toUpperCase();
+  if (upper !== "BTC" && upper !== "ETH") {
+    return undefined;
+  }
+  const blockchainData = await fetch(
+    `https://min-api.cryptocompare.com/data/blockchain/histo/day?fsym=${symbol}&limit=${time}&api_key=${process.env.CRYPTO_COMPARE_KEY}`
+  ).then((response) => response.json());
+  return blockchainData.Data?.Data;
+}
+
+async function loadPriceAndBlockchainHistory(symbol, time) {
+  const data = {
+    priceData: await fetchHistodayPriceSeries(symbol, time),
+  };
+  const blockchainData = await fetchBlockchainSeriesIfMajor(symbol, time);
+  if (blockchainData) {
+    data.blockchainData = blockchainData;
+  }
+  if (!data.priceData) {
+    throw new Error("Asset not found");
+  }
+  return data;
+}
+
+async function findDbAssetByNameOrSymbol(name) {
+  let dbAsset = await Asset.findOne({ name });
+  if (!dbAsset) {
+    dbAsset = await Asset.findOne({ symbol: name });
+  }
+  return dbAsset;
+}
+
 export const AssetResolver = {
-  getAssets: async (_, { offset, limit, topListBy }) => {
+  getAssets: async (_, { offset, limit }) => {
     try {
       const assets = await Asset.find({})
         .limit(offset * limit)
@@ -20,12 +60,13 @@ export const AssetResolver = {
       if (!type || type === "Crypto") {
         const CoinGeckoClient = new CoinGecko();
 
-        let assets = await CoinGeckoClient.coins.list();
+        const assets = await CoinGeckoClient.coins.list();
 
         return assets?.data?.filter((e) =>
           e.symbol.toLowerCase().includes(symbol.toLowerCase())
         );
-      } else if (type === "TradFI") {
+      }
+      if (type === "TradFI") {
         const url = `https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${symbol}&apikey=${process.env.ALPHA_VANTAGE}`;
 
         const data = await fetch(url).then((response) => response.json());
@@ -52,13 +93,9 @@ export const AssetResolver = {
       `https://api.glassnode.com/v1/metrics/indicators/difficulty_ribbon?a=${symbol}&api_key=${process.env.GLASSNODE_KEY}`
     ).then((response) => response.json());
 
-    const addressCount = await fetch(
-      `https://api.glassnode.com/v1/metrics/addresses/active_count?a=${symbol}&api_key=${process.env.GLASSNODE_KEY}`
-    ).then((response) => response.json());
+    const ribbonData = [];
 
-    let ribbonData = [];
-
-    for (let i of data.slice(-cut)) {
+    for (const i of data.slice(-cut)) {
       ribbonData.push({
         t: i.t,
         ma9: i.o.ma9,
@@ -72,21 +109,17 @@ export const AssetResolver = {
       });
     }
 
-    // let formattedData = {
-    //   ribbonData,
-    //   addressCount
-    // }
-
     return ribbonData;
   },
-  getBTCMacros: async (_, { symbol }) => {
+
+  getBTCMacros: async () => {
     const data = {};
 
-    let results = await btc_macros.find({}).catch((err) => new Error(err));
+    const results = await btc_macros.find({});
 
-    let responses = [];
+    const responses = [];
 
-    for (let i of results) {
+    for (const i of results) {
       if (typeof i.rolling_sharpe !== "number")
         i.rolling_sharpe = parseFloat(0);
 
@@ -115,8 +148,8 @@ export const AssetResolver = {
 
     return data;
   },
+
   getAssetSocialData: async (_, { symbol }) => {
-    // ABSTRACT THIS LOGIC OUT FOR COINLIST AND CACHE IT ON SERVER TO REDUCE REQUESTS
     try {
       const response = await fetch(
         "https://min-api.cryptocompare.com/data/all/coinlist"
@@ -124,31 +157,33 @@ export const AssetResolver = {
 
       const coins = response.Data;
 
-      // Find the coin object by symbol
       const coin = Object.values(coins).find(
         (c) => c.Symbol.toUpperCase() === symbol.toUpperCase()
       );
 
-      if (coin) {
-        const coinId = coin.Id;
-        // return coinId;
-        if (coinId) {
-          let socialData = await fetch(
-            `https://min-api.cryptocompare.com/data/social/coin/histo/day?coinId=${coinId}&api_key=${process.env.CRYPTO_COMPARE_KEY}`
-          ).then((response) => response.json());
-
-          return socialData.Data;
-        }
-      } else {
+      if (!coin) {
         throw new Error("Coin not found");
       }
+
+      const coinId = coin.Id;
+      if (!coinId) {
+        return null;
+      }
+
+      const socialData = await fetch(
+        `https://min-api.cryptocompare.com/data/social/coin/histo/day?coinId=${coinId}&api_key=${process.env.CRYPTO_COMPARE_KEY}`
+      ).then((response) => response.json());
+
+      return socialData.Data;
     } catch (error) {
       console.error("Error retrieving coinId:", error);
+      throw error;
     }
   },
+
   getAssetNews: async (_, { symbol }) => {
     const data = {};
-    let newsData = await fetch(
+    const newsData = await fetch(
       `https://min-api.cryptocompare.com/data/v2/news/?lang=EN&categories=${symbol.toUpperCase()}`
     ).then((response) => response.json());
 
@@ -156,40 +191,22 @@ export const AssetResolver = {
 
     return data.newsData;
   },
+
   getAssetPairs: async (_, { symbol }) => {
     const data = {};
 
-    let pairData = await fetch(
+    const pairData = await fetch(
       `https://min-api.cryptocompare.com/data/top/volumes?tsym=${symbol.toUpperCase()}`
     ).then((response) => response.json());
 
     data.pairData = pairData.Data;
 
-    return data;
+    return data.pairData;
   },
+
   getAssetFinancialDetails: async (_, { symbol, time }) => {
     try {
-      const data = {};
-
-      let priceData = await fetch(
-        `https://min-api.cryptocompare.com/data/v2/histoday?fsym=${symbol.toUpperCase()}&tsym=USD&limit=${time}`
-      ).then((response) => response.json());
-
-      data.priceData = priceData.Data.Data;
-
-      if (symbol.toUpperCase() === "BTC" || symbol.toUpperCase() === "ETH") {
-        let blockchainData = await fetch(
-          `https://min-api.cryptocompare.com/data/blockchain/histo/day?fsym=${symbol}&limit=${time}&api_key=${process.env.CRYPTO_COMPARE_KEY}`
-        ).then((response) => response.json());
-
-        data.blockchainData = blockchainData.Data.Data;
-      }
-
-      if (data?.priceData) {
-        return data;
-      } else {
-        throw new Error("Asset not found");
-      }
+      return await loadPriceAndBlockchainHistory(symbol, time);
     } catch (err) {
       throw new Error(err);
     }
@@ -197,86 +214,43 @@ export const AssetResolver = {
 
   getAssetHistory: async (_, { symbol, time }) => {
     try {
-      const data = {};
-
-      let priceData = await fetch(
-        `https://min-api.cryptocompare.com/data/v2/histoday?fsym=${symbol.toUpperCase()}&tsym=USD&limit=${time}`
-      ).then((response) => response.json());
-
-      data.priceData = priceData.Data.Data;
-
-      if (symbol.toUpperCase() === "BTC" || symbol.toUpperCase() === "ETH") {
-        let blockchainData = await fetch(
-          `https://min-api.cryptocompare.com/data/blockchain/histo/day?fsym=${symbol}&limit=${time}&api_key=${process.env.CRYPTO_COMPARE_KEY}`
-        ).then((response) => response.json());
-
-        // let indicatorData = await fetch(
-        //   `https://min-api.cryptocompare.com/data/tradingsignals/intotheblock/latest?fsym=BTC&api_key=${process.env.CRYPTO_COMPARE_KEY}`
-        // ).then((response) => response.json());
-
-        data.blockchainData = blockchainData.Data.Data;
-      }
-
-      // if (results.length === 1) {
-      //   data.priceData = results[0]?.Data?.Data;
-      //   // data.blockchainData = results[1]?.Data;
-      // } else if (results.length === 2) {
-      //   data.priceData = results[0]?.Data?.Data;
-      //   data.blockchainData = results[1]?.Data?.Data;
-      // }
-
-      if (data?.priceData) {
-        return data;
-      } else {
-        throw new Error("Asset not found");
-      }
+      return await loadPriceAndBlockchainHistory(symbol, time);
     } catch (err) {
       throw new Error(err);
     }
   },
 
-  getGeckoAssetDetails: async (_, { name, time }) => {
+  getGeckoAssetDetails: async (_, { name }) => {
     try {
-      let data = {};
-
-      // // How to get details on contracts from erc-20
       const CoinGeckoClient = new CoinGecko();
 
-      let coinList = await CoinGeckoClient.coins.list();
+      const coinList = await CoinGeckoClient.coins.list();
 
-      let geckoProp = coinList?.data?.filter(
+      const geckoProp = coinList?.data?.filter(
         (asset) => name.toLowerCase() === asset.name.toLowerCase()
       );
 
-      let dbAsset = await Asset.findOne({ name }).catch(
-        (err) => new Error(err)
-      );
+      const dbAsset = await findDbAssetByNameOrSymbol(name);
 
-      if (!dbAsset) {
-        dbAsset = await Asset.findOne({ symbol: name }).catch(
-          (err) => new Error(err)
-        );
-      }
+      let data = {};
 
-      if (geckoProp) {
-        let geckoData = await CoinGeckoClient.coins.fetch(geckoProp[0].id, {
+      if (geckoProp?.length) {
+        const geckoData = await CoinGeckoClient.coins.fetch(geckoProp[0].id, {
           market_data: false,
           localization: false,
         });
 
-        data = geckoData?.data;
+        data = geckoData?.data ?? {};
       }
 
-      data.favorite_count = dbAsset?.favorite_count;
+      if (dbAsset?.favorite_count != null) {
+        data.favorite_count = dbAsset.favorite_count;
+      }
 
-      // let zrx = "0xe41d2489571d322189246dafa5ebde1f4699f498";
-      // let contract = await CoinGeckoClient.coins.fetchCoinContractInfo(zrx);
-
-      if (data) {
+      if (Object.keys(data).length > 0) {
         return data;
-      } else {
-        throw new Error("Asset not found");
       }
+      throw new Error("Asset not found");
     } catch (err) {
       throw new Error(err);
     }

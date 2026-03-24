@@ -16,10 +16,8 @@ import styled from "styled-components";
 
 interface AssetCardProps {
   asset: Asset;
-  key?: string;
   email: string | null;
   favorited: boolean;
-  refetchFavorites?: () => void;
 }
 
 export type Asset = {
@@ -57,7 +55,6 @@ const AssetCard = ({ asset, email, favorited }: AssetCardProps) => {
     name,
     symbol,
     image,
-    current_price,
     ath,
     atl,
     ath_change_percentage,
@@ -73,16 +70,13 @@ const AssetCard = ({ asset, email, favorited }: AssetCardProps) => {
     query: { name },
   };
 
-  const [addFavorite, { loading, error }] = useMutation(ADD_FAVORITE, {
-    // TEMP SOLUTION UNTIL CACHING FIXED
+  const [addFavorite] = useMutation(ADD_FAVORITE, {
     refetchQueries: [{ query: GET_USER, variables: { email: email } }],
   });
 
-  const [removeFavorite, { loading: removeLoading, error: removeError }] =
-    useMutation(REMOVE_FAVORITE, {
-      // TEMP SOLUTION UNTIL CACHING FIXED
-      refetchQueries: [{ query: GET_USER, variables: { email: email } }],
-    });
+  const [removeFavorite] = useMutation(REMOVE_FAVORITE, {
+    refetchQueries: [{ query: GET_USER, variables: { email: email } }],
+  });
 
   const removeFromFavorites = () => {
     removeFavorite({
@@ -114,7 +108,7 @@ const AssetCard = ({ asset, email, favorited }: AssetCardProps) => {
     });
   };
 
-  const changeCardView = (newView) => {
+  const changeCardView = (newView: string) => {
     handleSnapshotClick();
     setCardView(newView);
   };
@@ -142,34 +136,40 @@ const AssetCard = ({ asset, email, favorited }: AssetCardProps) => {
           <AssetCardWrapper>
             <div className={"card-body py-4 holder"}>
               {!favorited && (
-                <div
+                <FavoriteIconButton
+                  type="button"
                   onClick={addToFavorites}
                   className="favorite-button"
                   data-testid="add-button"
+                  aria-label="Add to favorites"
                 >
                   <Image
                     src={"/images/empty-star.svg"}
                     className={"pointer-link"}
                     height={"40px"}
                     width={"40px"}
-                    alt="non-favorited asset icon"
+                    alt=""
+                    aria-hidden={true}
                   />
-                </div>
+                </FavoriteIconButton>
               )}
               {favorited && (
-                <div
+                <FavoriteIconButton
+                  type="button"
                   onClick={removeFromFavorites}
                   className="favorite-button"
                   data-testid="remove-button"
+                  aria-label="Remove from favorites"
                 >
                   <Image
                     src={"/images/filled-star.svg"}
                     className={"pointer-link"}
                     height={"40px"}
                     width={"40px"}
-                    alt="favorited asset icon"
+                    alt=""
+                    aria-hidden={true}
                   />
-                </div>
+                </FavoriteIconButton>
               )}
 
               <h4 className="card-title">{title || name || "Card Title"}</h4>
@@ -188,11 +188,18 @@ const AssetCard = ({ asset, email, favorited }: AssetCardProps) => {
                 />
               </ImageContainer>
 
-              <Link href={exploreLink} as={`/assets/${symbol}?name=${name}`}>
-                <button>Explore</button>
+              <Link
+                href={exploreLink}
+                as={`/assets/${symbol}?name=${encodeURIComponent(name)}`}
+                passHref
+                legacyBehavior
+              >
+                <ExploreAnchor>Explore</ExploreAnchor>
               </Link>
 
-              <button onClick={() => changeCardView("B")}>Snapshot</button>
+              <button type="button" onClick={() => changeCardView("B")}>
+                Snapshot
+              </button>
             </div>
           </AssetCardWrapper>
         )}
@@ -221,7 +228,9 @@ const AssetCard = ({ asset, email, favorited }: AssetCardProps) => {
                 <p>Total Supply: {numberWithCommas(total_supply)}</p>
               </div>
 
-              <button onClick={() => changeCardView("A")}>Main View</button>
+              <button type="button" onClick={() => changeCardView("A")}>
+                Main View
+              </button>
             </div>
           </AssetCardWrapper>
         )}
@@ -239,36 +248,22 @@ const ImageContainer = styled.div`
   }
 `;
 
-const CardFront = styled.div`
-  border-radius: 12px;
-  background-color: ${Colors.lightGray};
-  border: 1px solid black;
-  text-align: center;
-  margin: 1rem 0;
-  box-shadow: 2px 4px 8px gray;
-
-  .holder {
-    position: relative;
-  }
-
-  .favorite-button {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-  }
-
-  button {
-    color: ${Colors.elegant.white};
-    background-color: ${Colors.elegant.accentPurple};
-    border-radius: 8px;
-    padding: 8px;
-    font-weight: 600;
-  }
-  /* Styles for the front side of the card */
+const FavoriteIconButton = styled.button`
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
 `;
 
-const CardBack = styled.div`
-  /* Styles for the back side of the card */
+const ExploreAnchor = styled.a`
+  display: inline-block;
+  color: ${Colors.elegant.white};
+  background-color: ${Colors.elegant.accentPurple};
+  border-radius: 8px;
+  padding: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  margin: 0 4px;
 `;
 
 const AssetCardWrapper = styled.div`

@@ -1,4 +1,3 @@
-import { gql } from "@apollo/client";
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = {
@@ -26,7 +25,7 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean };
   Int: { input: number; output: number };
   Float: { input: number; output: number };
-  Date: { input: any; output: any };
+  Date: { input: string; output: string };
 };
 
 export type Asset = {
@@ -168,6 +167,12 @@ export type DifficultyRibbonData = {
   t?: Maybe<Scalars["Float"]["output"]>;
 };
 
+export type ExerciseInput = {
+  exercise?: InputMaybe<Scalars["String"]["input"]>;
+  reps?: InputMaybe<Scalars["Int"]["input"]>;
+  sets?: InputMaybe<Scalars["Int"]["input"]>;
+};
+
 export type FavoriteInput = {
   asset?: InputMaybe<FavoritesDataInput>;
   email?: InputMaybe<Scalars["String"]["input"]>;
@@ -297,10 +302,8 @@ export type MacroData = {
 export type Mutation = {
   __typename?: "Mutation";
   addFavorite?: Maybe<User>;
-  deleteProduct?: Maybe<Scalars["String"]["output"]>;
-  newProduct?: Maybe<Product>;
+  addWorkoutRoutine?: Maybe<User>;
   removeFavorite?: Maybe<User>;
-  updateProduct?: Maybe<Product>;
   updateUsername?: Maybe<User>;
 };
 
@@ -308,21 +311,12 @@ export type MutationAddFavoriteArgs = {
   input?: InputMaybe<FavoriteInput>;
 };
 
-export type MutationDeleteProductArgs = {
-  id: Scalars["ID"]["input"];
-};
-
-export type MutationNewProductArgs = {
-  input?: InputMaybe<ProductInput>;
+export type MutationAddWorkoutRoutineArgs = {
+  input?: InputMaybe<WorkoutInput>;
 };
 
 export type MutationRemoveFavoriteArgs = {
   input?: InputMaybe<FavoriteInput>;
-};
-
-export type MutationUpdateProductArgs = {
-  id: Scalars["ID"]["input"];
-  input?: InputMaybe<ProductInput>;
 };
 
 export type MutationUpdateUsernameArgs = {
@@ -389,30 +383,18 @@ export type PriceObject = {
   symbol?: Maybe<Scalars["String"]["output"]>;
 };
 
-export type Product = {
-  __typename?: "Product";
-  description?: Maybe<Scalars["String"]["output"]>;
-  id?: Maybe<Scalars["ID"]["output"]>;
-  name?: Maybe<Scalars["String"]["output"]>;
-  price?: Maybe<Scalars["Float"]["output"]>;
-  productionCapacity?: Maybe<Scalars["Int"]["output"]>;
-};
-
-export type ProductInput = {
-  description?: InputMaybe<Scalars["String"]["input"]>;
-  name: Scalars["String"]["input"];
-  price: Scalars["Float"]["input"];
-  productionCapacity: Scalars["Int"]["input"];
-};
-
 export type Query = {
   __typename?: "Query";
+  createWorkout?: Maybe<Array<Maybe<WorkoutRoutine>>>;
   getAsset?: Maybe<Array<Maybe<Asset>>>;
   getAssetFinancialDetails?: Maybe<CryptoCompareHistory>;
   getAssetHistory?: Maybe<CryptoCompareHistory>;
+  getAssetNews?: Maybe<Array<Maybe<NewsFeedEntries>>>;
   getAssetPairs?: Maybe<AssetPairResponse>;
   getAssetPriceData?: Maybe<Array<Maybe<PriceObject>>>;
+  getAssetSocialData?: Maybe<Array<Maybe<SocialStats>>>;
   getAssets?: Maybe<Array<Maybe<Asset>>>;
+  getAssetsByName?: Maybe<Array<Maybe<Asset>>>;
   getBTCMacros?: Maybe<BtcMacros>;
   getCollectiveStats?: Maybe<DaysCollectiveStats>;
   getDifficultyRibbons?: Maybe<Array<Maybe<DifficultyRibbonData>>>;
@@ -420,14 +402,18 @@ export type Query = {
   getNewsFeed?: Maybe<Array<Maybe<NewsFeedEntries>>>;
   getPost?: Maybe<Post>;
   getPosts?: Maybe<Array<Maybe<Post>>>;
-  getProduct?: Maybe<Product>;
-  getProducts?: Maybe<Array<Maybe<Product>>>;
   getUser?: Maybe<User>;
   getUserExchangeData?: Maybe<Balance>;
+  getUsers?: Maybe<Array<Maybe<User>>>;
+};
+
+export type QueryCreateWorkoutArgs = {
+  prompt?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export type QueryGetAssetArgs = {
   symbol: Scalars["String"]["input"];
+  type?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export type QueryGetAssetFinancialDetailsArgs = {
@@ -440,6 +426,10 @@ export type QueryGetAssetHistoryArgs = {
   time?: InputMaybe<Scalars["Int"]["input"]>;
 };
 
+export type QueryGetAssetNewsArgs = {
+  symbol: Scalars["String"]["input"];
+};
+
 export type QueryGetAssetPairsArgs = {
   symbol: Scalars["String"]["input"];
 };
@@ -449,9 +439,19 @@ export type QueryGetAssetPriceDataArgs = {
   tickers?: InputMaybe<Array<InputMaybe<Scalars["String"]["input"]>>>;
 };
 
+export type QueryGetAssetSocialDataArgs = {
+  symbol: Scalars["String"]["input"];
+};
+
 export type QueryGetAssetsArgs = {
   limit?: InputMaybe<Scalars["Int"]["input"]>;
   offset?: InputMaybe<Scalars["Int"]["input"]>;
+};
+
+export type QueryGetAssetsByNameArgs = {
+  limit?: InputMaybe<Scalars["Int"]["input"]>;
+  offset?: InputMaybe<Scalars["Int"]["input"]>;
+  symbol?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export type QueryGetBtcMacrosArgs = {
@@ -476,10 +476,6 @@ export type QueryGetPostsArgs = {
   filter?: InputMaybe<Scalars["String"]["input"]>;
 };
 
-export type QueryGetProductArgs = {
-  id: Scalars["ID"]["input"];
-};
-
 export type QueryGetUserArgs = {
   email?: InputMaybe<Scalars["String"]["input"]>;
   id?: InputMaybe<Scalars["String"]["input"]>;
@@ -487,6 +483,49 @@ export type QueryGetUserArgs = {
 
 export type QueryGetUserExchangeDataArgs = {
   input?: InputMaybe<UserExchangeInput>;
+};
+
+export type QueryGetUsersArgs = {
+  filter?: InputMaybe<Scalars["String"]["input"]>;
+  value?: InputMaybe<Scalars["String"]["input"]>;
+};
+
+export type SocialStats = {
+  __typename?: "SocialStats";
+  analysis_page_views?: Maybe<Scalars["Float"]["output"]>;
+  charts_page_views?: Maybe<Scalars["Float"]["output"]>;
+  code_repo_closed_issues?: Maybe<Scalars["Float"]["output"]>;
+  code_repo_closed_pull_issues?: Maybe<Scalars["Float"]["output"]>;
+  code_repo_contributors?: Maybe<Scalars["Float"]["output"]>;
+  code_repo_forks?: Maybe<Scalars["Float"]["output"]>;
+  code_repo_open_issues?: Maybe<Scalars["Float"]["output"]>;
+  code_repo_open_pull_issues?: Maybe<Scalars["Float"]["output"]>;
+  code_repo_stars?: Maybe<Scalars["Float"]["output"]>;
+  code_repo_subscribers?: Maybe<Scalars["Float"]["output"]>;
+  comments?: Maybe<Scalars["Float"]["output"]>;
+  fb_likes?: Maybe<Scalars["Float"]["output"]>;
+  fb_talking_about?: Maybe<Scalars["Float"]["output"]>;
+  followers?: Maybe<Scalars["Float"]["output"]>;
+  forum_page_views?: Maybe<Scalars["Float"]["output"]>;
+  influence_page_views?: Maybe<Scalars["Float"]["output"]>;
+  markets_page_views?: Maybe<Scalars["Float"]["output"]>;
+  overview_page_views?: Maybe<Scalars["Float"]["output"]>;
+  points?: Maybe<Scalars["Float"]["output"]>;
+  posts?: Maybe<Scalars["Float"]["output"]>;
+  reddit_active_users?: Maybe<Scalars["Float"]["output"]>;
+  reddit_comments_per_day?: Maybe<Scalars["Float"]["output"]>;
+  reddit_comments_per_hour?: Maybe<Scalars["Float"]["output"]>;
+  reddit_posts_per_day?: Maybe<Scalars["Float"]["output"]>;
+  reddit_posts_per_hour?: Maybe<Scalars["Float"]["output"]>;
+  reddit_subscribers?: Maybe<Scalars["Float"]["output"]>;
+  time?: Maybe<Scalars["Float"]["output"]>;
+  total_page_views?: Maybe<Scalars["Float"]["output"]>;
+  trades_page_views?: Maybe<Scalars["Float"]["output"]>;
+  twitter_favourites?: Maybe<Scalars["Float"]["output"]>;
+  twitter_followers?: Maybe<Scalars["Float"]["output"]>;
+  twitter_following?: Maybe<Scalars["Float"]["output"]>;
+  twitter_lists?: Maybe<Scalars["Float"]["output"]>;
+  twitter_statuses?: Maybe<Scalars["Float"]["output"]>;
 };
 
 export type SourceInfo = {
@@ -512,6 +551,7 @@ export type User = {
   id?: Maybe<Scalars["ID"]["output"]>;
   image?: Maybe<Scalars["String"]["output"]>;
   name?: Maybe<Scalars["String"]["output"]>;
+  role?: Maybe<Scalars["String"]["output"]>;
   username?: Maybe<Scalars["String"]["output"]>;
 };
 
@@ -523,4 +563,29 @@ export type UserExchangeInput = {
 export type UsernameInput = {
   email?: InputMaybe<Scalars["String"]["input"]>;
   username: Scalars["String"]["input"];
+};
+
+export type WorkoutInput = {
+  id?: InputMaybe<Scalars["String"]["input"]>;
+  routine?: InputMaybe<Array<InputMaybe<WorkoutRoutineInput>>>;
+};
+
+export type WorkoutRoutine = {
+  __typename?: "WorkoutRoutine";
+  bodyPart?: Maybe<Scalars["String"]["output"]>;
+  day?: Maybe<Scalars["Int"]["output"]>;
+  exercises?: Maybe<Array<Maybe<Exercise>>>;
+};
+
+export type WorkoutRoutineInput = {
+  bodyPart?: InputMaybe<Scalars["String"]["input"]>;
+  day?: InputMaybe<Scalars["Int"]["input"]>;
+  exercises?: InputMaybe<Array<InputMaybe<ExerciseInput>>>;
+};
+
+export type Exercise = {
+  __typename?: "exercise";
+  exercise?: Maybe<Scalars["String"]["output"]>;
+  reps?: Maybe<Scalars["Int"]["output"]>;
+  sets?: Maybe<Scalars["Int"]["output"]>;
 };
