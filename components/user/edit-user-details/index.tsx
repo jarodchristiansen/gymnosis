@@ -14,7 +14,7 @@ import styled from "styled-components";
 const EditUserDetails = ({ user, fetchedUser }) => {
   const [usernameInput, setUsernameInput] = useState("");
 
-  const [updateUsername, { loading, error }] = useMutation(UPDATE_USERNAME);
+  const [updateUsername] = useMutation(UPDATE_USERNAME);
 
   const [viewState, setViewState] = useState("Main");
 
@@ -65,7 +65,9 @@ const EditUserDetails = ({ user, fetchedUser }) => {
 
                 <h4>{fetchedUser?.username}</h4>
 
-                <span onClick={setEditUsername}>X</span>
+                <IconActionButton type="button" onClick={setEditUsername}>
+                  Edit username
+                </IconActionButton>
               </div>
 
               <div className="detail-row">
@@ -103,14 +105,18 @@ const EditUserDetails = ({ user, fetchedUser }) => {
           {fetchedUser && (
             <>
               <div className="detail-row">
-                <h4>Username:</h4>
+                <label htmlFor="username-edit">
+                  <h4>Username:</h4>
+                </label>
                 <UserNameInput
+                  id="username-edit"
                   placeholder={fetchedUser?.username}
                   onChange={(e) => setUsernameInput(e.target.value)}
                 />
-                {/* <h4>{fetchedUser?.username}</h4> */}
 
-                <span onClick={setEditMain}>Back</span>
+                <IconActionButton type="button" onClick={setEditMain}>
+                  Back
+                </IconActionButton>
               </div>
 
               <div className="detail-row-inactive">
@@ -127,12 +133,23 @@ const EditUserDetails = ({ user, fetchedUser }) => {
             </>
           )}
 
-          <button onClick={submitUsernameChange}>Submit</button>
+          <button type="button" onClick={submitUsernameChange}>
+            Submit
+          </button>
         </UserDetailsCard>
       )}
     </>
   );
 };
+
+const IconActionButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: ${Colors.elegant.accentPurple};
+  text-decoration: underline;
+  font: inherit;
+`;
 
 const UserNameInput = styled.input`
   padding: 1rem 1rem;
@@ -182,7 +199,7 @@ const UserDetailsCard = styled.div`
     overflow-x: auto;
     background-color: #c0bfbf;
     opacity: 0.7;
-    pointer-events: disabled;
+    pointer-events: none;
 
     ::-webkit-scrollbar {
       display: none;

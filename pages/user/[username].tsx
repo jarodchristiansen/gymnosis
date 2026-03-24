@@ -1,13 +1,12 @@
 import SideMenu from "@/components/commons/sidebar-nav";
-// import PriceScreener from "@/components/commons/screener";
 import EditUserDetails from "@/components/user/edit-user-details";
 import { GET_USER } from "@/helpers/queries/user/index";
 import { Colors, MediaQueries } from "@/styles/variables";
 import { useLazyQuery } from "@apollo/client";
-// import { getSession, useSession } from "@web3modal/react";
 import { getSession, useSession } from "next-auth/react";
 import Head from "next/head";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
@@ -17,45 +16,33 @@ import styled from "styled-components";
  * @returns User Profile Page with edit/profile pages connected as query strings
  */
 const ProfilePage = () => {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const [user, setUser] = useState(null);
-  // const { account, isReady } = useAccount();
 
-  //   const [walletIsConnected, setWalletIsConnected] = useState(false);
-  // const { isOpen, open, close } = useConnectModal();
-
-  const [
-    fetchUserDetails,
-    { data, loading: dataLoading, error, refetch, fetchMore },
-  ] = useLazyQuery(GET_USER, {
+  const [fetchUserDetails, { data }] = useLazyQuery(GET_USER, {
     fetchPolicy: "network-only",
   });
 
   const router = useRouter();
 
   const slug = useMemo(() => {
-    if (!router?.query?.username) return "";
-
-    if (router?.query?.username) {
-      fetchUserDetails({
-        variables: {
-          id: router.query.username,
-        },
-      });
+    const raw = router.query?.username;
+    const username = Array.isArray(raw) ? raw[0] : raw;
+    if (!username) {
+      return "";
     }
+    fetchUserDetails({
+      variables: {
+        id: username,
+      },
+    });
+    return username;
+  }, [fetchUserDetails, router.query?.username]);
 
-    return router.query.username;
-    // @ts-ignore: username customized to be in session from database strategy
-  }, [
-    // @ts-ignore
-    fetchUserDetails,
-    router?.query?.username,
-  ]);
+  // @ts-expect-error next-auth user extended with username in DB strategy
+  const id = session?.user?.username;
 
-  // @ts-ignore next-auth v3 type structure issue
-  let id = session?.user?.username;
-
-  const isUsersProfile = id == slug;
+  const isUsersProfile = id === slug;
 
   useEffect(() => {
     if (data?.getUser) {
@@ -63,60 +50,40 @@ const ProfilePage = () => {
     }
   }, [data?.getUser]);
 
-  // const walletIsConnected = useMemo(() => {
-  //   if (!account.status) return false;
-
-  //   return account.status !== "disconnected" && account.status !== "connecting"
-  //     ? true
-  //     : false;
-  // }, [account]);
-
-  // const {
-  //   data: tokenData,
-  //   error: fetchTokenError,
-  //   isLoading: fetchTokensLoading,
-  //   refetch: refetchTokoenData,
-  // } = useBalance({ addressOrName: account?.address });
-
-  const navigateToAssetPage = useCallback(
-    (favorite) => {
-      router.push(
-        `/assets/${favorite.symbol.toLowerCase()}?name=${favorite.title}`
-      );
-    },
-    [router]
-  );
-
   const userFavoritesList = useMemo(() => {
     if (!data?.getUser?.favorites) return [];
 
-    return data.getUser.favorites.map((favorite, idx) => {
+    return data.getUser.favorites.map((favorite) => {
+      const href = `/assets/${favorite.symbol.toLowerCase()}?name=${encodeURIComponent(
+        favorite.title ?? ""
+      )}`;
+      const rowKey = `${favorite.symbol}-${favorite.title ?? "asset"}`;
       return (
-        <div className="favorites-row" key={favorite.title}>
-          <Image
-            src={favorite.image}
-            height={50}
-            width={50}
-            alt="block-logo"
-            className="pointer-link favorites-image"
-            onClick={() => navigateToAssetPage(favorite)}
-            unoptimized={true}
-          />
-          <h5
-            className="pointer-link"
-            onClick={() => navigateToAssetPage(favorite)}
-          >
-            {favorite.title}-{favorite.symbol}
-          </h5>
+        <div className="favorites-row" key={rowKey}>
+          <Link href={href} passHref legacyBehavior>
+            <FavoriteRowAnchor>
+              <Image
+                src={favorite.image}
+                height={50}
+                width={50}
+                alt=""
+                className="favorites-image"
+                unoptimized={true}
+              />
+              <h5>
+                {favorite.title}-{favorite.symbol}
+              </h5>
+            </FavoriteRowAnchor>
+          </Link>
         </div>
       );
     });
-  }, [data?.getUser?.favorites, navigateToAssetPage]);
+  }, [data?.getUser?.favorites]);
 
   const viewState = useMemo(() => {
-    if (!router.query?.view) return "Main";
-
-    return router.query?.view;
+    const raw = router.query?.view;
+    if (!raw) return "Main";
+    return Array.isArray(raw) ? raw[0] : raw;
   }, [router.query?.view]);
 
   const routeToMain = () => {
@@ -135,7 +102,7 @@ const ProfilePage = () => {
     if (viewState === "edit_user" || viewState === "portfolio") {
       router.push("/");
     }
-  }, []);
+  }, [router, viewState]);
 
   const navLinks = [
     { name: "Profile", stateChanger: () => routeToMain() },
@@ -167,10 +134,15 @@ const ProfilePage = () => {
           {viewState === "Main" && (
             <>
               <div className="switch-container">
-                <button className="standardized-button" onClick={routeEditUser}>
+                <button
+                  type="button"
+                  className="standardized-button"
+                  onClick={routeEditUser}
+                >
                   Edit Profile
                 </button>
                 <button
+                  type="button"
                   className="standardized-button"
                   onClick={routeToPortfolio}
                 >
@@ -213,28 +185,6 @@ const ProfilePage = () => {
                   </>
                 )}
               </UserDetailsCard>
-              {/* 
-              {!walletIsConnected && (
-                <ConnectWalletCard>
-                  <h4>It looks like your wallet isn't connected</h4>
-                  <button className="standardized-button" onClick={open}>
-                    Connect Your Wallet
-                  </button>
-                </ConnectWalletCard>
-              )}
-
-              {!!walletIsConnected && (
-                <ConnectWalletCard onClick={open}>
-                  <h6>{account?.address}</h6>
-                  <div>
-                    <h4>Balance:</h4>
-                    <h4>
-                      {tokenData?.formatted} {tokenData?.symbol}
-                    </h4>
-                  </div>
-                  <Web3Button />
-                </ConnectWalletCard>
-              )} */}
 
               {!!userFavoritesList.length ? (
                 <UserFavoritesList>
@@ -251,17 +201,16 @@ const ProfilePage = () => {
 
           {viewState === "edit_user" && isUsersProfile && (
             <>
-              {/* <div className="switch-container">
-                <button className="standardized-button" onClick={routeToMain}>
-                  Back to Main Page
-                </button>
-              </div> */}
-
               <div className="switch-container">
-                <button className="standardized-button" onClick={routeToMain}>
+                <button
+                  type="button"
+                  className="standardized-button"
+                  onClick={routeToMain}
+                >
                   View Profile
                 </button>
                 <button
+                  type="button"
                   className="standardized-button"
                   onClick={routeToPortfolio}
                 >
@@ -276,10 +225,18 @@ const ProfilePage = () => {
           {viewState === "portfolio" && isUsersProfile && (
             <>
               <div className="switch-container">
-                <button className="standardized-button" onClick={routeToMain}>
+                <button
+                  type="button"
+                  className="standardized-button"
+                  onClick={routeToMain}
+                >
                   View Profile
                 </button>
-                <button className="standardized-button" onClick={routeEditUser}>
+                <button
+                  type="button"
+                  className="standardized-button"
+                  onClick={routeEditUser}
+                >
                   Edit Profile
                 </button>
               </div>
@@ -337,19 +294,18 @@ const CentralWrapper = styled.div`
   }
 `;
 
-const ConnectWalletCard = styled.div`
-  width: 100%;
-  border: 2px solid black;
-  border-radius: 14px;
-  text-align: center;
-  padding: 2rem;
+const FavoriteRowAnchor = styled.a`
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  white-space: nowrap;
+  justify-content: space-between;
   align-items: center;
+  width: 100%;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
 
-  @media ${MediaQueries.MD} {
-    width: 30rem;
+  &:hover {
+    opacity: 0.85;
   }
 `;
 

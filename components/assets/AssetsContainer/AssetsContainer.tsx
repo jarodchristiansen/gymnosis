@@ -15,17 +15,10 @@ import AssetCard from "../AssetCard/AssetCard";
 const AssetsContainer = ({ assets, session }) => {
   const [currentAssets, setCurrentAssets] = useState(assets || null);
 
-  const [
-    fetchUserDetails,
-    {
-      data: userData,
-      loading: dataLoading,
-      error: userError,
-      refetch: refetchUser,
-    },
-  ] = useLazyQuery(GET_USER, {
-    fetchPolicy: "network-only",
-  });
+  const [fetchUserDetails, { data: userData, loading: dataLoading }] =
+    useLazyQuery(GET_USER, {
+      fetchPolicy: "network-only",
+    });
 
   useEffect(() => {
     if (session?.user?.email) {
@@ -42,34 +35,27 @@ const AssetsContainer = ({ assets, session }) => {
   }, [assets]);
 
   const ref = useRef();
-  // const isVisible = useOnScreen(ref, "100px");
 
   const AssetCards = useMemo(() => {
     if (!currentAssets) return [];
 
-    let favorites = userData?.getUser?.favorites;
+    const favorites = userData?.getUser?.favorites;
 
     return currentAssets.map((asset) => {
+      const key = asset.id ?? asset.symbol;
       return (
-        <div data-testid={`asset-card`} key={asset.id}>
+        <div data-testid={`asset-card`} key={key}>
           <AssetCard
             asset={asset}
             email={session?.user?.email}
             favorited={favorites?.some(
               (e) => e.symbol.toLowerCase() === asset.symbol.toLowerCase()
             )}
-            refetchFavorites={() => refetchUser()}
           />
         </div>
       );
     });
-  }, [
-    currentAssets,
-    userData?.getUser?.favorites,
-    dataLoading,
-    refetchUser,
-    session?.user?.email,
-  ]);
+  }, [currentAssets, userData?.getUser?.favorites, session?.user?.email]);
 
   return (
     <div data-testid={"assets-container"}>
@@ -82,16 +68,16 @@ const AssetsContainer = ({ assets, session }) => {
       </div>
 
       {currentAssets && currentAssets.length === 1 && (
-        <AssetCard
-          asset={currentAssets[0]}
-          email={session?.user?.email}
-          favorited={userData?.getUser?.favorites.some(
-            (e) =>
-              e.symbol.toLowerCase() === currentAssets[0].symbol.toLowerCase()
-          )}
-          refetchFavorites={() => refetchUser()}
-          data-testid={`asset-card`}
-        />
+        <div data-testid="asset-card">
+          <AssetCard
+            asset={currentAssets[0]}
+            email={session?.user?.email}
+            favorited={userData?.getUser?.favorites?.some(
+              (e) =>
+                e.symbol.toLowerCase() === currentAssets[0].symbol.toLowerCase()
+            )}
+          />
+        </div>
       )}
     </div>
   );

@@ -1,28 +1,26 @@
 import { FILTER_CONSTS, SEARCH_VALUE_CONSTS } from "@/helpers/Consts";
 import User from "../../models/user";
 
-// const openai = new OpenAI({
-//   apiKey: process.env.OPENAI_API_KEY,
-// });
-
 export const UserResolver = {
   queries: {
     getUsers: async (_, { filter, value }) => {
       if (filter === FILTER_CONSTS.ADMIN && value === SEARCH_VALUE_CONSTS.ALL) {
-        let users = await User.find({}).catch((err) => new Error(err));
+        const users = await User.find({}).catch((err) => new Error(err));
 
         return users;
-      } else if (
+      }
+      if (
         filter === FILTER_CONSTS.CLIENT_BY_ROLE &&
         value === SEARCH_VALUE_CONSTS.ROLE_CLIENT
       ) {
-        let users = await User.find({ role: "client" }).catch(
+        const users = await User.find({ role: "client" }).catch(
           (err) => new Error(err)
         );
 
         return users;
-      } else if (filter === FILTER_CONSTS.CLIENT_BY_ID && value) {
-        let users = await User.find({ id: value }).catch(
+      }
+      if (filter === FILTER_CONSTS.CLIENT_BY_ID && value) {
+        const users = await User.find({ id: value }).catch(
           (err) => new Error(err)
         );
 
@@ -66,7 +64,7 @@ export const UserResolver = {
       let message;
       let content;
 
-      if (choices.length) {
+      if (choices?.length) {
         message = choices[0].message;
         content = choices[0].message.content;
       }
@@ -75,12 +73,11 @@ export const UserResolver = {
 
       console.log({ data, choices, message, content });
 
-      if (content[Object.keys(content)[0]]) {
-        console.log(content[Object.keys(content)[0]], "OBJECT BEFORE MAPPING");
+      const firstKey = Object.keys(content)[0];
+      if (content[firstKey]) {
+        console.log(content[firstKey], "OBJECT BEFORE MAPPING");
 
-        content[Object.keys(content)[0]] = content[
-          Object.keys(content)[0]
-        ]?.map((day) => {
+        content[firstKey] = content[firstKey]?.map((day) => {
           if (day.exercises) {
             day.exercises = day.exercises.map((exercise) => {
               exercise.sets = parseInt(exercise.sets);
@@ -92,44 +89,45 @@ export const UserResolver = {
           return day;
         });
 
-        console.log(content[Object.keys(content)[0]], "ROUTINE");
+        console.log(content[firstKey], "ROUTINE");
 
-        return content[Object.keys(content)[0]];
+        return content[firstKey];
       }
     },
 
     getAssetPriceData: async (_, { tickers, exchange_data }) => {
-      if (tickers) {
-        try {
-          const { public_key: publicKey, private_key: privateKey } =
-            exchange_data;
+      if (!tickers) {
+        return [];
+      }
+      try {
+        const { public_key: publicKey, private_key: privateKey } =
+          exchange_data;
 
-          const ccxt = require("ccxt");
+        const ccxt = require("ccxt");
 
-          const exchange = new ccxt.coinbase({
-            apiKey: publicKey,
-            secret: privateKey,
-          });
+        const exchange = new ccxt.coinbase({
+          apiKey: publicKey,
+          secret: privateKey,
+        });
 
-          let prices = await exchange.fetchTickers(tickers);
-          let assetArray = [];
+        const prices = await exchange.fetchTickers(tickers);
+        const assetArray = [];
 
-          if (prices) {
-            for (let i in prices) {
-              assetArray.push({ symbol: i, info: 1 / prices[i].info });
-            }
+        if (prices) {
+          for (const i in prices) {
+            assetArray.push({ symbol: i, info: 1 / prices[i].info });
           }
+        }
 
-          return assetArray;
-        } catch (err) {}
+        return assetArray;
+      } catch (err) {
+        console.error("getAssetPriceData", err);
+        throw new Error(err?.message || String(err));
       }
     },
+
     getUserExchangeData: async (_, { input }) => {
-      const {
-        exchangeData,
-        public_key: publicKey,
-        private_key: privateKey,
-      } = input;
+      const { public_key: publicKey, private_key: privateKey } = input;
 
       const ccxt = require("ccxt");
 
@@ -140,9 +138,9 @@ export const UserResolver = {
         });
 
         let balance = {};
-        let tickers = [];
+        const tickers = [];
 
-        let list = await exchange.fetchBalance();
+        const list = await exchange.fetchBalance();
 
         balance = Object.entries(list.free)
           .filter((entry) => entry[1] > 0)
@@ -156,11 +154,11 @@ export const UserResolver = {
             };
           });
 
-        let prices = await exchange.fetchTickers(tickers);
-        let assetArray = [];
+        const prices = await exchange.fetchTickers(tickers);
+        const assetArray = [];
 
         if (prices) {
-          for (let i in prices) {
+          for (const i in prices) {
             assetArray.push({
               symbol: prices[i].symbol,
               usd: 1 / prices[i].info,
@@ -180,22 +178,22 @@ export const UserResolver = {
     },
 
     getUser: async (_, { email, id }) => {
-      // Searches for user profile based on id for profile page, needs update
       let user;
 
       if (id) {
         user = await User.find({ username: id })
-          .then((res) => res[0].toObject())
+          .then((res) => res[0]?.toObject())
           .catch((err) => new Error(err));
       } else if (email) {
-        user = User.find({ email })
-          .then((res) => res[0].toObject())
+        user = await User.find({ email })
+          .then((res) => res[0]?.toObject())
           .catch((err) => new Error(err));
       }
 
       if (user?.favorites) {
-        for (let i of user.favorites) {
-          i.id = user.favorites.indexOf(i);
+        for (let idx = 0; idx < user.favorites.length; idx++) {
+          const i = user.favorites[idx];
+          i.id = idx;
         }
       }
 
@@ -211,7 +209,7 @@ export const UserResolver = {
       const { asset, email } = input;
 
       try {
-        let user = await User.findOne({ email });
+        const user = await User.findOne({ email });
 
         if (user) {
           if (
@@ -238,21 +236,20 @@ export const UserResolver = {
     addWorkoutRoutine: async (_, { input }) => {
       const { id, routine } = input;
       try {
-        let user = await User.findOne({ _id: id });
+        const user = await User.findOne({ _id: id });
 
         if (user) {
           const newRoutine = {
-            date: new Date(), // You can set the date to the current date or as needed
-            routine: routine, // Ensure routine follows the correct structure
+            date: new Date(),
+            routine: routine,
           };
 
           user.workoutHistory.push(newRoutine);
           await user.save();
 
           return user;
-        } else {
-          throw new Error("User not found");
         }
+        throw new Error("User not found");
       } catch (err) {
         throw new Error("Error in addWorkoutRoutine: " + err.message);
       }
@@ -262,7 +259,7 @@ export const UserResolver = {
       const { asset, email } = input;
 
       try {
-        let user = await User.findOne({ email });
+        const user = await User.findOne({ email });
 
         if (user) {
           if (
@@ -283,15 +280,18 @@ export const UserResolver = {
         throw new Error("Error in addFavorite!!", err);
       }
     },
+
     updateUsername: async (_, { input }) => {
       const { username, email } = input;
 
       try {
-        let user = await User.findOne({ email });
+        const user = await User.findOne({ email });
 
-        let inputMatch = await User.findOne({ username: username });
+        const inputMatch = await User.findOne({ username: username });
 
-        inputMatch && new Error("User name already exists");
+        if (inputMatch) {
+          throw new Error("User name already exists");
+        }
 
         if (user && !inputMatch) {
           user.username = username;

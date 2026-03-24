@@ -5,51 +5,56 @@ import styled from "styled-components";
 
 const AssetSearchDropdown = ({ type, addAssetMethod }) => {
   const [searchValue, setSearchValue] = useState("");
-  const [getAsset, { data, loading, error }] = useLazyQuery(GET_ASSET);
-  const [isOpen, setIsOpen] = useState(false); // To track if dropdown should be open
+  const [getAsset, { data }] = useLazyQuery(GET_ASSET);
+  const [isOpen, setIsOpen] = useState(false);
 
   const updateSearchValue = (e) => {
     const value = e.target.value;
     setSearchValue(value);
 
-    if (value.length > 2 && type == "Crypto") {
+    if (value.length > 2 && (type === "Crypto" || type === "TradFI")) {
       getAsset({
         variables: { symbol: value, type },
       });
-      setIsOpen(true); // Open the dropdown when options are available
-    } else if (value.length > 2 && type == "TradFI") {
-      getAsset({
-        variables: { symbol: value, type },
-      });
-      setIsOpen(true); // Open the dropdown when options are available
+      setIsOpen(true);
     }
   };
 
   useEffect(() => {
     if (!data || data?.getAsset?.length === 0) {
-      setIsOpen(false); // Close the dropdown if no options are available
+      setIsOpen(false);
     }
   }, [data]);
 
   return (
     <DropdownContainer>
       <label htmlFor="asset-search">Asset Search</label>
-      <Input type="text" onChange={updateSearchValue} />
+      <Input
+        id="asset-search"
+        type="text"
+        value={searchValue}
+        onChange={updateSearchValue}
+        autoComplete="off"
+      />
 
-      {/* Use the isOpen state to conditionally render the Select */}
       {isOpen && data && data?.getAsset?.length > 0 && (
-        <div className="option-container">
-          {/* Remove the "Select an option" prompt */}
+        <ul
+          className="option-container"
+          role="listbox"
+          aria-label="Asset matches"
+        >
           {data.getAsset.map((asset) => (
-            <option
-              key={asset.id}
-              value={asset.symbol}
-              onClick={(e: any) => addAssetMethod(e.target.value)}
-            >
-              {asset.symbol.toUpperCase()} - {asset.name}
-            </option>
+            <li key={asset.id ?? `${asset.symbol}-${asset.name}`}>
+              <OptionButton
+                type="button"
+                role="option"
+                onClick={() => addAssetMethod(asset.symbol)}
+              >
+                {asset.symbol.toUpperCase()} - {asset.name}
+              </OptionButton>
+            </li>
           ))}
-        </div>
+        </ul>
       )}
     </DropdownContainer>
   );
@@ -61,6 +66,9 @@ const DropdownContainer = styled.div`
   position: relative;
 
   .option-container {
+    list-style: none;
+    margin: 0;
+    padding: 0;
     border: 1px solid black;
     position: absolute;
     top: 80px;
@@ -68,17 +76,22 @@ const DropdownContainer = styled.div`
     z-index: 100;
     max-height: 200px;
     overflow-y: scroll;
+  }
+`;
 
-    option {
-      border-top: 1px solid black;
-      border-bottom: 1px solid black;
-      padding: 12px;
-      cursor: pointer;
+const OptionButton = styled.button`
+  width: 100%;
+  text-align: left;
+  border: none;
+  border-top: 1px solid black;
+  border-bottom: 1px solid black;
+  padding: 12px;
+  cursor: pointer;
+  background: white;
 
-      &:hover {
-        background-color: blue;
-      }
-    }
+  &:hover {
+    background-color: blue;
+    color: white;
   }
 `;
 

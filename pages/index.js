@@ -10,7 +10,6 @@ import client from "apollo-client";
 import LandingCard from "components/commons/info-cards/landing-card";
 import CTACard from "components/ctas/CTACard";
 import ProgressMeter from "components/progressmeter/ProgressMeter";
-import { useSession } from "next-auth/react";
 import Image from "next/image";
 import styled from "styled-components";
 
@@ -22,9 +21,7 @@ import SEOHead from "../components/seo/SEOHead";
  * @returns Landing page with Info/Sign Up Pages
  */
 export default function Home({ data }) {
-  const { data: session, status } = useSession();
-
-  console.log({ session });
+  void data;
 
   const cardContent = [
     {
@@ -78,11 +75,16 @@ export default function Home({ data }) {
           {cardContent &&
             cardContent.map((card) => {
               return (
-                <div className="card" key={card?.text}>
+                <div className="card" key={card?.title}>
                   <div className="card-content">
                     {card?.image && (
                       <div className="card-background">
-                        <Image src={card.image} height={150} width={150} />{" "}
+                        <Image
+                          src={card.image}
+                          height={150}
+                          width={150}
+                          alt=""
+                        />
                       </div>
                     )}
 
@@ -301,12 +303,10 @@ const getNewsFeed = async () => {
   return { data: result };
 };
 
-export const getServerSideProps = async (context) => {
-  let data = {};
+export const getServerSideProps = async () => {
+  const response = await getNewsFeed();
 
-  const response = await getNewsFeed(); // any async promise here.
-
-  data = response.data;
+  const data = response.data;
 
   if (!data) {
     return {

@@ -3,7 +3,6 @@ import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
-// import { ToastContainer } from "react-nextjs-toast";
 import styled from "styled-components";
 
 import ToggleSwitch from "../commons/switchers/toggle-switch";
@@ -41,7 +40,11 @@ const SignInForm = ({ providers }) => {
           break;
         case "password":
           setPassword(e.target.value);
+          break;
         case "passwordConfirm":
+          break;
+        default:
+          break;
       }
     }
   };
@@ -138,7 +141,7 @@ const SignInForm = ({ providers }) => {
             </label>
             <StyledInput
               name={"passwordConfirm"}
-              type="passwordConfirm"
+              type="password"
               className="form-control"
               id="confirmPasswordInput"
               onChange={handleFormChange}
@@ -148,12 +151,6 @@ const SignInForm = ({ providers }) => {
         </>
       )}
 
-      {/* <SubmitWrapper>
-        <button type="submit" className="standardized-button">
-          Submit
-        </button>
-      </SubmitWrapper> */}
-
       <CheckMarkContainer>
         <input
           type="checkbox"
@@ -162,12 +159,10 @@ const SignInForm = ({ providers }) => {
           onChange={() => setIsSubmitDisabled(!isSubmitDisabled)}
         />
 
-        <label className="form-check-label">
-          <span>You agree to our {"  "}</span>
+        <label className="form-check-label" htmlFor="exampleCheck1">
+          <span>You agree to our </span>
           <Link href="/terms-of-service" passHref legacyBehavior>
-            <a target="#">
-              <span className="term-text">Terms of Service</span>
-            </a>
+            <a className="term-text">Terms of Service</a>
           </Link>
         </label>
       </CheckMarkContainer>
@@ -185,9 +180,6 @@ const SignInForm = ({ providers }) => {
           isSubmitDisabled={isSubmitDisabled}
         />
       </ProviderWrapper>
-      {/* <ToastContainer position={"bottom"} /> */}
-
-      {/*<ToastHolder />*/}
     </FormStyling>
   );
 };
