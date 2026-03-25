@@ -36,43 +36,45 @@ function Header() {
   // @ts-ignore: next-auth type issue v3
   let id = session?.user?.id;
 
-  const routes = [
-    id && { key: 2, route: `/client/${id}`, guarded: false, text: "Profile" },
-    // @ts-ignore: next-auth type issue v3
-    checkIsAdmin(session?.user?.role) && {
-      key: 3,
-      route: "/admin",
-      guarded: true,
-      text: "Admin",
-    },
+  type NavRoute = {
+    key: number;
+    route: string;
+    guarded: boolean;
+    text: string;
+  };
 
-    // @ts-ignore: next-auth type issue v3
-    checkIsAdminOrTrainer(session?.user?.role) && {
-      key: 4,
-      route: "/client",
-      guarded: true,
-      text: "Client Dashboard",
-    },
-
-    !session && {
-      key: 5,
-      route: "/auth?path=SignIn",
-      guarded: false,
-      text: "Sign In",
-    },
-  ];
+  const routes: NavRoute[] = useMemo(() => {
+    return [
+      id && { key: 2, route: `/client/${id}`, guarded: false, text: "Profile" },
+      // @ts-ignore: next-auth type issue v3
+      checkIsAdmin(session?.user?.role) && {
+        key: 3,
+        route: "/admin",
+        guarded: true,
+        text: "Admin",
+      },
+      // @ts-ignore: next-auth type issue v3
+      checkIsAdminOrTrainer(session?.user?.role) && {
+        key: 4,
+        route: "/client",
+        guarded: true,
+        text: "Client Dashboard",
+      },
+      !session && {
+        key: 5,
+        route: "/auth?path=SignIn",
+        guarded: false,
+        text: "Sign In",
+      },
+    ].filter((r): r is NavRoute => Boolean(r));
+  }, [id, session]);
 
   useEffect(() => {
-    setRouterAsPath();
-  }, [asPath]);
-
-  const setRouterAsPath = () => {
-    let matchingRoute = routes.filter((item) => asPath.includes(item?.route));
-
+    const matchingRoute = routes.filter((item) => asPath.includes(item.route));
     if (matchingRoute.length) {
       setSelectedRoute(matchingRoute[0].key);
     }
-  };
+  }, [asPath, routes]);
 
   const routeObjects = useMemo(() => {
     if (!routes?.length) return [];
@@ -102,7 +104,7 @@ function Header() {
         </div>
       );
     });
-  }, [routes?.length, selectedRoute, session]);
+  }, [routes, selectedRoute, session]);
 
   return (
     <Navbar

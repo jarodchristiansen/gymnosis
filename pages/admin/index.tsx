@@ -7,15 +7,7 @@ import { useEffect, useMemo } from "react";
 import styled from "styled-components";
 
 const AdminPage = () => {
-  const [
-    fetchUserDetails,
-    {
-      data: userData,
-      loading: dataLoading,
-      error: userError,
-      refetch: refetchUser,
-    },
-  ] = useLazyQuery(GET_USERS, {
+  const [fetchUserDetails, { data: userData }] = useLazyQuery(GET_USERS, {
     fetchPolicy: "cache-and-network",
   });
 
@@ -26,7 +18,7 @@ const AdminPage = () => {
         value: SEARCH_VALUE_CONSTS.ALL,
       },
     });
-  }, []);
+  }, [fetchUserDetails]);
 
   const UserCards = useMemo(() => {
     if (!userData?.getUsers) return [];

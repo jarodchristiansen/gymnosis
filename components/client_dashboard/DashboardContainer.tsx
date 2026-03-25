@@ -1,3 +1,4 @@
+import { checkIsAdminOrTrainer } from "@/helpers/auth/auth";
 import { MediaQueries } from "@/styles/variables";
 import { getSession } from "next-auth/react";
 import Image from "next/image";
@@ -8,9 +9,7 @@ import WorkoutView from "./WorkoutView";
 const DashboardContainer = ({ session: data }) => {
   const [activeTab, setActiveTab] = useState("Workouts");
 
-  const { name, email, role, image, workoutHistory, id } = data?.user;
-
-  console.log({ id, workoutHistory });
+  const { name, email, role, id } = data?.user ?? {};
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -76,9 +75,15 @@ const DashboardContainer = ({ session: data }) => {
 
       <DashboardContainerGrid>
         <div className="tab-buttons">
-          <button onClick={() => setActiveTab("Workouts")}>Workouts</button>
-          <button onClick={() => setActiveTab("MealPlan")}>Meal Plan</button>
-          <button onClick={() => setActiveTab("History")}>History</button>
+          <button type="button" onClick={() => setActiveTab("Workouts")}>
+            Workouts
+          </button>
+          <button type="button" onClick={() => setActiveTab("MealPlan")}>
+            Meal Plan
+          </button>
+          <button type="button" onClick={() => setActiveTab("History")}>
+            History
+          </button>
         </div>
 
         {renderTabContent()}

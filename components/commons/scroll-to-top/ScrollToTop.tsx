@@ -29,7 +29,9 @@ const ScrollToTop: React.FC<ScrollToTopProps> = ({ scrollThreshold = 100 }) => {
 
   return (
     <ScrollButton
+      type="button"
       onClick={scrollToTop}
+      aria-label="Scroll to top"
       style={{ opacity: showScrollButton ? 1 : 0 }}
     >
       <i className="fas fa-arrow-up" />

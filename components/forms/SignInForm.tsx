@@ -53,7 +53,7 @@ const SignInForm = ({ providers }) => {
     isSignIn
       ? router.push("/auth?path=SignIn")
       : router.push("/auth?path=SignUp");
-  }, [isSignIn]);
+  }, [isSignIn, router]);
 
   return (
     <FormStyling onSubmit={handleSignInSubmit}>
@@ -161,8 +161,8 @@ const SignInForm = ({ providers }) => {
 
         <label className="form-check-label" htmlFor="exampleCheck1">
           <span>You agree to our </span>
-          <Link href="/terms-of-service" passHref legacyBehavior>
-            <a className="term-text">Terms of Service</a>
+          <Link href="/terms-of-service" className="term-text">
+            Terms of Service
           </Link>
         </label>
       </CheckMarkContainer>

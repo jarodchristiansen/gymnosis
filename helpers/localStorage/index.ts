@@ -27,5 +27,5 @@ export const GetLocalKeys = (identity) => {
     }
   }
 
-  return;
+  return undefined;
 };

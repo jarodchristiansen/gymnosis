@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Pagination } from "react-bootstrap";
 
 interface PaginationComponentProps {
@@ -55,11 +55,6 @@ const PaginationComponent = ({
         />
       </Pagination>
       <br />
-
-      {/*<Pagination size="lg">{items}</Pagination>*/}
-      {/*<br />*/}
-
-      {/*<Pagination size="sm">{items}</Pagination>*/}
     </div>
   );
 };

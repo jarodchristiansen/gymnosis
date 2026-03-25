@@ -186,7 +186,7 @@ const ProfilePage = () => {
                 )}
               </UserDetailsCard>
 
-              {!!userFavoritesList.length ? (
+              {userFavoritesList.length > 0 ? (
                 <UserFavoritesList>
                   <h4 className="header-text">Favorited Assets</h4>
                   {userFavoritesList}
@@ -223,24 +223,22 @@ const ProfilePage = () => {
           )}
 
           {viewState === "portfolio" && isUsersProfile && (
-            <>
-              <div className="switch-container">
-                <button
-                  type="button"
-                  className="standardized-button"
-                  onClick={routeToMain}
-                >
-                  View Profile
-                </button>
-                <button
-                  type="button"
-                  className="standardized-button"
-                  onClick={routeEditUser}
-                >
-                  Edit Profile
-                </button>
-              </div>
-            </>
+            <div className="switch-container">
+              <button
+                type="button"
+                className="standardized-button"
+                onClick={routeToMain}
+              >
+                View Profile
+              </button>
+              <button
+                type="button"
+                className="standardized-button"
+                onClick={routeEditUser}
+              >
+                Edit Profile
+              </button>
+            </div>
           )}
         </div>
       </CentralWrapper>

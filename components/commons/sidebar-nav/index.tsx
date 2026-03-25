@@ -1,37 +1,25 @@
 import { MediaQueries } from "@/styles/variables";
-import { useState } from "react";
 import styled from "styled-components";
 
 const SideMenu = ({ navLinks }) => {
-  const [menuStatus, setMenuStatus] = useState("open");
-  const [style, setStyle] = useState("menu active");
-
-  const handleClick = () => {
-    switch (menuStatus) {
-      case "open":
-        setMenuStatus("close");
-        setStyle("menu active");
-        break;
-      case "close":
-        setMenuStatus("open");
-        setStyle("menu");
-        break;
-    }
-  };
-
   const runPropFunction = (stateChanger) => {
-    if (!!stateChanger && typeof stateChanger === "function") {
+    if (stateChanger && typeof stateChanger === "function") {
       stateChanger();
     }
   };
 
   return (
     <Wrapper>
-      <div className={style}>
+      <div className="menu active">
         <ul>
           {navLinks.map(({ name, stateChanger }) => (
-            <li onClick={() => runPropFunction(stateChanger)} key={name}>
-              <span>{name}</span>
+            <li key={name}>
+              <NavItemButton
+                type="button"
+                onClick={() => runPropFunction(stateChanger)}
+              >
+                {name}
+              </NavItemButton>
             </li>
           ))}
         </ul>
@@ -39,6 +27,18 @@ const SideMenu = ({ navLinks }) => {
     </Wrapper>
   );
 };
+
+const NavItemButton = styled.button`
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  text-align: inherit;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+`;
 
 const Wrapper = styled.div`
   @media ${MediaQueries.MD} {
@@ -55,7 +55,7 @@ const Wrapper = styled.div`
     margin-top: -0.5rem;
     padding-top: 1rem;
 
-    span {
+    ${NavItemButton} {
       color: #fff;
       text-decoration: none;
       display: block;

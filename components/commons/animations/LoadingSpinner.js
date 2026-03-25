@@ -1,7 +1,4 @@
 import { motion } from "framer-motion";
-// import Lottie from "lottie-react";
-// // import animationData from "../../public/lotties/spiral-loading.json";
-// import animationData from "../../../public/lotties/spiral-loading.json";
 
 import { Colors } from "@/styles/variables";
 import styled from "styled-components";
@@ -20,15 +17,10 @@ const LoadingSpinner = () => {
           src={"/bitcoin_PNG48.png"}
           style={{
             height: "150px",
-            // background: "#260049",
-            // backgroundImage: "../../../public/vercel.svg",
             width: "150px",
             borderRadius: "50%",
           }}
           animate={{
-            // scale: [1, 1.1, 1.25, 1.1, 1],
-            // src: ["/bitcoin.png", "/bitcoin_PNG48.png"],
-            // backgroundImage: ["/bitcoin.png", "/bitcoin_PNG48.png"],
             rotate: [0, 90, 180, 90, 0],
           }}
           transition={{

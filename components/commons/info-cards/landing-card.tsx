@@ -4,58 +4,31 @@ import styled from "styled-components";
 
 interface LandingCardProps {
   headerText: string;
-  header2Text: string;
+  header2Text?: string;
   bodyText: string;
   renderSignIn: boolean;
-  renderLearnMore: boolean;
+  renderLearnMore?: boolean;
 }
 
 const LandingCard = ({
   headerText,
-  header2Text,
+  header2Text = "",
   bodyText,
   renderSignIn = false,
-  renderLearnMore = false,
 }: LandingCardProps) => {
   const router = useRouter();
 
-  const routeToAuth = (string) => {
-    router.push(`/auth?path=${string}`);
-  };
-
-  const routeToEducation = () => {
-    router.push("/education");
+  const routeToAuth = (path: string) => {
+    router.push(`/auth?path=${path}`);
   };
 
   return (
     <InfoCardContainer renderSignIn={renderSignIn}>
-      {/* {!!renderSignIn && (
-        <>
-          <CommunityIconContainer right>
-            <Image
-              src={"/assets/community.svg"}
-              width={80}
-              height={80}
-              layout="responsive"
-              alt="community icon"
-            />
-          </CommunityIconContainer>
-
-          <CommunityIconContainer>
-            <Image
-              src={"/assets/community.svg"}
-              width={80}
-              height={80}
-              layout="responsive"
-              alt="community icon"
-            />
-          </CommunityIconContainer>
-        </>
-      )} */}
-
       <div className="info-card-header">
         <h2 className="heading-text">{headerText}</h2>
-        <h2 className="subheading-text">{header2Text}</h2>
+        {header2Text ? (
+          <h2 className="subheading-text">{header2Text}</h2>
+        ) : null}
       </div>
 
       <div className="info-card-body">
@@ -78,49 +51,9 @@ const LandingCard = ({
           </button>
         </div>
       )}
-
-      {/* {!!renderLearnMore && (
-        <div className="button-container">
-          <CTAButton
-            className="standardized-button"
-            onClick={() => routeToEducation()}
-          >
-            Our Story
-          </CTAButton>
-          <CTAButton
-            className="secondary-button"
-            onClick={() => routeToEducation()}
-          >
-            Web3
-          </CTAButton>
-        </div>
-      )} */}
     </InfoCardContainer>
   );
 };
-
-interface CommunityIconProps {
-  right?: boolean;
-}
-
-const CommunityIconContainer = styled.div<CommunityIconProps>`
-  display: none;
-
-  @media ${MediaQueries.MD} {
-    display: flex;
-    position: absolute;
-    border: 2px solid black;
-    border-radius: 50%;
-    top: 2rem;
-    right: ${(props) => (props.right ? "3rem" : "unset")};
-    left: ${(props) => (props.right ? "unset" : "3rem")};
-    background-color: #e7d3ff;
-
-    img {
-      max-height: 7rem;
-    }
-  }
-`;
 
 interface InfoCardContainerProps {
   renderSignIn: boolean;
@@ -149,10 +82,8 @@ const InfoCardContainer = styled.div<InfoCardContainerProps>`
 
     span {
       font-size: 20px;
-      color: ${(props) =>
-        props.renderSignIn ? Colors.elegant.white : Colors.elegant.white};
-      font-style: italic;
-      font-style: ${(props) => props.renderSignIn && "normal"};
+      color: ${Colors.elegant.white};
+      font-style: ${(props) => (props.renderSignIn ? "normal" : "italic")};
     }
   }
 
@@ -165,22 +96,6 @@ const InfoCardContainer = styled.div<InfoCardContainerProps>`
 
   @media ${MediaQueries.LG} {
     padding: 2rem 2rem;
-  }
-`;
-
-const CTAButton = styled.button`
-  padding: 12px 24px;
-  font-size: 16px;
-  font-weight: bold;
-  background-color: ${Colors.elegant.accentPurple};
-  color: #fff;
-  border: 2px solid black;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-
-  &:hover {
-    background-color: #0056b3;
   }
 `;
 

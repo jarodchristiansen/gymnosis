@@ -1,7 +1,6 @@
 import { FormatUnixTime } from "@/helpers/formatters/time";
 import { Colors, FontWeight, MediaQueries } from "@/styles/variables";
 import Image from "next/image";
-import Link from "next/link";
 import styled from "styled-components";
 
 interface NewsBlockProps {
@@ -35,6 +34,7 @@ interface SourceInfoType {
  */
 const NewsBlock = (props: NewsBlockProps) => {
   const { story } = props;
+  const articleHref = story.url || story.guid;
 
   return (
     <NewsItem>
@@ -49,11 +49,18 @@ const NewsBlock = (props: NewsBlockProps) => {
 
       <div className="text-column">
         <div className="top-text-row">
-          <Link href={story?.guid} passHref legacyBehavior>
-            <a target="_blank">
+          {articleHref ? (
+            <a
+              href={articleHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="article-title-link"
+            >
               <h4 className="article-header">{story.title}</h4>
             </a>
-          </Link>
+          ) : (
+            <h4 className="article-header">{story.title}</h4>
+          )}
 
           <span>{FormatUnixTime(story.published_on)}</span>
         </div>
@@ -62,8 +69,13 @@ const NewsBlock = (props: NewsBlockProps) => {
           <span>{story.body.slice(0, 300) + "..."}</span>
         </div>
 
-        <Link href={story?.guid} passHref legacyBehavior>
-          <a target="_blank">
+        {articleHref ? (
+          <a
+            href={articleHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="source-link"
+          >
             <div className="source-row">
               <span className="source-name">{story?.source_info?.name}</span>
               <Image
@@ -76,7 +88,19 @@ const NewsBlock = (props: NewsBlockProps) => {
               />
             </div>
           </a>
-        </Link>
+        ) : (
+          <div className="source-row">
+            <span className="source-name">{story?.source_info?.name}</span>
+            <Image
+              src={story.source_info?.img}
+              height={55}
+              width={55}
+              alt="block-logo"
+              unoptimized={true}
+              priority
+            />
+          </div>
+        )}
       </div>
     </NewsItem>
   );
@@ -92,6 +116,16 @@ const NewsItem = styled.div`
   border-radius: 12px;
   gap: 24px;
   position: relative;
+
+  .article-title-link {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .source-link {
+    color: inherit;
+    text-decoration: none;
+  }
 
   h4 {
     font-size: 1.3rem;

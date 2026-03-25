@@ -1,6 +1,29 @@
 import { Colors, FontWeight, MediaQueries } from "@/styles/variables";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import styled from "styled-components";
+
+const STEPS = [
+  {
+    title: "Building",
+    description: "MVP development, and initial funding for Mesh.",
+    completed: false,
+  },
+  {
+    title: "Alpha release",
+    description: "The first version of Mesh will be released to the public.",
+    completed: false,
+  },
+  {
+    title: "Beta release",
+    description: "The second version of Mesh will be released to the public",
+    completed: false,
+  },
+  {
+    title: "Main release",
+    description: "The final version of Mesh will be released to the public.",
+    completed: false,
+  },
+] as const;
 
 interface ProgressProps {
   progressWidth: number;
@@ -78,52 +101,23 @@ const StepTitle = styled.h4`
   color: ${Colors.elegant.white};
 `;
 
-const ProgressMeter = () => {
-  const steps = [
-    {
-      title: "Building",
-      description: "MVP development, and initial funding for Mesh.",
-      completed: false,
-    },
-    {
-      title: "Alpha release",
-      description: "The first version of Mesh will be released to the public.",
-      completed: false,
-    },
-    {
-      title: "Beta release",
-      description: "The second version of Mesh will be released to the public",
-      completed: false,
-    },
-    {
-      title: "Main release",
-      description: "The final version of Mesh will be released to the public.",
-      completed: false,
-    },
-  ];
+type ProgressMeterProps = {
+  currentStep?: number;
+};
 
-  const [currentStep, setCurrentStep] = useState(0);
-
+const ProgressMeter = ({ currentStep = 0 }: ProgressMeterProps) => {
   const progressWidth = currentStep === 3 ? 100 : currentStep * 30 || 2;
-
-  const updateStep = () => {
-    if (currentStep >= 3) {
-      setCurrentStep(0);
-    } else {
-      setCurrentStep(currentStep + 1);
-    }
-  };
 
   const BarComponent = useMemo(() => {
     return (
       <>
         <Timeline>
-          {steps.map((step, index) => {
+          {STEPS.map((step, index) => {
             if (index === 0 || index === 2) {
-              return <Step key={index}>{""}</Step>;
+              return <Step key={step.title}>{""}</Step>;
             } else {
               return (
-                <Step key={index}>
+                <Step key={step.title}>
                   <StepMarker />
                   <StepTitle>{step.title}</StepTitle>
                   <p>{step.description}</p>
@@ -137,25 +131,23 @@ const ProgressMeter = () => {
           <Progress progressWidth={progressWidth} />
         </ProgressBar>
         <Timeline>
-          <Timeline>
-            {steps.map((step, index) => {
-              if (index === 1 || index === 3) {
-                return <Step key={index}>{""}</Step>;
-              } else {
-                return (
-                  <Step key={index}>
-                    <StepMarker />
-                    <StepTitle>{step.title}</StepTitle>
-                    <p>{step.description}</p>
-                  </Step>
-                );
-              }
-            })}
-          </Timeline>
+          {STEPS.map((step, index) => {
+            if (index === 1 || index === 3) {
+              return <Step key={`${step.title}-lower`}>{""}</Step>;
+            } else {
+              return (
+                <Step key={`${step.title}-lower`}>
+                  <StepMarker />
+                  <StepTitle>{step.title}</StepTitle>
+                  <p>{step.description}</p>
+                </Step>
+              );
+            }
+          })}
         </Timeline>
       </>
     );
-  }, [currentStep]);
+  }, [progressWidth]);
 
   return <ProgressMeterContainer>{BarComponent}</ProgressMeterContainer>;
 };

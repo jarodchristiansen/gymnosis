@@ -16,19 +16,13 @@ function Layout(props) {
   const router = useRouter();
   const { asPath } = router;
 
-  let purpleBackgroundList = ["/auth"];
-
   useEffect(() => {
-    determineLayoutBackground();
-  }, [asPath]);
-
-  const determineLayoutBackground = () => {
     if (asPath.includes("/auth") || asPath.includes("/assets/")) {
       setIsPurplePath(true);
     } else {
       setIsPurplePath(false);
     }
-  };
+  }, [asPath]);
 
   return (
     <LayoutContainer isPurplePath={isPurplePath}>

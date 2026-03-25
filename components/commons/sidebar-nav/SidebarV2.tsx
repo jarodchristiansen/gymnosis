@@ -16,27 +16,35 @@ const SidebarV2 = ({ open, setOpen, view, setPageView }: SidebarProps) => {
 
   return (
     <SidebarContainer open={open}>
-      <ToggleIcon onClick={() => setOpen(!open)}>
+      <ToggleIcon
+        type="button"
+        aria-label={open ? "Close sidebar" : "Open sidebar"}
+        aria-expanded={open}
+        onClick={() => setOpen?.(!open)}
+      >
         {open ? <i className="fas fa-times" /> : <i className="fas fa-bars" />}
       </ToggleIcon>
       <SidebarContent>
         {open && (
           <>
             <MenuItem
+              type="button"
               className={isDashboardView && "selected"}
-              onClick={() => setPageView("dashboard")}
+              onClick={() => setPageView?.("dashboard")}
             >
               Dashboard
             </MenuItem>
             <MenuItem
+              type="button"
               className={isReportView && "selected"}
-              onClick={() => setPageView("reports")}
+              onClick={() => setPageView?.("reports")}
             >
               Reports
             </MenuItem>
             <MenuItem
+              type="button"
               className={isSettingsView && "selected"}
-              onClick={() => setPageView("settings")}
+              onClick={() => setPageView?.("settings")}
             >
               Settings
             </MenuItem>
@@ -46,8 +54,10 @@ const SidebarV2 = ({ open, setOpen, view, setPageView }: SidebarProps) => {
         {!open && (
           <>
             <MenuItem
+              type="button"
+              aria-label="Dashboard"
               className={isDashboardView && "selected"}
-              onClick={() => setPageView("dashboard")}
+              onClick={() => setPageView?.("dashboard")}
             >
               <Image
                 alt="dashboard icon"
@@ -58,8 +68,10 @@ const SidebarV2 = ({ open, setOpen, view, setPageView }: SidebarProps) => {
             </MenuItem>
 
             <MenuItem
+              type="button"
+              aria-label="Reports"
               className={isReportView && "selected"}
-              onClick={() => setPageView("reports")}
+              onClick={() => setPageView?.("reports")}
             >
               <Image
                 alt="reports icon"
@@ -70,8 +82,10 @@ const SidebarV2 = ({ open, setOpen, view, setPageView }: SidebarProps) => {
             </MenuItem>
 
             <MenuItem
+              type="button"
+              aria-label="Settings"
               className={isSettingsView && "selected"}
-              onClick={() => setPageView("settings")}
+              onClick={() => setPageView?.("settings")}
             >
               <Image
                 alt="settings icon"
@@ -112,8 +126,12 @@ const SidebarContainer = styled.div<SidebarProps>`
   }
 `;
 
-const ToggleIcon = styled.div`
+const ToggleIcon = styled.button`
   display: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
 
   @media ${MediaQueries.MD} {
     display: flex;
@@ -140,10 +158,14 @@ const SidebarContent = styled.div`
   }
 `;
 
-const MenuItem = styled.div`
+const MenuItem = styled.button`
   padding: 24px 8px;
   cursor: pointer;
   color: ${Colors.elegant.white};
+  background: none;
+  border: none;
+  font: inherit;
+  text-align: center;
 
   img {
     padding: 4px;

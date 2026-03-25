@@ -8,11 +8,11 @@ import User from "../../../db/models/user";
 import clientPromise from "../../../lib/mongodb";
 
 function makeid(length) {
-  var result = "";
-  var characters =
+  const characters =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  var charactersLength = characters.length;
-  for (var i = 0; i < length; i++) {
+  const charactersLength = characters.length;
+  let result = "";
+  for (let i = 0; i < length; i++) {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
   return result;

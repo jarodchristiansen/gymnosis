@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 interface TimeButtonsProps {
   availTimes: number[];
@@ -16,6 +16,7 @@ const TimeButtons = ({
       {availTimes &&
         availTimes.map((time) => (
           <button
+            type="button"
             key={time}
             className={"standardized-button"}
             onClick={() => {
