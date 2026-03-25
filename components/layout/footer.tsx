@@ -1,6 +1,5 @@
 import { Colors, MediaQueries } from "@/styles/variables";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import { FaFacebook, FaInstagram, FaTwitter } from "react-icons/fa";
 import styled from "styled-components";
 
@@ -9,20 +8,9 @@ import styled from "styled-components";
  * @returns Footer component below pages
  */
 const Footer = () => {
-  const router = useRouter();
-  // const { data: session, status } = useSession();
-
-  //@ts-ignore: next-auth issue v3
-  // let id = session?.user?.id;
-
-  const routerToProfile = (manage) => {
-    // if (id && manage) {
-    //   router.push(`/user/${id}?view=edit_user`);
-    // } else if (id) {
-    //   router.push(`/user/${id}`);
-    // } else {
-    //   router.push("/auth?path=SignUp");
-    // }
+  const routerToProfile = (manage: boolean) => {
+    void manage;
+    /* Wire session + navigation when profile routes are enabled */
   };
 
   return (
@@ -32,17 +20,13 @@ const Footer = () => {
           <div className="info-column">
             <h4>News & Info</h4>
 
-            <Link href="/news" passHref legacyBehavior>
-              <a>
-                <h6>Newsfeed</h6>
-              </a>
-            </Link>
+            <FooterNextLink href="/news">
+              <h6>Newsfeed</h6>
+            </FooterNextLink>
 
-            <Link href="/terms-of-service" passHref legacyBehavior>
-              <a>
-                <h6>Terms of Service</h6>
-              </a>
-            </Link>
+            <FooterNextLink href="/terms-of-service">
+              <h6>Terms of Service</h6>
+            </FooterNextLink>
           </div>
           <div className="info-column">
             <h4>Resources</h4>
@@ -57,8 +41,18 @@ const Footer = () => {
           </div>
           <div className="info-column">
             <h4>Users</h4>
-            <h6 onClick={() => routerToProfile(false)}>Profile</h6>
-            <h6 onClick={() => routerToProfile(true)}>Manage Account</h6>
+            <FooterTextButton
+              type="button"
+              onClick={() => routerToProfile(false)}
+            >
+              Profile
+            </FooterTextButton>
+            <FooterTextButton
+              type="button"
+              onClick={() => routerToProfile(true)}
+            >
+              Manage Account
+            </FooterTextButton>
           </div>
         </InfoColumnsContainer>
 
@@ -71,6 +65,25 @@ const Footer = () => {
     </FooterContainer>
   );
 };
+
+const FooterNextLink = styled(Link)`
+  color: inherit;
+  text-decoration: none;
+`;
+
+const FooterTextButton = styled.button`
+  background: none;
+  border: none;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  font-size: 0.67em;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+  text-decoration: underline;
+  text-align: inherit;
+`;
 
 const InfoColumnsContainer = styled.div`
   width: 100%;
@@ -112,7 +125,8 @@ const FooterContainer = styled.div`
       font-weight: bold;
     }
 
-    h6 {
+    h6,
+    ${FooterTextButton} {
       color: white;
     }
   }

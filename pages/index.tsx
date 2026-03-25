@@ -1,4 +1,3 @@
-import { GET_NEWS_FEED } from "@/helpers/queries/news-feed";
 import {
   Colors,
   FontFamily,
@@ -6,23 +5,19 @@ import {
   MediaQueries,
   Padding,
 } from "@/styles/variables";
-import client from "apollo-client";
 import LandingCard from "components/commons/info-cards/landing-card";
 import CTACard from "components/ctas/CTACard";
 import ProgressMeter from "components/progressmeter/ProgressMeter";
+import type { GetServerSideProps } from "next";
 import Image from "next/image";
 import styled from "styled-components";
 
 import SEOHead from "../components/seo/SEOHead";
 
 /**
- *
- * @param data: Response from GetNewsFeed query, renders the news feed at bottom of landing page
- * @returns Landing page with Info/Sign Up Pages
+ * Landing page with Info/Sign Up Pages
  */
-export default function Home({ data }) {
-  void data;
-
+export default function Home() {
   const cardContent = [
     {
       image: "/landing/avatar-icon.svg",
@@ -72,29 +67,23 @@ export default function Home({ data }) {
       <Row>
         <h3>Experience Facility Management Like Never Before</h3>
         <div className="site-description-container">
-          {cardContent &&
-            cardContent.map((card) => {
-              return (
-                <div className="card" key={card?.title}>
-                  <div className="card-content">
-                    {card?.image && (
-                      <div className="card-background">
-                        <Image
-                          src={card.image}
-                          height={150}
-                          width={150}
-                          alt=""
-                        />
-                      </div>
-                    )}
+          {cardContent.map((card) => {
+            return (
+              <div className="card" key={card.title}>
+                <div className="card-content">
+                  {card.image ? (
+                    <div className="card-background">
+                      <Image src={card.image} height={150} width={150} alt="" />
+                    </div>
+                  ) : null}
 
-                    <h4>{card?.title}</h4>
+                  <h4>{card.title}</h4>
 
-                    <div>{card?.text}</div>
-                  </div>
+                  <div>{card.text}</div>
                 </div>
-              );
-            })}
+              </div>
+            );
+          })}
         </div>
       </Row>
 
@@ -154,14 +143,8 @@ const Row = styled.div`
       border-radius: 12px;
       box-shadow: 0px 2px 12px ${Colors.darkGray};
       position: relative;
-      /* &:hover {
-        border: 2px solid blue;
-        cursor: pointer;
-      } */
       text-align: center;
       border: 2px solid ${Colors.modern.accentBlue};
-
-      /* background: linear-gradient(180deg, transparent 0%, #0088ff 100%); */
 
       h4 {
         font-weight: ${FontWeight.bold};
@@ -170,11 +153,6 @@ const Row = styled.div`
 
       .card-background {
         padding: 24px 0;
-
-        /* img {
-          border-radius: 50%;
-          border: 2px solid black;
-        } */
       }
     }
   }
@@ -231,90 +209,6 @@ const AlternateHomePageWrapper = styled.div`
   }
 `;
 
-const NewsItem = styled.div`
-  border: 1.5px solid gray;
-  display: flex;
-  flex-direction: column;
-  border-radius: 12px;
-  padding: 1rem 1rem;
-  justify-content: start;
-  max-height: 28rem;
-  min-width: 20rem;
-  text-align: center;
-  align-items: center;
-  gap: 1rem;
-  box-shadow: 2px 4px 10px #b9b7b7;
-  position: relative;
-  background-color: white;
-
-  cursor: grab;
-
-  .partner-header {
-    background-color: #e9e9e937;
-    border-radius: 8px;
-  }
-
-  h4 {
-    font-weight: 500;
-  }
-
-  a:hover {
-    text-decoration: underline;
-  }
-
-  .article-image {
-    border-radius: 12px;
-  }
-
-  .source-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-    font-size: 18px;
-    max-height: 8rem;
-    border-bottom: 1px solid lightgray;
-    width: 100%;
-
-    .source-name {
-      font-weight: bold;
-    }
-
-    .source-image {
-      border-radius: 50%;
-    }
-  }
-
-  span {
-    font-weight: 600;
-  }
-
-  @media ${MediaQueries.MD} {
-    max-height: 30rem;
-    min-width: 22rem;
-  }
-`;
-
-const getNewsFeed = async () => {
-  const result = await client.query({
-    query: GET_NEWS_FEED,
-  });
-
-  return { data: result };
-};
-
-export const getServerSideProps = async () => {
-  const response = await getNewsFeed();
-
-  const data = response.data;
-
-  if (!data) {
-    return {
-      notFound: true,
-    };
-  }
-
-  return {
-    props: data, // will be passed to the page component as props
-  };
+export const getServerSideProps: GetServerSideProps = async () => {
+  return { props: {} };
 };

@@ -4,14 +4,26 @@ interface UnderlineProps {
   selected: boolean;
 }
 
-const ChartTimeSwitcher = ({ is14Days, onChange }: any) => {
+interface ChartTimeSwitcherProps {
+  is14Days: boolean;
+  onChange: () => void;
+}
+
+const ChartTimeSwitcher = ({ is14Days, onChange }: ChartTimeSwitcherProps) => {
   return (
     <TimeSwitcherWrapper>
-      <TimeOption className={is14Days && "selected"} onClick={() => onChange()}>
+      <TimeOption
+        type="button"
+        aria-pressed={is14Days}
+        className={is14Days ? "selected" : undefined}
+        onClick={() => onChange()}
+      >
         14 days
       </TimeOption>
       <TimeOption
-        className={!is14Days && "selected"}
+        type="button"
+        aria-pressed={!is14Days}
+        className={!is14Days ? "selected" : undefined}
         onClick={() => onChange()}
       >
         1 year
@@ -31,11 +43,13 @@ const TimeSwitcherWrapper = styled.div`
   background-color: #f2f2f2;
 `;
 
-const TimeOption = styled.span`
+const TimeOption = styled.button`
   position: relative;
   padding: 5px 10px;
   margin-right: 10px;
   background-color: transparent;
+  border: none;
+  font: inherit;
   border-radius: 5px;
   cursor: pointer;
   font-weight: bold;
@@ -57,7 +71,7 @@ const Underline = styled.div<UnderlineProps>`
   width: 100%;
   height: 2px;
   background-color: #4a06c9;
-  transform: scaleX(${(props) => (props.selected ? 0.5 : 0.5)});
+  transform: scaleX(${(props) => (props.selected ? 1 : 0)});
   transform-origin: ${(props) => (props.selected ? "left" : "right")};
   transition: transform 5.3s ease;
 `;

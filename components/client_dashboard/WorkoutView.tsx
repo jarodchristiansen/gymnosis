@@ -72,7 +72,7 @@ const Tabs = styled.div`
   gap: 16px;
 `;
 
-const TabButton = styled.button<TabButtonProps>`
+const TabButton = styled.button.attrs({ type: "button" })<TabButtonProps>`
   padding: 8px 16px;
   background-color: ${(props) => (props.active ? "#007bff" : "lightgray")};
   color: white;

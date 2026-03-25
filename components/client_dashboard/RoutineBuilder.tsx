@@ -10,7 +10,7 @@ const RoutineBuilder = ({ aiWorkoutData, id }) => {
   const [firstInvalidExercise, setFirstInvalidExercise] = useState(null); // State to store the first invalid exercise
   const scrollRef = useRef(null); // Reference for scrolling
 
-  const [addRoutine, { loading, error }] = useMutation(ADD_WORKOUT_ROUTINE);
+  const [addRoutine] = useMutation(ADD_WORKOUT_ROUTINE);
 
   const handleExerciseChange = (day, exerciseIndex, property, value) => {
     const updatedRoutine = [...routineData];
@@ -97,7 +97,7 @@ const RoutineBuilder = ({ aiWorkoutData, id }) => {
           <div>
             {dayData.exercises.map((exercise, exerciseIndex) => (
               <FormRow
-                key={exerciseIndex}
+                key={`day-${dayData.day}-ex-${exerciseIndex}-${exercise.exercise}`}
                 ref={
                   firstInvalidExercise &&
                   firstInvalidExercise.day === dayData.day &&
@@ -114,8 +114,13 @@ const RoutineBuilder = ({ aiWorkoutData, id }) => {
                 }
               >
                 <div>
-                  <label>Exercise</label>
+                  <label
+                    htmlFor={`exercise-name-${dayData.day}-${exerciseIndex}`}
+                  >
+                    Exercise
+                  </label>
                   <input
+                    id={`exercise-name-${dayData.day}-${exerciseIndex}`}
                     type="text"
                     value={exercise.exercise}
                     onChange={(e) =>
@@ -129,8 +134,13 @@ const RoutineBuilder = ({ aiWorkoutData, id }) => {
                   />
                 </div>
                 <div>
-                  <label>Sets</label>
+                  <label
+                    htmlFor={`exercise-sets-${dayData.day}-${exerciseIndex}`}
+                  >
+                    Sets
+                  </label>
                   <input
+                    id={`exercise-sets-${dayData.day}-${exerciseIndex}`}
                     type="number"
                     value={exercise.sets}
                     min={1}
@@ -145,8 +155,13 @@ const RoutineBuilder = ({ aiWorkoutData, id }) => {
                   />
                 </div>
                 <div>
-                  <label>Reps</label>
+                  <label
+                    htmlFor={`exercise-reps-${dayData.day}-${exerciseIndex}`}
+                  >
+                    Reps
+                  </label>
                   <input
+                    id={`exercise-reps-${dayData.day}-${exerciseIndex}`}
                     type="text"
                     value={exercise.reps}
                     min={1}
@@ -162,6 +177,7 @@ const RoutineBuilder = ({ aiWorkoutData, id }) => {
                 </div>
                 <div>
                   <button
+                    type="button"
                     onClick={() =>
                       handleRemoveExercise(dayData.day, exerciseIndex)
                     }
@@ -172,7 +188,10 @@ const RoutineBuilder = ({ aiWorkoutData, id }) => {
               </FormRow>
             ))}
             <div>
-              <button onClick={() => handleAddExercise(dayData.day)}>
+              <button
+                type="button"
+                onClick={() => handleAddExercise(dayData.day)}
+              >
                 Add Exercise
               </button>
             </div>
@@ -180,7 +199,9 @@ const RoutineBuilder = ({ aiWorkoutData, id }) => {
         </DayRow>
       ))}
       <div>
-        <button onClick={handleSaveRoutine}>Save Routine</button>
+        <button type="button" onClick={handleSaveRoutine}>
+          Save Routine
+        </button>
         {!isFormValid && (
           <ValidationMessage>
             Please ensure all exercises have a name, sets, and reps.

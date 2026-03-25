@@ -14,8 +14,7 @@ const WorkoutGoalForm = ({ setFormIsOpen, setAiWorkoutData }) => {
   const [weightTraining, setWeightTraining] = useState(false);
   const [weightTrainingFrequency, setWeightTrainingFrequency] = useState("");
 
-  const [createWorkout, { data, loading, error }] =
-    useLazyQuery(CREATE_WORKOUT);
+  const [createWorkout, { data }] = useLazyQuery(CREATE_WORKOUT);
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
@@ -100,22 +99,21 @@ Please provide a workout plan in the format of the JavaScript object array above
   };
 
   useEffect(() => {
-    console.log({ data }, "IN USE EFFECT");
-
     if (data?.createWorkout) {
       setAiWorkoutData(data.createWorkout);
       setFormIsOpen(false);
     }
-  }, [data]);
+  }, [data, setAiWorkoutData, setFormIsOpen]);
 
   return (
     <div>
       <WorkoutBuilderForm onSubmit={handleFormSubmit}>
         <div className="grid-container">
-          <div>
-            <label>Client Weight Goal</label>
-            <label>
+          <fieldset>
+            <legend>Client Weight Goal</legend>
+            <label htmlFor="client-goal-bulking">
               <input
+                id="client-goal-bulking"
                 type="radio"
                 name="clientGoal"
                 value="bulking"
@@ -124,8 +122,9 @@ Please provide a workout plan in the format of the JavaScript object array above
               />
               Bulking
             </label>
-            <label>
+            <label htmlFor="client-goal-lean">
               <input
+                id="client-goal-lean"
                 type="radio"
                 name="clientGoal"
                 value="getting more lean"
@@ -134,8 +133,9 @@ Please provide a workout plan in the format of the JavaScript object array above
               />
               Getting More Lean
             </label>
-            <label>
+            <label htmlFor="client-goal-sport">
               <input
+                id="client-goal-sport"
                 type="radio"
                 name="clientGoal"
                 value="sport specific"
@@ -144,11 +144,12 @@ Please provide a workout plan in the format of the JavaScript object array above
               />
               Sport Specific
             </label>
-          </div>
+          </fieldset>
 
           <div>
-            <label>Client Weight (lbs)</label>
+            <label htmlFor="client-weight">Client Weight (lbs)</label>
             <input
+              id="client-weight"
               type="number"
               value={clientWeight}
               onChange={(e) => setClientWeight(e.target.value)}
@@ -157,8 +158,9 @@ Please provide a workout plan in the format of the JavaScript object array above
           </div>
 
           <div>
-            <label>Client Height (inches)</label>
+            <label htmlFor="client-height">Client Height (inches)</label>
             <input
+              id="client-height"
               type="number"
               value={clientHeight}
               onChange={(e) => setClientHeight(e.target.value)}
@@ -167,8 +169,9 @@ Please provide a workout plan in the format of the JavaScript object array above
           </div>
 
           <div>
-            <label>Client Age</label>
+            <label htmlFor="client-age">Client Age</label>
             <input
+              id="client-age"
               type="number"
               value={clientAge}
               onChange={(e) => setClientAge(e.target.value)}
@@ -177,8 +180,9 @@ Please provide a workout plan in the format of the JavaScript object array above
           </div>
 
           <div>
-            <label>Client Activity Level</label>
+            <label htmlFor="activity-level">Client Activity Level</label>
             <select
+              id="activity-level"
               value={activityLevel}
               onChange={(e) => setActivityLevel(e.target.value)}
               required
@@ -192,17 +196,18 @@ Please provide a workout plan in the format of the JavaScript object array above
           </div>
 
           <div>
-            <label>Sports You Participate In (select multiple)</label>
+            <label htmlFor="sports-select">
+              Sports You Participate In (select multiple)
+            </label>
             <select
+              id="sports-select"
               multiple
               value={sports}
               onChange={(e) => {
-                const options = e.target.options;
-                const selectedSports = [];
-                for (let i = 0; i < options.length; i++) {
-                  if (options[i].selected) {
-                    selectedSports.push(options[i].value);
-                  }
+                const selectedSports: string[] = [];
+                const opts = e.target.selectedOptions;
+                for (let i = 0; i < opts.length; i++) {
+                  selectedSports.push(opts[i].value);
                 }
                 setSports(selectedSports);
               }}
@@ -214,10 +219,11 @@ Please provide a workout plan in the format of the JavaScript object array above
             </select>
           </div>
 
-          <div>
-            <label>Do You Currently Weight Train?</label>
-            <label>
+          <fieldset>
+            <legend>Do You Currently Weight Train?</legend>
+            <label htmlFor="weight-train-yes">
               <input
+                id="weight-train-yes"
                 type="radio"
                 name="weightTraining"
                 value="yes"
@@ -226,8 +232,9 @@ Please provide a workout plan in the format of the JavaScript object array above
               />
               Yes
             </label>
-            <label>
+            <label htmlFor="weight-train-no">
               <input
+                id="weight-train-no"
                 type="radio"
                 name="weightTraining"
                 value="no"
@@ -236,11 +243,14 @@ Please provide a workout plan in the format of the JavaScript object array above
               />
               No
             </label>
-          </div>
+          </fieldset>
 
           <div>
-            <label>Weight Training Frequency (times per week)</label>
+            <label htmlFor="weight-training-frequency">
+              Weight Training Frequency (times per week)
+            </label>
             <input
+              id="weight-training-frequency"
               type="number"
               value={weightTrainingFrequency}
               onChange={(e) => setWeightTrainingFrequency(e.target.value)}

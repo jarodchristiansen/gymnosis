@@ -1,64 +1,107 @@
 import { FormatUnixTime } from "../formatters/time";
 
-export const processFinancialHistory = (financialData) => {
-  let market_dominance = [];
-  let volatility = [];
-  let volume = [];
-  let highs = [];
-  let lows = [];
-  let closes = [];
-  let percent_change = [];
-  let price_btc = [];
+type FinancialPoint = Record<string, unknown>;
 
-  for (let i of financialData) {
-    if (i?.market_dominance) {
-      market_dominance.push({
+function appendIf<T>(
+  row: FinancialPoint,
+  predicate: (r: FinancialPoint) => boolean,
+  build: (r: FinancialPoint) => T,
+  bucket: T[]
+) {
+  if (predicate(row)) {
+    bucket.push(build(row));
+  }
+}
+
+export const processFinancialHistory = (financialData: FinancialPoint[]) => {
+  const market_dominance: Array<{
+    market_dominance: unknown;
+    time: string;
+  }> = [];
+  const volatility: Array<{ volatility: unknown; time: string }> = [];
+  const volume: Array<{
+    volumeTo: unknown;
+    volumeFrom: unknown;
+    time: string;
+  }> = [];
+  const highs: unknown[] = [];
+  const lows: unknown[] = [];
+  const closes: Array<{
+    close: unknown;
+    time: string;
+    low: unknown;
+    high: unknown;
+  }> = [];
+  const percent_change: Array<{ percent_change: unknown; time: string }> = [];
+  const price_btc: Array<{ price_btc: unknown; time: string }> = [];
+
+  for (const row of financialData) {
+    appendIf(
+      row,
+      (i) => Boolean(i?.market_dominance),
+      (i) => ({
         market_dominance: i.market_dominance,
         time: FormatUnixTime(i.time),
-      });
-    }
-    if (i?.volatility) {
-      volatility.push({
+      }),
+      market_dominance
+    );
+    appendIf(
+      row,
+      (i) => Boolean(i?.volatility),
+      (i) => ({
         volatility: i.volatility,
         time: FormatUnixTime(i.time),
-      });
-    }
-    if (i.volumeto && i.volumefrom) {
-      volume.push({
+      }),
+      volatility
+    );
+    appendIf(
+      row,
+      (i) => Boolean(i.volumeto && i.volumefrom),
+      (i) => ({
         volumeTo: i.volumeto,
         volumeFrom: i.volumefrom,
         time: FormatUnixTime(i.time),
-      });
-    }
-    if (i?.percent_change_24h) {
-      percent_change.push({
+      }),
+      volume
+    );
+    appendIf(
+      row,
+      (i) => Boolean(i?.percent_change_24h),
+      (i) => ({
         percent_change: i.percent_change_24h,
         time: FormatUnixTime(i.time),
-      });
-    }
-    if (i?.close) {
-      closes.push({
+      }),
+      percent_change
+    );
+    appendIf(
+      row,
+      (i) => Boolean(i?.close),
+      (i) => ({
         close: i.close,
         time: FormatUnixTime(i.time),
         low: i.low,
         high: i.high,
-      });
-    }
-    if (i?.price_btc) {
-      price_btc.push({
+      }),
+      closes
+    );
+    appendIf(
+      row,
+      (i) => Boolean(i?.price_btc),
+      (i) => ({
         price_btc: i.price_btc,
         time: FormatUnixTime(i.time),
-      });
+      }),
+      price_btc
+    );
+    if (row?.high) {
+      highs.push(row.high);
     }
-    if (i?.high) {
-      highs.push(i.high);
-    }
-    if (i?.low) {
-      lows.push(i.low);
+    if (row?.low) {
+      lows.push(row.low);
     }
   }
 
-  let filteredData = {
+  return {
     market_dominance,
     volatility,
     volume,
@@ -68,6 +111,4 @@ export const processFinancialHistory = (financialData) => {
     percent_change,
     price_btc,
   };
-
-  return filteredData;
 };

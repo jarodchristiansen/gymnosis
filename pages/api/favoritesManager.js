@@ -25,11 +25,11 @@ export default async function handler(request, response) {
       });
     }
 
-    for (let favorite in favoritesMap) {
-      let asset = await Asset.findOneAndUpdate(
-        { name: favorite },
-        { favorite_count: favoritesMap[favorite] }
-      ).catch();
+    for (const title of Object.keys(favoritesMap)) {
+      await Asset.findOneAndUpdate(
+        { name: title },
+        { favorite_count: favoritesMap[title] }
+      ).catch(() => undefined);
     }
 
     response.status(200).json({
