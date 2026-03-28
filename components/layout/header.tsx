@@ -1,6 +1,6 @@
 import { checkIsAdmin, checkIsAdminOrTrainer } from "@/helpers/auth/auth";
 import { Colors, MediaQueries } from "@/styles/variables";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -13,16 +13,12 @@ import styled from "styled-components";
  * @returns Header component above pages
  */
 function Header() {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const [selectedRoute, setSelectedRoute] = useState<string | number>("");
 
   const router = useRouter();
   const { asPath } = router;
 
-  const handleSignin = (e) => {
-    e.preventDefault();
-    signIn();
-  };
   const handleSignout = (e) => {
     e.preventDefault();
     setSelectedRoute("");
@@ -139,14 +135,15 @@ function Header() {
           <RouteRow>
             {routeObjects}
             {session && (
-              <Nav.Link
-                eventKey={"5"}
-                role={"link"}
-                onClick={handleSignout}
-                className={"pointer-link fw-bold"}
-              >
-                <SignOutSpan>{"Sign Out"}</SignOutSpan>
-              </Nav.Link>
+              <TextContainer>
+                <SignOutNavButton
+                  type="button"
+                  onClick={handleSignout}
+                  className="pointer-link fw-bold"
+                >
+                  <SignOutSpan>Sign Out</SignOutSpan>
+                </SignOutNavButton>
+              </TextContainer>
             )}
           </RouteRow>
         </Navbar.Collapse>
@@ -167,6 +164,15 @@ const RouteRow = styled.div`
     flex-direction: row;
     width: 100%;
   }
+`;
+
+const SignOutNavButton = styled.button`
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  text-align: inherit;
 `;
 
 const SignOutSpan = styled.span`

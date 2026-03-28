@@ -3,11 +3,8 @@ import Cors from "micro-cors";
 
 import connectDb from "../../db/config";
 import resolvers from "../../db/resolvers/index";
-// import { ApolloServer } from "@apollo/server";
 
 import typeDefs from "../../db/schema";
-
-// import { createContext } from "graphql/context";
 
 connectDb();
 
@@ -22,8 +19,6 @@ const cors = Cors({
 });
 
 const server = new ApolloServer({
-  // context: createContext,
-  // schema,
   typeDefs,
   resolvers,
   context: () => {

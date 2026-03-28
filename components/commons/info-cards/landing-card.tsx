@@ -1,4 +1,5 @@
 import { Colors, MediaQueries } from "@/styles/variables";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import styled from "styled-components";
 
@@ -15,6 +16,7 @@ const LandingCard = ({
   header2Text = "",
   bodyText,
   renderSignIn = false,
+  renderLearnMore = false,
 }: LandingCardProps) => {
   const router = useRouter();
 
@@ -34,6 +36,12 @@ const LandingCard = ({
       <div className="info-card-body">
         <span className="body-text">{bodyText}</span>
       </div>
+
+      {!!renderLearnMore && (
+        <div className="learn-more-container">
+          <LearnMoreLink href="/education">Learn more</LearnMoreLink>
+        </div>
+      )}
 
       {!!renderSignIn && (
         <div className="button-container">
@@ -87,6 +95,11 @@ const InfoCardContainer = styled.div<InfoCardContainerProps>`
     }
   }
 
+  .learn-more-container {
+    text-align: center;
+    padding: 0.25rem 0 0.75rem;
+  }
+
   .button-container {
     display: flex;
     justify-content: center;
@@ -96,6 +109,18 @@ const InfoCardContainer = styled.div<InfoCardContainerProps>`
 
   @media ${MediaQueries.LG} {
     padding: 2rem 2rem;
+  }
+`;
+
+const LearnMoreLink = styled(Link)`
+  color: ${Colors.elegant.white};
+  font-size: 18px;
+  font-weight: 600;
+  text-decoration: underline;
+
+  &:hover {
+    color: ${Colors.elegant.white};
+    opacity: 0.9;
   }
 `;
 

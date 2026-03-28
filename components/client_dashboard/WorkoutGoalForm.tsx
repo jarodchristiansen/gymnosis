@@ -120,7 +120,7 @@ Please provide a workout plan in the format of the JavaScript object array above
                 checked={clientGoal === "bulking"}
                 onChange={(e) => setClientGoal(e.target.value)}
               />
-              Bulking
+              <span>Bulking</span>
             </label>
             <label htmlFor="client-goal-lean">
               <input
@@ -131,7 +131,7 @@ Please provide a workout plan in the format of the JavaScript object array above
                 checked={clientGoal === "getting more lean"}
                 onChange={(e) => setClientGoal(e.target.value)}
               />
-              Getting More Lean
+              <span>Getting More Lean</span>
             </label>
             <label htmlFor="client-goal-sport">
               <input
@@ -142,7 +142,7 @@ Please provide a workout plan in the format of the JavaScript object array above
                 checked={clientGoal === "sport specific"}
                 onChange={(e) => setClientGoal(e.target.value)}
               />
-              Sport Specific
+              <span>Sport Specific</span>
             </label>
           </fieldset>
 
@@ -204,12 +204,9 @@ Please provide a workout plan in the format of the JavaScript object array above
               multiple
               value={sports}
               onChange={(e) => {
-                const selectedSports: string[] = [];
-                const opts = e.target.selectedOptions;
-                for (let i = 0; i < opts.length; i++) {
-                  selectedSports.push(opts[i].value);
-                }
-                setSports(selectedSports);
+                setSports(
+                  Array.from(e.target.selectedOptions, (opt) => opt.value)
+                );
               }}
             >
               <option value="running">Running</option>
@@ -230,7 +227,7 @@ Please provide a workout plan in the format of the JavaScript object array above
                 checked={weightTraining}
                 onChange={() => setWeightTraining(true)}
               />
-              Yes
+              <span>Yes</span>
             </label>
             <label htmlFor="weight-train-no">
               <input
@@ -241,7 +238,7 @@ Please provide a workout plan in the format of the JavaScript object array above
                 checked={!weightTraining}
                 onChange={() => setWeightTraining(false)}
               />
-              No
+              <span>No</span>
             </label>
           </fieldset>
 

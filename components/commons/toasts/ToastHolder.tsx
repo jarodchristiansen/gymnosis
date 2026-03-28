@@ -4,7 +4,6 @@ import { Col, Row, Toast } from "react-bootstrap";
 export type ToastHolderProps = {
   toggleShowA: () => void;
   showA: boolean;
-  setShowA: (value: boolean) => void;
   toastText?: string;
 };
 
