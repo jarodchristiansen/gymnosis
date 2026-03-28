@@ -8,9 +8,8 @@ import styled from "styled-components";
  * @returns Footer component below pages
  */
 const Footer = () => {
-  const routerToProfile = (manage: boolean) => {
-    void manage;
-    /* Wire session + navigation when profile routes are enabled */
+  const routerToProfile = (_manage: boolean) => {
+    /* Wire session + navigation when profile routes are enabled; use _manage for account vs profile */
   };
 
   return (

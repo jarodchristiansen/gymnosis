@@ -64,16 +64,7 @@ const SignInForm = ({ providers }) => {
         setToggleState={setIsSignIn}
       />
 
-      {isSignIn ? (
-        <>
-          {" "}
-          <h1 className="form-header">Sign In</h1>
-        </>
-      ) : (
-        <>
-          <h1 className="form-header">Sign Up</h1>
-        </>
-      )}
+      <h1 className="form-header">{isSignIn ? "Sign In" : "Sign Up"}</h1>
 
       {isSignIn ? (
         <>

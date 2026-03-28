@@ -13,22 +13,21 @@ const TimeButtons = ({
 }: TimeButtonsProps) => {
   return (
     <div>
-      {availTimes &&
-        availTimes.map((time) => (
-          <button
-            type="button"
-            key={time}
-            className={"standardized-button"}
-            onClick={() => {
-              setTimeQuery(time);
-              refetch({
-                time,
-              });
-            }}
-          >
-            -{time}-
-          </button>
-        ))}
+      {(availTimes ?? []).map((time) => (
+        <button
+          type="button"
+          key={time}
+          className={"standardized-button"}
+          onClick={() => {
+            setTimeQuery(time);
+            refetch({
+              time,
+            });
+          }}
+        >
+          -{time}-
+        </button>
+      ))}
     </div>
   );
 };

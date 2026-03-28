@@ -1,11 +1,11 @@
 import { BorderRadius, Colors, FontWeight } from "@/styles/variables";
-import React, { ChangeEvent, useEffect, useState } from "react";
+import type { ChangeEvent, Dispatch, SetStateAction } from "react";
 import styled from "styled-components";
 
 interface SearchFormProps {
   queryValue: string;
-  setQueryValue: React.Dispatch<React.SetStateAction<string>>;
-  filterAssets: (e?: React.ChangeEvent<HTMLFormElement>) => Promise<void>;
+  setQueryValue: Dispatch<SetStateAction<string>>;
+  filterAssets: (e?: ChangeEvent<HTMLFormElement>) => Promise<void>;
 }
 
 /**
@@ -20,7 +20,7 @@ const SearchForm = ({
   setQueryValue,
   filterAssets,
 }: SearchFormProps) => {
-  const handleSearch = (e: React.ChangeEvent<HTMLFormElement>) => {
+  const handleSearch = (e: ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     filterAssets(e);

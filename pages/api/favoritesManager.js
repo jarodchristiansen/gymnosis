@@ -8,38 +8,38 @@ import User from "../../db/models/user";
  * @returns
  */
 export default async function handler(request, response) {
-  if (request?.query?.SECRET === process.env.CRYPTO_COMPARE_KEY) {
-    let users = await User.find().catch((err) => new Error(err, "IN GET USER"));
-
-    let favoritesMap = {};
-
-    if (users) {
-      users.forEach((user) => {
-        for (let favorite of user.favorites) {
-          if (favoritesMap[favorite.title]) {
-            favoritesMap[favorite.title]++;
-          } else if (!favoritesMap[favorite.title]) {
-            favoritesMap[favorite.title] = 1;
-          }
-        }
-      });
-    }
-
-    for (const title of Object.keys(favoritesMap)) {
-      await Asset.findOneAndUpdate(
-        { name: title },
-        { favorite_count: favoritesMap[title] }
-      ).catch(() => undefined);
-    }
-
-    response.status(200).json({
-      body: "Sucess",
-    });
-  } else {
+  if (request?.query?.SECRET !== process.env.CRYPTO_COMPARE_KEY) {
     response.status(401).json({
       status: 401,
       message: "Unauthorized",
     });
     return;
   }
+
+  let users = await User.find().catch((err) => new Error(err, "IN GET USER"));
+
+  let favoritesMap = {};
+
+  if (users) {
+    users.forEach((user) => {
+      for (let favorite of user.favorites) {
+        if (favoritesMap[favorite.title]) {
+          favoritesMap[favorite.title]++;
+        } else if (!favoritesMap[favorite.title]) {
+          favoritesMap[favorite.title] = 1;
+        }
+      }
+    });
+  }
+
+  for (const title of Object.keys(favoritesMap)) {
+    await Asset.findOneAndUpdate(
+      { name: title },
+      { favorite_count: favoritesMap[title] }
+    ).catch(() => undefined);
+  }
+
+  response.status(200).json({
+    body: "Sucess",
+  });
 }
