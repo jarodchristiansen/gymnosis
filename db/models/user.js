@@ -29,10 +29,6 @@ const UsersSchema = new Schema({
     type: Date,
     default: Date.now(),
   },
-  favorites: {
-    type: [{ title: String, symbol: String, image: String }],
-    default: [],
-  },
   role: {
     type: String,
     enum: ["admin", "trainer", "client"],

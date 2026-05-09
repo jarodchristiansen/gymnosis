@@ -60,7 +60,6 @@ export const authOptions = {
     async session({ session, token, user }) {
       session.user.username = user.username;
       session.user.role = user.role;
-      session.user.favorites = user.favorites;
       session.user.facilities = user?.facilities || [];
       session.user.workoutHistory = user?.workoutHistory || [];
       session.user.id = user.id;

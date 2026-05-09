@@ -6,122 +6,56 @@ const FeatureGrid = () => {
     <GridContainer>
       <div className="features-grid">
         <div className="feature-card">
-          <span className="feature-icon">
-            {/* Add the corresponding icon here */}
-          </span>
-          <h4>Portfolio Tracking</h4>
+          <span className="feature-icon"></span>
+          <h4>AI Workout Planning</h4>
+          <p>Build personalized workout routines powered by AI.</p>
           <p>
-            Stay on top of your crypto investments with our intuitive portfolio
-            tracking feature.
+            Describe your goals and get a complete, structured plan in seconds.
           </p>
+          <p>Adapts to any fitness level, equipment, and schedule.</p>
+        </div>
+
+        <div className="feature-card">
+          <span className="feature-icon"></span>
+          <h4>Client Progress Tracking</h4>
+          <p>Monitor your clients&apos; progress with clear, visual metrics.</p>
+          <p>Log workout history and track improvements over time.</p>
           <p>
-            Monitor real-time prices, performance, and allocation across
-            multiple assets.
-          </p>
-          <p>
-            Visualize your portfolio growth and make data-driven decisions with
-            ease.
+            Keep every client motivated with transparent, data-driven results.
           </p>
         </div>
 
         <div className="feature-card">
-          <span className="feature-icon">
-            {/* Add the corresponding icon here */}
-          </span>
-          <h4>Comprehensive Metrics</h4>
-          <p>
-            Dive deep into financial and on-chain metrics to gain valuable
-            insights into crypto assets.
-          </p>
-          <p>
-            Analyze price movements, market capitalization, trading volume, and
-            more.
-          </p>
-          <p>
-            Evaluate token fundamentals and historical data to make informed
-            investment choices.
-          </p>
+          <span className="feature-icon"></span>
+          <h4>Trainer Dashboard</h4>
+          <p>Manage your schedule, clients, and routines from one place.</p>
+          <p>Get a bird&apos;s-eye view of your entire roster at a glance.</p>
+          <p>Spend less time on admin and more time coaching.</p>
         </div>
 
         <div className="feature-card">
-          <span className="feature-icon">
-            {/* Add the corresponding icon here */}
-          </span>
-          <h4>Social Community</h4>
-          <p>
-            Connect with a vibrant community of crypto enthusiasts and
-            investors.
-          </p>
-          <p>
-            Engage in discussions, share knowledge, and stay updated on the
-            latest trends.
-          </p>
-          <p>
-            Foster valuable connections, collaborate on projects, and explore
-            new opportunities.
-          </p>
+          <span className="feature-icon"></span>
+          <h4>Member Profiles</h4>
+          <p>Detailed profiles for every gym member.</p>
+          <p>Store fitness history, goals, and preferences in one place.</p>
+          <p>Personalize every member&apos;s experience from day one.</p>
         </div>
-
-        {/* Repeat the above structure for the remaining features */}
 
         <div className="feature-card">
-          <span className="feature-icon">
-            {/* Add the corresponding icon here */}
-          </span>
-          <h4>News and Updates</h4>
-          <p>
-            Access a curated feed of crypto news, articles, and market updates
-            in real-time.
-          </p>
-          <p>
-            Stay informed about industry developments, regulatory changes, and
-            market trends.
-          </p>
-          <p>
-            Get a holistic view of the crypto ecosystem and make informed
-            decisions based on the latest information.
-          </p>
+          <span className="feature-icon"></span>
+          <h4>Facility Management</h4>
+          <p>Keep your gym organized and running smoothly.</p>
+          <p>Track equipment, spaces, and operational details with ease.</p>
+          <p>Scale from a single studio to a multi-location operation.</p>
         </div>
-
-        {/* Repeat the above structure for the remaining features */}
 
         <div className="feature-card">
-          <span className="feature-icon">
-            {/* Add the corresponding icon here */}
-          </span>
-          <h4>User-friendly Interface</h4>
-          <p>
-            Enjoy a sleek and intuitive interface designed for seamless user
-            experience.
-          </p>
-          <p>
-            Navigate effortlessly through the apps features and access
-            information with ease.
-          </p>
-          <p>
-            Experience the power of crypto in a user-friendly environment that
-            simplifies complex concepts.
-          </p>
+          <span className="feature-icon"></span>
+          <h4>Secure &amp; Private</h4>
+          <p>Your data stays yours — secure by design.</p>
+          <p>Role-based access keeps sensitive information where it belongs.</p>
+          <p>Built with privacy best practices at every layer.</p>
         </div>
-
-        {/* Repeat the above structure for the remaining features */}
-
-        <div className="feature-card">
-          <span className="feature-icon">
-            {/* Add the corresponding icon here */}
-          </span>
-          <h4>Security and Privacy</h4>
-          <p>
-            Rest assured knowing that your data and assets are protected with
-            robust security measures.
-          </p>
-          <p>
-            Safeguard your privacy and maintain full control over your personal
-            information.
-          </p>
-        </div>
-
-        {/* Repeat the above structure for the remaining features */}
       </div>
     </GridContainer>
   );

@@ -95,88 +95,6 @@ export const UserResolver = {
       }
     },
 
-    getAssetPriceData: async (_, { tickers, exchange_data }) => {
-      if (!tickers) {
-        return [];
-      }
-      try {
-        const { public_key: publicKey, private_key: privateKey } =
-          exchange_data;
-
-        const ccxt = require("ccxt");
-
-        const exchange = new ccxt.coinbase({
-          apiKey: publicKey,
-          secret: privateKey,
-        });
-
-        const prices = await exchange.fetchTickers(tickers);
-        const assetArray = [];
-
-        if (prices) {
-          for (const i in prices) {
-            assetArray.push({ symbol: i, info: 1 / prices[i].info });
-          }
-        }
-
-        return assetArray;
-      } catch (err) {
-        console.error("getAssetPriceData", err);
-        throw new Error(err?.message || String(err));
-      }
-    },
-
-    getUserExchangeData: async (_, { input }) => {
-      const { public_key: publicKey, private_key: privateKey } = input;
-
-      const ccxt = require("ccxt");
-
-      try {
-        const exchange = new ccxt.coinbase({
-          apiKey: publicKey,
-          secret: privateKey,
-        });
-
-        let balance = {};
-        const tickers = [];
-
-        const list = await exchange.fetchBalance();
-
-        balance = Object.entries(list.free)
-          .filter((entry) => entry[1] > 0)
-          .map((entry) => {
-            tickers.push(`${entry[0]}/USD`);
-
-            return {
-              symbol: entry[0],
-              balance: entry[1],
-              ticker: `${entry[0]}/USD`,
-            };
-          });
-
-        const prices = await exchange.fetchTickers(tickers);
-        const assetArray = [];
-
-        if (prices) {
-          for (const i in prices) {
-            assetArray.push({
-              symbol: prices[i].symbol,
-              usd: 1 / prices[i].info,
-            });
-          }
-        }
-
-        const result = balance.map((asset) => ({
-          ...asset,
-          ...assetArray.find((price) => price.symbol === asset.ticker),
-        }));
-
-        return { balances: result };
-      } catch (err) {
-        throw new Error(err);
-      }
-    },
-
     getUser: async (_, { email, id }) => {
       let user;
 
@@ -190,13 +108,6 @@ export const UserResolver = {
           .catch((err) => new Error(err));
       }
 
-      if (user?.favorites) {
-        for (let idx = 0; idx < user.favorites.length; idx++) {
-          const i = user.favorites[idx];
-          i.id = idx;
-        }
-      }
-
       if (!user) {
         throw new Error("User not found");
       }
@@ -205,34 +116,6 @@ export const UserResolver = {
     },
   },
   mutations: {
-    removeFavorite: async (_, { input }) => {
-      const { asset, email } = input;
-
-      try {
-        const user = await User.findOne({ email });
-
-        if (user) {
-          if (
-            user.favorites.find(
-              (item) =>
-                item?.symbol?.toLowerCase() === asset.symbol.toLowerCase()
-            )
-          ) {
-            user.favorites = user.favorites.filter(function (item) {
-              return item?.symbol?.toLowerCase() !== asset.symbol.toLowerCase();
-            });
-
-            user.save();
-
-            return user;
-          }
-        }
-        return "user not found";
-      } catch (err) {
-        throw new Error("Error in removeFavorite!!", err);
-      }
-    },
-
     addWorkoutRoutine: async (_, { input }) => {
       const { id, routine } = input;
       try {
@@ -252,32 +135,6 @@ export const UserResolver = {
         throw new Error("User not found");
       } catch (err) {
         throw new Error("Error in addWorkoutRoutine: " + err.message);
-      }
-    },
-
-    addFavorite: async (_, { input }) => {
-      const { asset, email } = input;
-
-      try {
-        const user = await User.findOne({ email });
-
-        if (user) {
-          if (
-            user.favorites.find(
-              (item) =>
-                item?.symbol?.toLowerCase() === asset.symbol.toLowerCase()
-            )
-          ) {
-            return;
-          }
-          user.favorites.push(asset);
-
-          user.save();
-        }
-
-        return user;
-      } catch (err) {
-        throw new Error("Error in addFavorite!!", err);
       }
     },
 

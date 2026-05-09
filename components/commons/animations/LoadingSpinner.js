@@ -14,7 +14,7 @@ const LoadingSpinner = () => {
       <div className={"col"}>
         <motion.img
           data-testid={"loading-element"}
-          src={"/bitcoin_PNG48.png"}
+          src={"/assets/dumbbell.svg"}
           style={{
             height: "150px",
             width: "150px",

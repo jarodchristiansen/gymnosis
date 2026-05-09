@@ -9,11 +9,6 @@ export const GET_USER = gql`
       username
       image
       createAt
-      favorites {
-        title
-        symbol
-        image
-      }
     }
   }
 `;
@@ -28,24 +23,6 @@ export const GET_USERS = gql`
       image
       createAt
       role
-      favorites {
-        title
-        symbol
-        image
-      }
-    }
-  }
-`;
-
-export const GET_USER_HOLDINGS = gql`
-  query getUserExchangeData($input: UserExchangeInput) {
-    getUserExchangeData(input: $input) {
-      balances {
-        symbol
-        balance
-        ticker
-        usd
-      }
     }
   }
 `;

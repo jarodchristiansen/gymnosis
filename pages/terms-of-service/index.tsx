@@ -9,14 +9,14 @@ const TermsOfServicePage = () => {
       <span>
         These terms and conditions are the agreement between you as a
         &quot;User&quot; (also referred to herein as &quot;you&quot; and
-        &quot;your&quot;) of the website www.hodl-watch.vercel.app/ By accepting
+        &quot;your&quot;) of the website www.gymnosis.vercel.app/ By accepting
         these Terms and Conditions on the Websites by means of clicking the
         &quot;I accept&quot; button or another affirmatory action, you are
         consenting to these Terms and Conditions that may be amended from time
         to time as set forth herein. Please review our Privacy Notice located at
-        www.hodl-watch.vercel.app//privacy-notice, which is incorporated into
-        these Terms and Conditions by this reference and therefore an integral
-        part thereof.
+        www.gymnosis.vercel.app/privacy-notice, which is incorporated into these
+        Terms and Conditions by this reference and therefore an integral part
+        thereof.
       </span>
 
       <h3>Services</h3>
@@ -31,7 +31,7 @@ const TermsOfServicePage = () => {
         Services. It is a core part of our Services that our user community
         benefit from the overall trends (e.g. how many of our users have
         Bitcoins in their portfolio). By merging the Services of the Services
-        provided through the website www.hodl-watch.vercel.app/, and enabling a
+        provided through the website www.gymnosis.vercel.app/, and enabling a
         single sign on, we further extent our offerings and provide you with
         even better Services.
       </span>
@@ -299,7 +299,7 @@ const TermsOfServicePage = () => {
         your records, and you waive any other requirement that these Terms and
         Conditions be evidenced by a written document. These Terms and
         Conditions, together with the Privacy Notice at
-        www.hodl-watch.vercel.app/privacy-notice and any other legal notices
+        www.gymnosis.vercel.app/privacy-notice and any other legal notices
         published by us, constitute the entire agreement between you and us with
         regard to your use of the Service. Our failure to insist on or to
         enforce strict performance of these Terms and Conditions shall not be

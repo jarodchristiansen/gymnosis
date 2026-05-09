@@ -33,34 +33,34 @@ const CarouselMarkers = ({ slides, activeIndex }: CarouselMarkersProps) => {
 
 const CAROUSEL_SLIDES: Slide[] = [
   {
-    title: "Portfolio Tracking",
-    text: "Monitor real-time prices, performance, and allocation across multiple assets.",
-    image: "/assets/chartScreenshot.png",
-  },
-  {
-    title: "Comprehensive Metrics",
-    text: "Dive deep into financial and on-chain metrics to gain valuable insights into crypto assets.",
+    title: "AI Workout Planning",
+    text: "Build personalized workout routines powered by AI.",
     image: "/landing/growth-chart-icon.svg",
   },
   {
-    title: "Social Community",
-    text: "Connect with a vibrant community of crypto enthusiasts and investors.",
+    title: "Client Progress Tracking",
+    text: "Monitor your clients' progress with clear, visual metrics.",
+    image: "/landing/metrics.svg",
+  },
+  {
+    title: "Trainer Dashboard",
+    text: "Manage your schedule, clients, and routines from one place.",
+    image: "/landing/ui.svg",
+  },
+  {
+    title: "Member Profiles",
+    text: "Detailed profiles for every gym member.",
+    image: "/landing/avatar-icon.svg",
+  },
+  {
+    title: "Facility Management",
+    text: "Keep your gym organized and running smoothly.",
     image: "/landing/connected-icon.svg",
   },
   {
-    title: "News and Updates",
-    text: "Access a curated feed of crypto news, articles, and market updates in real-time.",
-    image: "/assets/chartScreenshot.png",
-  },
-  {
-    title: "User-friendly Interface",
-    text: "Enjoy a sleek and intuitive interface designed for seamless user experience.",
-    image: "/assets/chartScreenshot.png",
-  },
-  {
-    title: "Security and Privacy",
-    text: "Rest assured knowing that your data and assets are protected with robust security measures.",
-    image: "/landing/avatar-icon.svg",
+    title: "Secure & Private",
+    text: "Your data stays yours — secure by design.",
+    image: "/landing/security.svg",
   },
 ];
 
