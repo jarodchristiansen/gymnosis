@@ -6,7 +6,6 @@ import { useLazyQuery } from "@apollo/client";
 import { getSession, useSession } from "next-auth/react";
 import Head from "next/head";
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
@@ -50,36 +49,6 @@ const ProfilePage = () => {
     }
   }, [data?.getUser]);
 
-  const userFavoritesList = useMemo(() => {
-    if (!data?.getUser?.favorites) return [];
-
-    return data.getUser.favorites.map((favorite) => {
-      const href = `/assets/${favorite.symbol.toLowerCase()}?name=${encodeURIComponent(
-        favorite.title ?? ""
-      )}`;
-      const rowKey = `${favorite.symbol}-${favorite.title ?? "asset"}`;
-      return (
-        <div className="favorites-row" key={rowKey}>
-          <Link href={href} passHref legacyBehavior>
-            <FavoriteRowAnchor>
-              <Image
-                src={favorite.image}
-                height={50}
-                width={50}
-                alt=""
-                className="favorites-image"
-                unoptimized={true}
-              />
-              <h5>
-                {favorite.title}-{favorite.symbol}
-              </h5>
-            </FavoriteRowAnchor>
-          </Link>
-        </div>
-      );
-    });
-  }, [data?.getUser?.favorites]);
-
   const viewState = useMemo(() => {
     const raw = router.query?.view;
     if (!raw) return "Main";
@@ -94,12 +63,8 @@ const ProfilePage = () => {
     router.push(`/user/${id}?view=edit_user`);
   };
 
-  const routeToPortfolio = () => {
-    router.push(`/user/${id}?view=portfolio`);
-  };
-
   const redirectNonUser = useCallback(() => {
-    if (viewState === "edit_user" || viewState === "portfolio") {
+    if (viewState === "edit_user") {
       router.push("/");
     }
   }, [router, viewState]);
@@ -107,7 +72,6 @@ const ProfilePage = () => {
   const navLinks = [
     { name: "Profile", stateChanger: () => routeToMain() },
     { name: "Edit Account", stateChanger: () => routeEditUser() },
-    { name: "Portfolio", stateChanger: () => routeToPortfolio() },
   ];
 
   useEffect(() => {
@@ -140,13 +104,6 @@ const ProfilePage = () => {
                   onClick={routeEditUser}
                 >
                   Edit Profile
-                </button>
-                <button
-                  type="button"
-                  className="standardized-button"
-                  onClick={routeToPortfolio}
-                >
-                  View Portfolio
                 </button>
               </div>
 
@@ -185,17 +142,6 @@ const ProfilePage = () => {
                   </>
                 )}
               </UserDetailsCard>
-
-              {userFavoritesList.length > 0 ? (
-                <UserFavoritesList>
-                  <h4 className="header-text">Favorited Assets</h4>
-                  {userFavoritesList}
-                </UserFavoritesList>
-              ) : (
-                <UserFavoritesList>
-                  <h4 className="header-text">No Favorited Assets</h4>
-                </UserFavoritesList>
-              )}
             </>
           )}
 
@@ -209,36 +155,10 @@ const ProfilePage = () => {
                 >
                   View Profile
                 </button>
-                <button
-                  type="button"
-                  className="standardized-button"
-                  onClick={routeToPortfolio}
-                >
-                  View Portfolio
-                </button>
               </div>
 
               <EditUserDetails user={user} fetchedUser={data?.getUser} />
             </>
-          )}
-
-          {viewState === "portfolio" && isUsersProfile && (
-            <div className="switch-container">
-              <button
-                type="button"
-                className="standardized-button"
-                onClick={routeToMain}
-              >
-                View Profile
-              </button>
-              <button
-                type="button"
-                className="standardized-button"
-                onClick={routeEditUser}
-              >
-                Edit Profile
-              </button>
-            </div>
           )}
         </div>
       </CentralWrapper>
@@ -292,21 +212,6 @@ const CentralWrapper = styled.div`
   }
 `;
 
-const FavoriteRowAnchor = styled.a`
-  display: flex;
-  white-space: nowrap;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  text-decoration: none;
-  color: inherit;
-  cursor: pointer;
-
-  &:hover {
-    opacity: 0.85;
-  }
-`;
-
 const UserDetailsCard = styled.div`
   width: 100%;
   border: 2px solid black;
@@ -340,43 +245,6 @@ const UserDetailsCard = styled.div`
 
   @media ${MediaQueries.MD} {
     width: 30rem;
-  }
-`;
-
-const UserFavoritesList = styled.div`
-  width: 100%;
-  border: 2px solid black;
-  border-radius: 14px;
-  max-width: 30rem;
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  max-height: 40rem;
-  overflow-y: auto;
-  background-color: ${Colors.lightGray};
-
-  ::-webkit-scrollbar {
-    display: none;
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none;
-  }
-
-  .header-text {
-    text-align: center;
-    padding-bottom: 1rem;
-  }
-
-  .favorites-row {
-    display: flex;
-    white-space: nowrap;
-    justify-content: space-between;
-    padding: 1rem 1rem;
-    border-top: 1px solid black;
-
-    .favorites-image {
-      border-radius: 30px;
-      border: 1px solid gray;
-    }
   }
 `;
 

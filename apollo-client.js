@@ -16,20 +16,6 @@ const client = new ApolloClient({
     fetch,
   }),
   cache: new InMemoryCache(),
-  //     {
-  //   typePolicies: {
-  //     AssetFinancialDetails: {
-  //       fields: {
-  //         timeSeries: {
-  //           read(LunarAssetDetails = {}) {
-  //             // Return the cached name, transformed to upper case
-  //             return LunarAssetDetails;
-  //           },
-  //         },
-  //       },
-  //     },
-  //   },
-  // }
 });
 
 export default client;
