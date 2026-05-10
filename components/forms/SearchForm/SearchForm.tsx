@@ -52,8 +52,8 @@ const SearchForm = ({
 };
 
 const SubmitButton = styled.button`
-  background-color: ${Colors.elegant.accentPurple};
-  color: ${Colors.elegant.white};
+  background-color: ${Colors.brand.accent};
+  color: ${Colors.brand.white};
   font-weight: ${FontWeight.bold};
   border-radius: ${BorderRadius.small};
   border: 1px solid black;

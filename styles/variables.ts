@@ -1,27 +1,20 @@
 export const Colors = {
-  lightGray: "#f4f4f4",
-  midGray: "#597081",
-  darkGray: "#a9a9a9",
-  richBlack: "#171523",
-  midnight: "#080411",
+  // Semantic surface tokens
+  lightGray: "#f4f4f4", // near-white; used as body text on dark backgrounds
+  midGray: "#8A9FB0", // muted text on dark surfaces — passes WCAG AA
+  darkGray: "#a9a9a9", // borders, shadows
+  richBlack: "#0C0C0E", // primary dark background
+  midnight: "#0A0A0C", // deepest background / nav
+  surface: "#161618", // raised surface on dark backgrounds
 
-  modern: {
-    white: "#FFFFFC",
-    black: "#000000",
-    secondaryGray: "#4A4A4A",
-    accentBlue: "#0088FF",
-  },
-  fresh: {
-    white: "#FFFFFC",
-    secondaryAqua: "#83D0C9",
-    black: "#000000",
-    accentBlue: "#1F4F59",
-  },
-  elegant: {
-    white: "#FFFFFC",
-    black: "#000000",
-    secondaryGray: "#B7B7B7",
-    accentPurple: "#6B4CFF",
+  // Active brand palette — use for all new work
+  brand: {
+    accent: "#FF6B2B",
+    accentHover: "#E85A1A",
+    accentLight: "#FF9466",
+    white: "#FFFFFF",
+    muted: "#888888",
+    surface: "#161618",
   },
 };
 
@@ -43,14 +36,15 @@ export const FontSize = {
 };
 
 export const FontFamily = {
-  primary: "Arial",
-  secondary: "Helvetica",
-  tertiary: "Times New Roman",
+  display: '"Barlow Condensed", "Inter", system-ui, sans-serif',
+  primary: '"Inter", system-ui, -apple-system, sans-serif',
+  secondary: '"Inter", system-ui, -apple-system, sans-serif',
 };
 
 export const FontWeight = {
   light: "300",
   regular: "400",
+  semibold: "600",
   bold: "700",
 };
 

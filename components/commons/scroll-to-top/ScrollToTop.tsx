@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { FaArrowUp } from "react-icons/fa";
 import styled from "styled-components";
 
 interface ScrollToTopProps {
@@ -34,7 +35,7 @@ const ScrollToTop: React.FC<ScrollToTopProps> = ({ scrollThreshold = 100 }) => {
       aria-label="Scroll to top"
       style={{ opacity: showScrollButton ? 1 : 0 }}
     >
-      <i className="fas fa-arrow-up" />
+      <FaArrowUp aria-hidden="true" />
     </ScrollButton>
   );
 };

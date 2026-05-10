@@ -32,7 +32,7 @@ const ButtonContainer = styled.button<ButtonProps>`
   outline: none;
 
   background-color: ${(props) =>
-    props.primary ? Colors.modern.accentBlue : Colors.midnight};
+    props.primary ? Colors.brand.accent : Colors.midnight};
   color: ${Colors.lightGray};
 
   &:hover {

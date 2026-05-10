@@ -99,12 +99,12 @@ export const UserResolver = {
       let user;
 
       if (id) {
-        user = await User.find({ username: id })
-          .then((res) => res[0]?.toObject())
+        user = await User.findOne({ _id: id })
+          .then((res) => res?.toObject())
           .catch((err) => new Error(err));
       } else if (email) {
-        user = await User.find({ email })
-          .then((res) => res[0]?.toObject())
+        user = await User.findOne({ email })
+          .then((res) => res?.toObject())
           .catch((err) => new Error(err));
       }
 

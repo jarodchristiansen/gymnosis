@@ -2,7 +2,7 @@ html,
 body {
   padding: 0;
   margin: 0;
-  font-family: "Sarabun", sans-serif;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
 }
 
 a {
@@ -14,70 +14,24 @@ a {
   box-sizing: border-box;
 }
 
-.loading-spinner-background-image {
-  background-image: url("/public/vercel.svg");
-}
-
-/* chrome and chromium based */
+/* Horizontal scroll menu — hide scrollbar */
 .react-horizontal-scrolling-menu--scroll-container::-webkit-scrollbar {
   display: none;
 }
 
 .react-horizontal-scrolling-menu--scroll-container {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
-}
-
-.accordion-button:not(.collapsed)::after {
-  background-image: url("/Accordion/down-arrow.svg");
-  background-color: white;
-  -moz-transform: scaleY(-1);
-  -o-transform: scaleY(-1);
-  -webkit-transform: scaleY(-1);
-  transform: scaleY(-1);
-  filter: FlipV;
-  -ms-filter: "FlipV";
-}
-
-.accordion-button::after {
-  background-color: white;
-  background-image: url("/Accordion/down-arrow.svg");
-}
-
-.accordion-body:not(.collapsed) {
-  background-color: rgba(255, 255, 255, 0.9);
-}
-
-.accordion-button:not(.collapsed) {
-  background-color: #806cfe;
-  color: white;
-  font-weight: bold;
-}
-.accordion-button.collapsed {
-  background-color: #3b3274;
-  color: white;
-  font-weight: bold;
-}
-
-.accordion-container {
-  border-radius: 0.5rem;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .heading-text {
   font-size: 32px;
-  font-weight: "semibold";
+  font-weight: 600;
 }
 
 .body-text {
   font-size: 18px;
-  font-weight: normal;
-}
-
-.tradingview-widget-copyright {
-  display: none;
-}
-.screener {
-  max-width: 100%;
+  font-weight: 400;
 }
 
 .pointer-link {

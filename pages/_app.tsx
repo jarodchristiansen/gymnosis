@@ -11,8 +11,6 @@ import Script from "next/script";
 import { useEffect } from "react";
 
 import "../styles/globals.css";
-import "@fortawesome/fontawesome-free/css/all.css";
-import "bootstrap/dist/css/bootstrap.css";
 
 type AppPageProps = {
   session: Session | null;

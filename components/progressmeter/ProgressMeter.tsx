@@ -5,22 +5,22 @@ import styled from "styled-components";
 const STEPS = [
   {
     title: "Building",
-    description: "MVP development, and initial funding for Mesh.",
+    description: "MVP development and initial launch of Gymnosis.",
     completed: false,
   },
   {
     title: "Alpha release",
-    description: "The first version of Mesh will be released to the public.",
+    description: "The first version of Gymnosis released to early users.",
     completed: false,
   },
   {
     title: "Beta release",
-    description: "The second version of Mesh will be released to the public",
+    description: "The second version of Gymnosis with expanded features.",
     completed: false,
   },
   {
     title: "Main release",
-    description: "The final version of Mesh will be released to the public.",
+    description: "The full Gymnosis platform available to all trainers.",
     completed: false,
   },
 ] as const;
@@ -98,7 +98,7 @@ const StepMarker = styled.div`
 
 const StepTitle = styled.h4`
   margin: 0;
-  color: ${Colors.elegant.white};
+  color: ${Colors.brand.white};
 `;
 
 type ProgressMeterProps = {

@@ -5,32 +5,30 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
-import { Container, Nav, Navbar } from "react-bootstrap";
 import styled from "styled-components";
 
-/**
- *
- * @returns Header component above pages
- */
 function Header() {
   const { data: session } = useSession();
   const [selectedRoute, setSelectedRoute] = useState<string | number>("");
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const router = useRouter();
   const { asPath } = router;
 
-  const handleSignout = (e) => {
+  const handleSignout = (e: React.MouseEvent) => {
     e.preventDefault();
     setSelectedRoute("");
+    setMenuOpen(false);
     signOut();
   };
 
-  const handleSelect = (selectedKey) => {
-    setSelectedRoute(selectedKey);
+  const handleSelect = (key: string | number) => {
+    setSelectedRoute(key);
+    setMenuOpen(false);
   };
 
   // @ts-ignore: next-auth type issue v3
-  let id = session?.user?.id;
+  const id = session?.user?.id;
 
   type NavRoute = {
     key: number;
@@ -41,6 +39,8 @@ function Header() {
 
   const routes: NavRoute[] = useMemo(() => {
     return [
+      { key: 0, route: "/education", guarded: false, text: "Features" },
+      { key: 1, route: "/news", guarded: false, text: "News" },
       id && { key: 2, route: `/client/${id}`, guarded: false, text: "Profile" },
       // @ts-ignore: next-auth type issue v3
       checkIsAdmin(session?.user?.role) && {
@@ -72,130 +72,195 @@ function Header() {
     }
   }, [asPath, routes]);
 
-  const routeObjects = useMemo(() => {
+  const routeItems = useMemo(() => {
     if (!routes?.length) return [];
 
-    return routes.map((route, idx) => {
-      if (!route?.key) return;
+    return routes.map((route) => {
+      if (!route?.key) return null;
+
+      // const isGuardedAndAllowed = route.guarded && !!session;
+      // const isUnguarded = !route.guarded;
+
+      // if (!isGuardedAndAllowed && !isUnguarded) return null;
 
       return (
-        <div key={route?.route}>
-          {!!route.guarded && !!session && (
-            <TextContainer>
-              <Nav.Link href={route.route}>{route.text}</Nav.Link>
-              {selectedRoute == route.key && (
-                <span className="active-underline-span"></span>
-              )}
-            </TextContainer>
-          )}
-
-          {!route.guarded && (
-            <TextContainer>
-              <Nav.Link href={route.route}>{route.text}</Nav.Link>
-              {selectedRoute == route.key && (
-                <span className="active-underline-span"></span>
-              )}
-            </TextContainer>
-          )}
-        </div>
+        <NavItem key={route.route}>
+          <NavLink
+            href={route.route}
+            onClick={() => handleSelect(route.key)}
+            aria-current={selectedRoute === route.key ? "page" : undefined}
+          >
+            {route.text}
+          </NavLink>
+          {selectedRoute === route.key && <ActiveIndicator />}
+        </NavItem>
       );
     });
   }, [routes, selectedRoute, session]);
 
   return (
-    <Navbar
-      collapseOnSelect
-      expand="lg"
-      // bg="dark"
-      variant="dark"
-      onSelect={handleSelect}
-      className="navbar-main"
-      style={{
-        backgroundColor: Colors.midnight,
-        color: Colors.elegant.white,
-        position: "fixed",
-        width: "100vw",
-        zIndex: 1000,
-      }}
-    >
-      <Container>
-        <Navbar.Brand onClick={() => setSelectedRoute("")}>
-          <Link href={"/"} passHref legacyBehavior>
-            <Image
-              src={"/assets/dumbbell.svg"}
-              className={"pointer-link"}
-              height={50}
-              width={50}
-              alt="block-logo"
-            />
-          </Link>
-        </Navbar.Brand>
-        <Navbar.Toggle aria-controls="responsive-navbar-nav" />
-        <Navbar.Collapse id="responsive-navbar-nav">
-          <RouteRow>
-            {routeObjects}
-            {session && (
-              <TextContainer>
-                <SignOutNavButton
-                  type="button"
-                  onClick={handleSignout}
-                  className="pointer-link fw-bold"
-                >
-                  <SignOutSpan>Sign Out</SignOutSpan>
-                </SignOutNavButton>
-              </TextContainer>
-            )}
-          </RouteRow>
-        </Navbar.Collapse>
-      </Container>
-    </Navbar>
+    <NavBar role="navigation" aria-label="Main navigation">
+      <NavInner>
+        <BrandLink href="/" onClick={() => setSelectedRoute("")}>
+          <Image
+            src="/assets/dumbbell.svg"
+            height={40}
+            width={40}
+            alt="Gymnosis logo"
+          />
+          <BrandName>Gymnosis</BrandName>
+        </BrandLink>
+
+        <MobileToggle
+          type="button"
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={menuOpen}
+          aria-controls="nav-menu"
+          onClick={() => setMenuOpen((o) => !o)}
+        >
+          <HamburgerBar />
+          <HamburgerBar />
+          <HamburgerBar />
+        </MobileToggle>
+
+        <NavMenu id="nav-menu" open={menuOpen}>
+          {routeItems}
+          {session && (
+            <NavItem>
+              <SignOutButton type="button" onClick={handleSignout}>
+                Sign Out
+              </SignOutButton>
+            </NavItem>
+          )}
+        </NavMenu>
+      </NavInner>
+    </NavBar>
   );
 }
 
-const RouteRow = styled.div`
+const NavBar = styled.nav`
+  background-color: ${Colors.midnight};
+  color: ${Colors.brand.white};
+  position: fixed;
+  top: 0;
+  width: 100vw;
+  z-index: 1000;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+`;
+
+const NavInner = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 64px;
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const BrandLink = styled(Link)`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+`;
+
+const BrandName = styled.span`
+  font-size: 20px;
+  font-weight: 700;
+  color: ${Colors.brand.accent};
+  letter-spacing: -0.3px;
+`;
+
+const NavMenu = styled.div<{ open: boolean }>`
+  display: ${({ open }) => (open ? "flex" : "none")};
   flex-direction: column;
-  gap: 2rem;
-  font-weight: 600;
-  text-align: center;
-  padding: 12px 0;
+  position: absolute;
+  top: 64px;
+  left: 0;
+  right: 0;
+  background-color: ${Colors.midnight};
+  padding: 16px 24px 24px;
+  gap: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 
   @media ${MediaQueries.MD} {
+    display: flex;
     flex-direction: row;
-    width: 100%;
+    position: static;
+    background: none;
+    padding: 0;
+    gap: 4px;
+    border: none;
+    align-items: center;
   }
 `;
 
-const SignOutNavButton = styled.button`
+const NavItem = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+`;
+
+const NavLink = styled(Link)`
+  color: ${Colors.brand.white};
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  padding: 10px 14px;
+  border-radius: 6px;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.07);
+  }
+`;
+
+const ActiveIndicator = styled.span`
+  height: 2px;
+  background-color: ${Colors.brand.accent};
+  border-radius: 1px;
+  margin: 0 14px;
+`;
+
+const MobileToggle = styled.button`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
   background: none;
   border: none;
-  padding: 0;
-  font: inherit;
+  padding: 8px;
   cursor: pointer;
-  text-align: inherit;
-`;
-
-const SignOutSpan = styled.span`
-  color: ${Colors.elegant.white};
 
   @media ${MediaQueries.MD} {
-    white-space: nowrap;
+    display: none;
   }
 `;
 
-const TextContainer = styled.div`
-  display: flex;
-  flex-direction: column;
+const HamburgerBar = styled.span`
+  display: block;
+  width: 22px;
+  height: 2px;
+  background-color: ${Colors.brand.white};
+  border-radius: 1px;
+`;
 
-  a {
-    color: ${Colors.elegant.white};
-    font-weight: bold;
-    text-decoration: none;
-  }
+const SignOutButton = styled.button`
+  background: none;
+  border: none;
+  padding: 10px 14px;
+  font: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  color: ${Colors.brand.white};
+  cursor: pointer;
+  text-align: left;
+  border-radius: 6px;
+  transition: background-color 0.15s ease;
 
-  .active-underline-span {
-    height: 2px;
-    color: ${Colors.elegant.accentPurple};
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.07);
   }
 `;
 

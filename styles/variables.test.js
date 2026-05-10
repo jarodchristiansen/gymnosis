@@ -14,21 +14,15 @@ describe("Styles", () => {
   it("should have the correct color values", () => {
     expect(Colors.lightGray).toEqual("#f4f4f4");
     expect(Colors.darkGray).toEqual("#a9a9a9");
+    expect(Colors.midGray).toEqual("#8A9FB0");
+    expect(Colors.richBlack).toEqual("#0C0C0E");
+    expect(Colors.midnight).toEqual("#0A0A0C");
 
-    expect(Colors.modern.white).toEqual("#FFFFFC");
-    expect(Colors.modern.black).toEqual("#000000");
-    expect(Colors.modern.secondaryGray).toEqual("#4A4A4A");
-    expect(Colors.modern.accentBlue).toEqual("#0088FF");
-
-    expect(Colors.fresh.white).toEqual("#FFFFFC");
-    expect(Colors.fresh.secondaryAqua).toEqual("#83D0C9");
-    expect(Colors.fresh.black).toEqual("#000000");
-    expect(Colors.fresh.accentBlue).toEqual("#1F4F59");
-
-    expect(Colors.elegant.white).toEqual("#FFFFFC");
-    expect(Colors.elegant.black).toEqual("#000000");
-    expect(Colors.elegant.secondaryGray).toEqual("#B7B7B7");
-    expect(Colors.elegant.accentPurple).toEqual("#6B4CFF");
+    expect(Colors.brand.accent).toEqual("#FF6B2B");
+    expect(Colors.brand.accentHover).toEqual("#E85A1A");
+    expect(Colors.brand.accentLight).toEqual("#FF9466");
+    expect(Colors.brand.white).toEqual("#FFFFFF");
+    expect(Colors.brand.muted).toEqual("#888888");
   });
 
   it("should have the correct padding values", () => {
@@ -48,14 +42,18 @@ describe("Styles", () => {
   });
 
   it("should have the correct font family values", () => {
-    expect(FontFamily.primary).toEqual("Arial");
-    expect(FontFamily.secondary).toEqual("Helvetica");
-    expect(FontFamily.tertiary).toEqual("Times New Roman");
+    expect(FontFamily.display).toEqual(
+      '"Barlow Condensed", "Inter", system-ui, sans-serif'
+    );
+    expect(FontFamily.primary).toEqual(
+      '"Inter", system-ui, -apple-system, sans-serif'
+    );
   });
 
   it("should have the correct font weight values", () => {
     expect(FontWeight.light).toEqual("300");
     expect(FontWeight.regular).toEqual("400");
+    expect(FontWeight.semibold).toEqual("600");
     expect(FontWeight.bold).toEqual("700");
   });
 

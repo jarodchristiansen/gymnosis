@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import styled from "styled-components";
 
 interface ScrollIndicatorProps {
@@ -63,7 +64,7 @@ const ScrollIndicator: React.FC<ScrollIndicatorProps> = ({ containerRef }) => {
           onMouseUp={stopScroll}
           onMouseLeave={stopScroll}
         >
-          <i className="fas fa-chevron-left" />
+          <FaChevronLeft aria-hidden="true" />
         </ScrollButton>
       ) : null}
       {scrollState === "both" || scrollState === "right" ? (
@@ -72,7 +73,7 @@ const ScrollIndicator: React.FC<ScrollIndicatorProps> = ({ containerRef }) => {
           onMouseUp={stopScroll}
           onMouseLeave={stopScroll}
         >
-          <i className="fas fa-chevron-right" />
+          <FaChevronRight aria-hidden="true" />
         </ScrollButton>
       ) : null}
     </ScrollIndicatorContainer>
