@@ -146,7 +146,7 @@ const IconActionButton = styled.button`
   background: none;
   border: none;
   cursor: pointer;
-  color: ${Colors.elegant.accentPurple};
+  color: ${Colors.brand.accent};
   text-decoration: underline;
   font: inherit;
 `;

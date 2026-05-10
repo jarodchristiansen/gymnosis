@@ -86,7 +86,7 @@ const GridContainer = styled.div`
   }
 
   .feature-card {
-    background-color: ${Colors.elegant.white};
+    background-color: ${Colors.brand.white};
     border: 2px solid ${Colors.darkGray};
     padding: 16px;
     border-radius: 12px;

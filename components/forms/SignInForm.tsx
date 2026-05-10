@@ -1,249 +1,359 @@
-import { Colors, MediaQueries } from "@/styles/variables";
+import { Colors, BorderRadius, FontSize, FontWeight } from "@/styles/variables";
 import { signIn } from "next-auth/react";
-import Link from "next/link";
+import type { ClientSafeProvider } from "next-auth/react";
 import { useRouter } from "next/router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 
-import ToggleSwitch from "../commons/switchers/toggle-switch";
 import ProviderContainer from "./ProviderContainer/ProviderContainer";
 
-/**
- *
- * @param providers: Sign In Providers github etc.
- * @returns Sign In/Sign Up Forms
- */
-const SignInForm = ({ providers }) => {
+const ERROR_MESSAGES: Record<string, string> = {
+  OAuthAccountNotLinked:
+    "This email is already linked to a different sign-in method.",
+  OAuthSignin: "Could not connect to the provider. Please try again.",
+  OAuthCallback: "Something went wrong during sign-in. Please try again.",
+  CredentialsSignin: "Incorrect email or password.",
+  SessionRequired: "You must be signed in to access that page.",
+  Default: "An unexpected error occurred. Please try again.",
+};
+
+type Tab = "signin" | "signup";
+
+interface SignInFormProps {
+  providers: Record<string, ClientSafeProvider> | null;
+  initialTab?: Tab;
+}
+
+const SignInForm = ({ providers, initialTab = "signin" }: SignInFormProps) => {
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [credError, setCredError] = useState<string | null>(null);
+  const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
 
-  const [isSignIn, setIsSignIn] = useState(router.query.path === "SignIn");
-  const [isSubmitDisabled, setIsSubmitDisabled] = useState(true);
+  const isFirstRender = useRef(true);
 
-  const handleSignInSubmit = async (e: React.ChangeEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const oauthError =
+    typeof router.query.error === "string"
+      ? ERROR_MESSAGES[router.query.error] ?? ERROR_MESSAGES.Default
+      : null;
 
-    await signIn("credentials", {
-      email,
-      password,
-    });
+  const errorMessage = credError ?? oauthError;
+
+  // Sync URL to tab state — only on user-initiated tab changes, not on mount
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    const path = activeTab === "signin" ? "SignIn" : "SignUp";
+    router.replace(`/auth?path=${path}`, undefined, { shallow: true });
+  }, [activeTab]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleTabChange = (tab: Tab) => {
+    setCredError(null);
+    setActiveTab(tab);
   };
 
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name } = e.target;
+  const handleCredentialsSubmit = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
+    e.preventDefault();
+    setCredError(null);
+    setIsSubmitting(true);
 
-    if (name) {
-      switch (name) {
-        case "email":
-          setEmail(e.target.value);
-          break;
-        case "password":
-          setPassword(e.target.value);
-          break;
-        case "passwordConfirm":
-          break;
-        default:
-          break;
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setCredError(
+          ERROR_MESSAGES[result.error] ?? ERROR_MESSAGES.CredentialsSignin
+        );
+      } else if (result?.ok) {
+        router.push("/");
       }
+    } catch {
+      setCredError("Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  useEffect(() => {
-    isSignIn
-      ? router.push("/auth?path=SignIn")
-      : router.push("/auth?path=SignUp");
-  }, [isSignIn, router]);
+  const handleOAuthSignIn = async (providerId: string) => {
+    setCredError(null);
+    setLoadingProvider(providerId);
+    try {
+      await signIn(providerId, { redirect: true, callbackUrl: "/" });
+    } catch {
+      setLoadingProvider(null);
+    }
+  };
 
   return (
-    <FormStyling onSubmit={handleSignInSubmit}>
-      <ToggleSwitch
-        label={"Sign In"}
-        label2={"Sign Up"}
-        toggleState={isSignIn}
-        setToggleState={setIsSignIn}
-      />
+    <FormCard>
+      <TabRow>
+        <TabButton
+          type="button"
+          active={activeTab === "signin"}
+          onClick={() => handleTabChange("signin")}
+        >
+          Sign In
+          {activeTab === "signin" && <TabUnderline />}
+        </TabButton>
+        <TabButton
+          type="button"
+          active={activeTab === "signup"}
+          onClick={() => handleTabChange("signup")}
+        >
+          Sign Up
+          {activeTab === "signup" && <TabUnderline />}
+        </TabButton>
+      </TabRow>
 
-      <h1 className="form-header">{isSignIn ? "Sign In" : "Sign Up"}</h1>
+      <FormBody>
+        {errorMessage && <ErrorBanner role="alert">{errorMessage}</ErrorBanner>}
 
-      {isSignIn ? (
-        <>
-          <div className="input-container">
-            <label htmlFor="exampleInputEmail1" className="form-label">
-              Email Address
-            </label>
-            <StyledInput
-              name={"email"}
-              type="email"
-              className="form-control"
-              id="exampleInputEmail1"
-              aria-describedby="emailHelp"
-              onChange={handleFormChange}
-              autoComplete={"true"}
+        {activeTab === "signin" && (
+          <>
+            <CredentialsForm onSubmit={handleCredentialsSubmit} noValidate>
+              <FieldGroup>
+                <FieldLabel htmlFor="signin-email">Email</FieldLabel>
+                <FieldInput
+                  id="signin-email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </FieldGroup>
+
+              <FieldGroup>
+                <FieldLabel htmlFor="signin-password">Password</FieldLabel>
+                <FieldInput
+                  id="signin-password"
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </FieldGroup>
+
+              <SubmitButton
+                type="submit"
+                disabled={isSubmitting || !email || !password}
+              >
+                {isSubmitting ? <Spinner /> : "Sign In"}
+              </SubmitButton>
+            </CredentialsForm>
+
+            <Divider>
+              <DividerLine />
+              <DividerText>or continue with</DividerText>
+              <DividerLine />
+            </Divider>
+
+            <ProviderContainer
+              providers={providers}
+              loadingProvider={loadingProvider}
+              onSignIn={handleOAuthSignIn}
             />
-          </div>
-          <div className="input-container">
-            <label htmlFor="exampleInputPassword1" className="form-label">
-              Password
-            </label>
-            <StyledInput
-              name={"password"}
-              type="password"
-              className="form-control"
-              id="exampleInputPassword1"
-              onChange={handleFormChange}
-              autoComplete={"true"}
+          </>
+        )}
+
+        {activeTab === "signup" && (
+          <>
+            <SignUpNote>
+              Create your account by signing in with a provider below. If
+              it&apos;s your first time, an account is automatically created.
+            </SignUpNote>
+
+            <ProviderContainer
+              providers={providers}
+              loadingProvider={loadingProvider}
+              onSignIn={handleOAuthSignIn}
             />
-          </div>
-        </>
-      ) : (
-        <>
-          <div className="input-container">
-            <label htmlFor="exampleInputEmail1" className="form-label">
-              Email Address
-            </label>
-            <StyledInput
-              name={"email"}
-              type="email"
-              className="form-control"
-              id="exampleInputEmail1"
-              aria-describedby="emailHelp"
-              onChange={handleFormChange}
-              autoComplete={"false"}
-            />
-          </div>
-          <div className="input-container">
-            <label htmlFor="exampleInputPassword1" className="form-label">
-              Password
-            </label>
-            <StyledInput
-              name={"password"}
-              type="password"
-              className="form-control"
-              id="exampleInputPassword1"
-              onChange={handleFormChange}
-              autoComplete={"false"}
-            />
-          </div>
-
-          <div className="input-container">
-            <label htmlFor="confirmPasswordInput" className="form-label">
-              Confirm Password
-            </label>
-            <StyledInput
-              name={"passwordConfirm"}
-              type="password"
-              className="form-control"
-              id="confirmPasswordInput"
-              onChange={handleFormChange}
-              autoComplete={"false"}
-            />
-          </div>
-        </>
-      )}
-
-      <CheckMarkContainer>
-        <input
-          type="checkbox"
-          className="form-check-input"
-          id="exampleCheck1"
-          onChange={() => setIsSubmitDisabled(!isSubmitDisabled)}
-        />
-
-        <label className="form-check-label" htmlFor="exampleCheck1">
-          <span>You agree to our </span>
-          <Link href="/terms-of-service" className="term-text">
-            Terms of Service
-          </Link>
-        </label>
-      </CheckMarkContainer>
-
-      <ProviderWrapper>
-        <h6>Sign in with:</h6>
-
-        <span className="provider-note">
-          Note: Signing in with providers for the first time also creates
-          account
-        </span>
-
-        <ProviderContainer
-          providers={providers}
-          isSubmitDisabled={isSubmitDisabled}
-        />
-      </ProviderWrapper>
-    </FormStyling>
+          </>
+        )}
+      </FormBody>
+    </FormCard>
   );
 };
 
-const CheckMarkContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  gap: 1rem;
-  text-align: center;
-  justify-content: center;
-  padding-top: 1rem;
-  align-items: center;
+// ─── Styled Components ────────────────────────────────────────────────────────
 
-  .term-text {
-    color: blue;
-    text-decoration: underline;
-  }
-
-  .form-check-input {
-    cursor: pointer;
-    border: 2px solid black;
-    padding: 0.5rem;
-
-    :checked {
-      color: ${Colors.elegant.accentPurple};
-    }
-  }
-`;
-
-const ProviderWrapper = styled.div`
-  padding-top: 2rem;
-
-  .provider-note {
-    font-size: 14px;
-    color: gray;
-  }
-`;
-
-const StyledInput = styled.input`
-  border: 2px solid gray;
-  border-radius: 12px;
-  color: gray;
-  font-weight: 500;
-  padding: 0.5rem;
-
-  ::placeholder {
-    color: gray;
-    font-weight: 500;
-  }
-`;
-
-const FormStyling = styled.form`
+const FormCard = styled.div`
   width: 100%;
+`;
+
+const TabRow = styled.div`
+  display: flex;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+`;
+
+const TabButton = styled.button<{ active: boolean }>`
+  position: relative;
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 16px 0;
+  font-size: ${FontSize.medium};
+  font-weight: ${FontWeight.semibold};
+  color: ${({ active }) => (active ? Colors.brand.white : Colors.brand.muted)};
+  cursor: pointer;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: ${Colors.brand.white};
+  }
+`;
+
+const TabUnderline = styled.span`
+  position: absolute;
+  bottom: -1px;
+  left: 16px;
+  right: 16px;
+  height: 2px;
+  background-color: ${Colors.brand.accent};
+  border-radius: 1px;
+`;
+
+const FormBody = styled.div`
+  padding: 28px 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+`;
+
+const ErrorBanner = styled.div`
+  background-color: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: ${BorderRadius.medium};
+  color: #fca5a5;
+  font-size: 13px;
+  padding: 10px 14px;
+  line-height: 1.5;
+`;
+
+const CredentialsForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+const FieldGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+
+const FieldLabel = styled.label`
+  font-size: 13px;
+  font-weight: ${FontWeight.semibold};
+  color: ${Colors.midGray};
+`;
+
+const FieldInput = styled.input`
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: ${BorderRadius.medium};
+  color: ${Colors.brand.white};
+  font-size: ${FontSize.medium};
+  padding: 10px 14px;
+  width: 100%;
+  transition: border-color 0.15s ease;
+
+  &::placeholder {
+    color: ${Colors.brand.muted};
+  }
+
+  &:focus {
+    outline: none;
+    border-color: ${Colors.brand.accent};
+  }
+
+  &:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 30px ${Colors.surface} inset;
+    -webkit-text-fill-color: ${Colors.brand.white};
+  }
+`;
+
+const SubmitButton = styled.button`
+  background-color: ${Colors.brand.accent};
+  color: ${Colors.brand.white};
+  border: none;
+  border-radius: ${BorderRadius.medium};
+  font-size: ${FontSize.medium};
+  font-weight: ${FontWeight.semibold};
+  padding: 11px 0;
+  width: 100%;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+
+  &:hover:not(:disabled) {
+    background-color: ${Colors.brand.accentHover};
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+`;
+
+const Divider = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const DividerLine = styled.div`
+  flex: 1;
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.08);
+`;
+
+const DividerText = styled.span`
+  font-size: 12px;
+  color: ${Colors.brand.muted};
+  white-space: nowrap;
+`;
+
+const SignUpNote = styled.p`
+  font-size: 14px;
+  color: ${Colors.midGray};
+  line-height: 1.6;
+  margin: 0;
   text-align: center;
-  padding: 2rem;
-  border-radius: 14px;
-  box-shadow: 0px 4px 8px gray;
-  border: 1px solid black;
-  background-color: white;
+`;
 
-  .form-header {
-    padding: 2rem 0;
-  }
+const Spinner = styled.span`
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: ${Colors.brand.white};
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
 
-  .input-container {
-    max-width: 28rem;
-    margin: 0.5rem auto;
-  }
-
-  @media ${MediaQueries.MD} {
-    min-width: 35rem;
-    border-radius: unset;
-    box-shadow: unset;
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
   }
 `;
 

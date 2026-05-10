@@ -1,5 +1,6 @@
 import { Colors, MediaQueries } from "@/styles/variables";
 import Image from "next/image";
+import { FaBars, FaTimes } from "react-icons/fa";
 import styled from "styled-components";
 
 interface SidebarProps {
@@ -22,7 +23,7 @@ const SidebarV2 = ({ open, setOpen, view, setPageView }: SidebarProps) => {
         aria-expanded={open}
         onClick={() => setOpen?.(!open)}
       >
-        {open ? <i className="fas fa-times" /> : <i className="fas fa-bars" />}
+        {open ? <FaTimes aria-hidden="true" /> : <FaBars aria-hidden="true" />}
       </ToggleIcon>
       <SidebarContent>
         {open && (
@@ -111,7 +112,7 @@ const SidebarContainer = styled.div<SidebarProps>`
   /* z-index: 100; */
 
   .selected {
-    background-color: ${Colors.fresh.accentBlue};
+    background-color: ${Colors.brand.accent};
   }
 
   @media ${MediaQueries.MD} {
@@ -141,7 +142,7 @@ const ToggleIcon = styled.button`
     height: 60px;
     cursor: pointer;
     font-size: 20px;
-    background-color: ${Colors.elegant.white};
+    background-color: ${Colors.brand.white};
     margin: 18px auto;
   }
 `;
@@ -161,7 +162,7 @@ const SidebarContent = styled.div`
 const MenuItem = styled.button`
   padding: 24px 8px;
   cursor: pointer;
-  color: ${Colors.elegant.white};
+  color: ${Colors.brand.white};
   background: none;
   border: none;
   font: inherit;
@@ -172,7 +173,7 @@ const MenuItem = styled.button`
   }
 
   &:hover {
-    background-color: ${Colors.fresh.accentBlue};
+    background-color: ${Colors.brand.accent};
   }
 `;
 

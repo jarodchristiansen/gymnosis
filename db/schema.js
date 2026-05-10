@@ -11,6 +11,12 @@ const typeDefs = gql`
     image: String
     createAt: Date
     role: String
+    workoutHistory: [WorkoutHistoryEntry]
+  }
+
+  type WorkoutHistoryEntry {
+    date: Date
+    routine: [WorkoutRoutine]
   }
 
   input UsernameInput {

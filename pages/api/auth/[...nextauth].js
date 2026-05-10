@@ -1,9 +1,10 @@
 import { MongoDBAdapter } from "@next-auth/mongodb-adapter";
+import bcrypt from "bcryptjs";
 import NextAuth from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
 import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
-// import AppleProvider from "next-auth/providers/apple"
-// import EmailProvider from "next-auth/providers/email"
+import connectDb from "../../../db/config";
 import User from "../../../db/models/user";
 import clientPromise from "../../../lib/mongodb";
 
@@ -18,28 +19,60 @@ function makeid(length) {
   return result;
 }
 
-// For more information on each option (and a full list of options) go to
-// https://next-auth.js.org/configuration/options
 export const authOptions = {
-  // https://next-auth.js.org/configuration/providers/oauth
   adapter: MongoDBAdapter(clientPromise),
   providers: [
-    /* EmailProvider({
-         server: process.env.EMAIL_SERVER,
-         from: process.env.EMAIL_FROM,
-       }),
-    // Temporarily removing the Apple provider from the demo site as the
-    // callback URL for it needs updating due to Vercel changing domains
-    Providers.Apple({
-      clientId: process.env.APPLE_ID,
-      clientSecret: {
-        appleId: process.env.APPLE_ID,
-        teamId: process.env.APPLE_TEAM_ID,
-        privateKey: process.env.APPLE_PRIVATE_KEY,
-        keyId: process.env.APPLE_KEY_ID,
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          console.log("[auth] authorize: missing email or password");
+          return null;
+        }
+
+        try {
+          await connectDb();
+
+          const user = await User.findOne({ email: credentials.email }).select(
+            "+password"
+          );
+
+          console.log(
+            "[auth] authorize: user found =",
+            !!user,
+            "| has password =",
+            !!user?.password
+          );
+
+          if (!user?.password) return null;
+
+          const isValid = await bcrypt.compare(
+            credentials.password,
+            user.password
+          );
+
+          console.log("[auth] authorize: bcrypt isValid =", isValid);
+
+          if (!isValid) return null;
+
+          return {
+            id: user._id.toString(),
+            email: user.email,
+            name: user.name,
+            image: user.image,
+            role: user.role,
+            username: user.username,
+          };
+        } catch (err) {
+          console.error("[auth] authorize error:", err);
+          return null;
+        }
       },
     }),
-    */
     GithubProvider({
       clientId: process.env.GITHUB_ID,
       clientSecret: process.env.GITHUB_SECRET,
@@ -49,54 +82,58 @@ export const authOptions = {
       clientSecret: process.env.GOOGLE_SECRET,
     }),
   ],
+  session: {
+    strategy: "jwt",
+  },
   theme: {
-    colorScheme: "light",
+    colorScheme: "dark",
   },
   callbacks: {
-    async jwt({ token }) {
-      token.userRole = token.role || "client"; // Default role
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.role = user.role || "client";
+        token.username = user.username;
+      }
       return token;
     },
     async session({ session, token, user }) {
-      session.user.username = user.username;
-      session.user.role = user.role;
+      // JWT strategy: user object not available — read from token
+      // Database strategy (OAuth): user object is available
+      if (token) {
+        session.user.id = token.id || user?.id;
+        session.user.role = token.role || user?.role || "client";
+        session.user.username = token.username || user?.username;
+      } else if (user) {
+        session.user.id = user.id;
+        session.user.role = user.role || "client";
+        session.user.username = user.username;
+      }
       session.user.facilities = user?.facilities || [];
       session.user.workoutHistory = user?.workoutHistory || [];
-      session.user.id = user.id;
       return session;
     },
-    async signIn({ user, account, profile, email, credentials }) {
-      let userEmail = user?.email;
-      let existingUser = await User.findOne({ email: userEmail });
+    async signIn({ user, account }) {
+      // Only run DB logic for OAuth providers (credentials handled in authorize)
+      if (account?.type === "credentials") return true;
+
+      const existingUser = await User.findOne({ email: user?.email });
 
       if (existingUser) {
-        user.facilities = user?.facilities || []; // Initialize facilities array
-        user.workoutHistory = user?.workoutHistory || []; // Initialize workout history
-
-        // Handle role-specific logic here
-        // if (user.role === "trainer") {
-        //   // Add logic for trainers here
-        // } else if (user.role === "client") {
-        //   // Add logic for clients here
-        // }
-
-        if (!existingUser?.username) {
-          let newId = makeid(12).toString() + "!@$";
-          existingUser.username = newId;
+        if (!existingUser.username) {
+          existingUser.username = makeid(12) + "!@$";
           await existingUser.save();
         }
-      } else if (!existingUser) {
+      } else {
         user.role = "client";
-        user.facilities = []; // Initialize facilities array
-        user.workoutHistory = []; // Initialize workout history
-
-        return true;
+        user.facilities = [];
+        user.workoutHistory = [];
       }
 
-      return user;
+      return true;
     },
   },
-  secret: "PLACE-HERE-ANY-STRING",
+  secret: process.env.NEXTAUTH_SECRET || "PLACE-HERE-ANY-STRING",
   pages: {
     signIn: "/auth",
   },

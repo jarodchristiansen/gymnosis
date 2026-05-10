@@ -1,15 +1,28 @@
+import { Colors } from "@/styles/variables";
 import { useState } from "react";
 import styled from "styled-components";
 import RoutineBuilder from "./RoutineBuilder";
 import WorkoutGoalForm from "./WorkoutGoalForm";
 
-const WorkoutBuilder = ({ id }) => {
+interface WorkoutBuilderProps {
+  clientId: string;
+}
+
+const WorkoutBuilder = ({ clientId }: WorkoutBuilderProps) => {
   const [formIsOpen, setFormIsOpen] = useState(true);
   const [aiWorkoutData, setAiWorkoutData] = useState(null);
 
   return (
     <WorkoutBuilderContainer>
-      <h2>Client Goal</h2>
+      <BuilderHeader>
+        <BuilderTitle>Build a Workout Plan</BuilderTitle>
+        {formIsOpen && (
+          <StepIndicator>Step 1 of 2 &mdash; Client details</StepIndicator>
+        )}
+        {!formIsOpen && (
+          <StepIndicator>Step 2 of 2 &mdash; Review &amp; save</StepIndicator>
+        )}
+      </BuilderHeader>
 
       {formIsOpen && !aiWorkoutData && (
         <WorkoutGoalForm
@@ -18,7 +31,9 @@ const WorkoutBuilder = ({ id }) => {
         />
       )}
 
-      {!formIsOpen && <RoutineBuilder aiWorkoutData={aiWorkoutData} id={id} />}
+      {!formIsOpen && (
+        <RoutineBuilder aiWorkoutData={aiWorkoutData} clientId={clientId} />
+      )}
     </WorkoutBuilderContainer>
   );
 };
@@ -26,7 +41,26 @@ const WorkoutBuilder = ({ id }) => {
 const WorkoutBuilderContainer = styled.div`
   display: flex;
   flex-direction: column;
-  border: 2px solid black;
+  gap: 24px;
+`;
+
+const BuilderHeader = styled.div`
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+`;
+
+const BuilderTitle = styled.h2`
+  font-size: 20px;
+  font-weight: 700;
+  color: ${Colors.brand.white};
+  margin: 0;
+`;
+
+const StepIndicator = styled.span`
+  font-size: 12px;
+  color: ${Colors.midGray};
 `;
 
 export default WorkoutBuilder;
