@@ -1,110 +1,75 @@
 import { Colors, FontFamily, MediaQueries } from "@/styles/variables";
 import Image from "next/image";
 import Link from "next/link";
-import { FaFacebook, FaInstagram, FaTwitter } from "react-icons/fa";
 import styled from "styled-components";
 
-const Footer = () => {
-  return (
-    <FooterContainer>
-      <FooterInner>
-        {/* Brand block */}
-        <BrandBlock>
-          <BrandRow>
-            <Image
-              src="/assets/dumbbell.svg"
-              height={28}
-              width={28}
-              alt="Gymnosis logo"
-            />
-            <BrandName>Gymnosis</BrandName>
-          </BrandRow>
-          <BrandTagline>
-            Gym management built for professional trainers.
-          </BrandTagline>
-          <SocialRow>
-            <SocialLink
-              href="https://instagram.com/gymnosis"
-              aria-label="Gymnosis on Instagram"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <FaInstagram size={20} />
-            </SocialLink>
-            <SocialLink
-              href="https://facebook.com/gymnosis"
-              aria-label="Gymnosis on Facebook"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <FaFacebook size={20} />
-            </SocialLink>
-            <SocialLink
-              href="https://twitter.com/gymnosis"
-              aria-label="Gymnosis on Twitter"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <FaTwitter size={20} />
-            </SocialLink>
-          </SocialRow>
-        </BrandBlock>
+const Footer = () => (
+  <FooterContainer>
+    <FooterInner>
+      <BrandBlock>
+        <BrandRow>
+          <Image src="/assets/dumbbell.svg" height={24} width={24} alt="" />
+          <BrandName>Gymnosis</BrandName>
+        </BrandRow>
+        <BrandTagline>
+          AI drafts the workout plan. Safety rules check it. A trainer signs it
+          off.
+        </BrandTagline>
+        <Credit>
+          A portfolio project by{" "}
+          <a href="https://jarod-christiansen.vercel.app">Jarod Christiansen</a>
+          .
+        </Credit>
+      </BrandBlock>
 
-        {/* Link columns */}
-        <LinksBlock>
-          <LinkColumn>
-            <ColumnHeading>Product</ColumnHeading>
-            <FooterLink href="/education">Features</FooterLink>
-            <FooterLink href="/education">Documentation</FooterLink>
-            <FooterLink href="/news">Newsfeed</FooterLink>
-          </LinkColumn>
-          <LinkColumn>
-            <ColumnHeading>Company</ColumnHeading>
-            <FooterLink href="/terms-of-service">Terms of Service</FooterLink>
-          </LinkColumn>
-          <LinkColumn>
-            <ColumnHeading>Account</ColumnHeading>
-            <FooterLink href="/auth?path=SignUp">Get Started</FooterLink>
-            <FooterLink href="/auth?path=SignIn">Sign In</FooterLink>
-          </LinkColumn>
-        </LinksBlock>
-      </FooterInner>
-
-      <FooterBottom>
-        <span>© {new Date().getFullYear()} Gymnosis. All rights reserved.</span>
-      </FooterBottom>
-    </FooterContainer>
-  );
-};
+      <LinksBlock aria-label="Footer">
+        <LinkColumn>
+          <ColumnHeading>Product</ColumnHeading>
+          <FooterLink href="/education">Features</FooterLink>
+          <FooterLink href="/#demo">Try the demo</FooterLink>
+        </LinkColumn>
+        <LinkColumn>
+          <ColumnHeading>Account</ColumnHeading>
+          <FooterLink href="/auth?path=SignIn">Sign in</FooterLink>
+        </LinkColumn>
+        <LinkColumn>
+          <ColumnHeading>About</ColumnHeading>
+          <FooterExternal href="https://github.com/jarodchristiansen/gymnosis">
+            Source on GitHub
+          </FooterExternal>
+          <FooterLink href="/terms-of-service">About and terms</FooterLink>
+        </LinkColumn>
+      </LinksBlock>
+    </FooterInner>
+  </FooterContainer>
+);
 
 const FooterContainer = styled.footer`
-  width: 100%;
   background: ${Colors.midnight};
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  color: ${Colors.brand.white};
+  border-top: 1px solid ${Colors.rule};
+  color: ${Colors.midGray};
 `;
 
 const FooterInner = styled.div`
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 56px 32px 40px;
+  padding: 48px 16px;
   display: flex;
   flex-direction: column;
-  gap: 48px;
+  gap: 40px;
 
   @media ${MediaQueries.MD} {
     flex-direction: row;
     justify-content: space-between;
-    align-items: flex-start;
-    gap: 64px;
+    padding: 56px 24px;
   }
 `;
 
 const BrandBlock = styled.div`
+  max-width: 340px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  max-width: 240px;
 `;
 
 const BrandRow = styled.div`
@@ -114,83 +79,76 @@ const BrandRow = styled.div`
 `;
 
 const BrandName = styled.span`
-  font-family: ${FontFamily.primary};
-  font-size: 18px;
+  font-family: ${FontFamily.display};
+  font-size: 22px;
   font-weight: 700;
-  color: ${Colors.brand.accent};
-  letter-spacing: -0.3px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: ${Colors.lightGray};
 `;
 
 const BrandTagline = styled.p`
-  font-size: 13px;
-  color: ${Colors.midGray};
-  line-height: 1.5;
   margin: 0;
+  font-size: 15px;
+  color: ${Colors.lightGray};
 `;
 
-const SocialRow = styled.div`
-  display: flex;
-  gap: 16px;
-  padding-top: 4px;
-`;
+const Credit = styled.p`
+  margin: 0;
+  font-size: 14px;
 
-const SocialLink = styled.a`
-  color: ${Colors.midGray};
-  transition: color 0.2s ease;
-
-  &:hover {
-    color: ${Colors.brand.accent};
+  a {
+    color: ${Colors.brand.accentLight};
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 `;
 
-const LinksBlock = styled.div`
-  display: flex;
-  gap: 48px;
-  flex-wrap: wrap;
+const LinksBlock = styled.nav`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px;
 
   @media ${MediaQueries.MD} {
-    gap: 64px;
-    flex-wrap: nowrap;
+    grid-template-columns: repeat(3, auto);
+    gap: 56px;
   }
 `;
 
 const LinkColumn = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 4px;
 `;
 
 const ColumnHeading = styled.span`
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  color: ${Colors.brand.accent};
   margin-bottom: 4px;
+  font-family: ${FontFamily.display};
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: ${Colors.midGray};
+`;
+
+const linkStyles = `
+  display: inline-block;
+  padding: 6px 0;
+  font-size: 15px;
+  color: ${Colors.lightGray};
+  text-decoration: none;
+
+  &:hover {
+    color: ${Colors.brand.accentLight};
+  }
 `;
 
 const FooterLink = styled(Link)`
-  font-size: 14px;
-  color: ${Colors.midGray};
-  text-decoration: none;
-  transition: color 0.2s ease;
-
-  &:hover {
-    color: ${Colors.brand.white};
-  }
+  ${linkStyles}
 `;
 
-const FooterBottom = styled.div`
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 20px 32px;
-  max-width: 1100px;
-  margin: 0 auto;
-  width: 100%;
-
-  span {
-    font-size: 12px;
-    color: ${Colors.midGray};
-  }
+const FooterExternal = styled.a`
+  ${linkStyles}
 `;
 
 export default Footer;

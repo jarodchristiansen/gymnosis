@@ -1,4 +1,5 @@
 import { Colors, MediaQueries } from "@/styles/variables";
+import { Button } from "@/components/ui";
 import { useMemo, useRef, useState } from "react";
 import styled from "styled-components";
 import type { PlanDay } from "./types";
@@ -229,17 +230,13 @@ const PlanEditor = ({ days, onSave, saving }: PlanEditorProps) => {
 
       <Footer>
         {draft.length < MAX_DAYS && (
-          <SecondaryButton type="button" onClick={addDay}>
+          <Button variant="secondary" type="button" onClick={addDay}>
             Add a day
-          </SecondaryButton>
+          </Button>
         )}
-        <PrimaryButton
-          type="button"
-          onClick={handleSave}
-          disabled={!dirty || saving}
-        >
+        <Button type="button" onClick={handleSave} disabled={!dirty || saving}>
           {saving ? "Saving…" : dirty ? "Save changes" : "Saved"}
-        </PrimaryButton>
+        </Button>
         {problem && <Problem role="alert">{problem}</Problem>}
       </Footer>
     </Editor>
@@ -353,41 +350,6 @@ const Footer = styled.div`
   flex-wrap: wrap;
   align-items: center;
   gap: 12px;
-`;
-
-export const PrimaryButton = styled.button`
-  padding: 10px 18px;
-  border-radius: 8px;
-  border: none;
-  background: ${Colors.brand.accent};
-  color: ${Colors.richBlack};
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-
-  &:hover:not(:disabled) {
-    background: ${Colors.brand.accentHover};
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  &:focus-visible {
-    outline: 2px solid ${Colors.brand.white};
-    outline-offset: 2px;
-  }
-`;
-
-export const SecondaryButton = styled(PrimaryButton)`
-  background: transparent;
-  color: ${Colors.brand.white};
-  border: 1px solid rgba(255, 255, 255, 0.2);
-
-  &:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.06);
-  }
 `;
 
 const Hint = styled.p`

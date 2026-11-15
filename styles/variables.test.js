@@ -12,17 +12,14 @@ import {
 
 describe("Styles", () => {
   it("should have the correct color values", () => {
-    expect(Colors.lightGray).toEqual("#f4f4f4");
-    expect(Colors.darkGray).toEqual("#a9a9a9");
-    expect(Colors.midGray).toEqual("#8A9FB0");
-    expect(Colors.richBlack).toEqual("#0C0C0E");
-    expect(Colors.midnight).toEqual("#0A0A0C");
+    expect(Colors.lightGray).toEqual("#F2EEE8");
+    expect(Colors.midGray).toEqual("#A8A29A");
+    expect(Colors.richBlack).toEqual("#0F0F10");
+    expect(Colors.surface).toEqual("#1B1A19");
 
     expect(Colors.brand.accent).toEqual("#FF6B2B");
-    expect(Colors.brand.accentHover).toEqual("#E85A1A");
-    expect(Colors.brand.accentLight).toEqual("#FF9466");
-    expect(Colors.brand.white).toEqual("#FFFFFF");
-    expect(Colors.brand.muted).toEqual("#888888");
+    expect(Colors.ink).toEqual("#0F0F10");
+    expect(Colors.flag.block).toEqual("#FF8A7A");
   });
 
   it("should have the correct padding values", () => {
@@ -43,10 +40,10 @@ describe("Styles", () => {
 
   it("should have the correct font family values", () => {
     expect(FontFamily.display).toEqual(
-      '"Barlow Condensed", "Inter", system-ui, sans-serif'
+      '"Barlow Condensed", "Arial Narrow", system-ui, sans-serif'
     );
     expect(FontFamily.primary).toEqual(
-      '"Inter", system-ui, -apple-system, sans-serif'
+      '"Inter Variable", system-ui, -apple-system, sans-serif'
     );
   });
 

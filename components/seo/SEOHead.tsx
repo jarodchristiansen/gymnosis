@@ -8,8 +8,10 @@ interface SEOHeadProps {
   previewImage?: string;
 }
 
-const DEFAULT_META_TITLE = "Gymnosis: Gym Management Software";
-const DEFAULT_META_DESCRIPTION = "Gymnosis: Gym Management Software";
+const DEFAULT_META_TITLE =
+  "Gymnosis: AI-drafted, trainer-approved workout plans";
+const DEFAULT_META_DESCRIPTION =
+  "AI drafts the workout plan, safety rules check it, and a trainer signs it off before the client sees it.";
 
 const SEOHead = ({
   isHomePage = false,

@@ -1,9 +1,7 @@
 import FlagList from "@/components/plans/FlagList";
 import PlanDays from "@/components/plans/PlanDays";
-import PlanEditor, {
-  PrimaryButton,
-  SecondaryButton,
-} from "@/components/plans/PlanEditor";
+import PlanEditor from "@/components/plans/PlanEditor";
+import { Button } from "@/components/ui";
 import PlanTimeline from "@/components/plans/PlanTimeline";
 import StatusBadge from "@/components/plans/StatusBadge";
 import {
@@ -173,7 +171,7 @@ const PlanPage = () => {
                     ))}
                   </Problems>
                 )}
-                <PrimaryButton
+                <Button
                   type="button"
                   disabled={!ready || approving}
                   onClick={() =>
@@ -181,7 +179,7 @@ const PlanPage = () => {
                   }
                 >
                   Approve plan
-                </PrimaryButton>
+                </Button>
               </>
             )}
 
@@ -192,7 +190,7 @@ const PlanPage = () => {
                   you&apos;re ready, or reopen it to make changes.
                 </p>
                 <ButtonRow>
-                  <PrimaryButton
+                  <Button
                     type="button"
                     disabled={delivering}
                     onClick={() =>
@@ -203,14 +201,15 @@ const PlanPage = () => {
                     }
                   >
                     Send to client
-                  </PrimaryButton>
-                  <SecondaryButton
+                  </Button>
+                  <Button
+                    variant="secondary"
                     type="button"
                     onClick={() => setReopening((v) => !v)}
                     aria-expanded={reopening}
                   >
                     Reopen for edits
-                  </SecondaryButton>
+                  </Button>
                 </ButtonRow>
                 {reopening && (
                   <form
@@ -231,12 +230,13 @@ const PlanPage = () => {
                         onChange={(e) => setReopenNote(e.target.value)}
                         required
                       />
-                      <SecondaryButton
+                      <Button
+                        variant="secondary"
                         type="submit"
                         disabled={reopeningBusy || !reopenNote.trim()}
                       >
                         Reopen
-                      </SecondaryButton>
+                      </Button>
                     </NoteRow>
                   </form>
                 )}

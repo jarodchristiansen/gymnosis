@@ -1,20 +1,29 @@
+// "Coach's clipboard": paper-white ink on a near-black board, graphite sheets for plans, safety
+// orange for the one thing to do next, and pencil marks (red, amber) reserved for safety flags.
+// Every text colour here passes WCAG AA on every surface below.
 export const Colors = {
-  // Semantic surface tokens
-  lightGray: "#f4f4f4", // near-white; used as body text on dark backgrounds
-  midGray: "#8A9FB0", // muted text on dark surfaces — passes WCAG AA
-  darkGray: "#a9a9a9", // borders, shadows
-  richBlack: "#0C0C0E", // primary dark background
-  midnight: "#0A0A0C", // deepest background / nav
-  surface: "#161618", // raised surface on dark backgrounds
+  lightGray: "#F2EEE8", // paper white: body text on dark surfaces
+  midGray: "#A8A29A", // muted warm gray: secondary text, AA on all surfaces
+  darkGray: "#57534E", // borders and hairlines only, never text
+  richBlack: "#0F0F10", // page background
+  midnight: "#0A0A0B", // navigation, deepest background
+  surface: "#1B1A19", // sheets: plan cards, panels
 
-  // Active brand palette — use for all new work
   brand: {
-    accent: "#FF6B2B",
-    accentHover: "#E85A1A",
-    accentLight: "#FF9466",
+    accent: "#FF6B2B", // primary actions; always with ink text, never white
+    accentHover: "#FF8547",
+    accentLight: "#FF9F70", // links and accents on dark, AA as text
     white: "#FFFFFF",
-    muted: "#888888",
-    surface: "#161618",
+    muted: "#A8A29A",
+    surface: "#1B1A19",
+  },
+
+  ink: "#0F0F10", // text on accent
+  rule: "rgba(242, 238, 232, 0.09)", // ruled lines on sheets
+  flag: {
+    block: "#FF8A7A", // red pencil: blocks approval
+    warn: "#F2C14E", // highlighter: worth a look
+    ok: "#86D9A0", // approved, delivered
   },
 };
 
@@ -36,9 +45,9 @@ export const FontSize = {
 };
 
 export const FontFamily = {
-  display: '"Barlow Condensed", "Inter", system-ui, sans-serif',
-  primary: '"Inter", system-ui, -apple-system, sans-serif',
-  secondary: '"Inter", system-ui, -apple-system, sans-serif',
+  display: '"Barlow Condensed", "Arial Narrow", system-ui, sans-serif',
+  primary: '"Inter Variable", system-ui, -apple-system, sans-serif',
+  secondary: '"Inter Variable", system-ui, -apple-system, sans-serif',
 };
 
 export const FontWeight = {

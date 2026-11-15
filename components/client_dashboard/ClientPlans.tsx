@@ -1,4 +1,4 @@
-import { PrimaryButton } from "@/components/plans/PlanEditor";
+import { Button } from "@/components/ui";
 import PlanDays from "@/components/plans/PlanDays";
 import StatusBadge from "@/components/plans/StatusBadge";
 import { formatDate, type Plan } from "@/components/plans/types";
@@ -39,9 +39,9 @@ const ClientPlans = ({
             : "Your trainer hasn't sent you a plan yet. It will show up here once they do."}
         </Muted>
         {isStaff && onBuildWorkout && (
-          <PrimaryButton type="button" onClick={onBuildWorkout}>
+          <Button type="button" onClick={onBuildWorkout}>
             Start a plan
-          </PrimaryButton>
+          </Button>
         )}
       </Empty>
     );
@@ -81,9 +81,9 @@ const ClientPlans = ({
           {plans.length} {plans.length === 1 ? "plan" : "plans"}
         </h3>
         {onBuildWorkout && (
-          <PrimaryButton type="button" onClick={onBuildWorkout}>
+          <Button type="button" onClick={onBuildWorkout}>
             Start a plan
-          </PrimaryButton>
+          </Button>
         )}
       </Heading>
       <List>

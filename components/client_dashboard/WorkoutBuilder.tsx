@@ -1,4 +1,4 @@
-import { SecondaryButton } from "@/components/plans/PlanEditor";
+import { Button } from "@/components/ui";
 import { errorMessage } from "@/components/plans/types";
 import { CREATE_MANUAL_PLAN, DRAFT_PLAN } from "@/helpers/mutations/plans";
 import { Colors } from "@/styles/variables";
@@ -44,13 +44,14 @@ const WorkoutBuilder = ({ clientId }: WorkoutBuilderProps) => {
         <BuilderTitle>Start a workout plan</BuilderTitle>
         <ManualRow>
           <span>Rather write it yourself?</span>
-          <SecondaryButton
+          <Button
+            variant="secondary"
             type="button"
             onClick={handleManual}
             disabled={creating}
           >
             Start from scratch
-          </SecondaryButton>
+          </Button>
         </ManualRow>
         {manualError && <Problem role="alert">{manualError}</Problem>}
       </BuilderHeader>
