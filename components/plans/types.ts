@@ -49,7 +49,7 @@ export interface Plan {
   client?: Person | null;
   trainer?: Person | null;
   source: {
-    kind: "ai" | "manual" | "legacy";
+    kind: "ai" | "manual" | "legacy" | "seed";
     model?: string | null;
     promptVersion?: string | null;
     draftFailed: boolean;

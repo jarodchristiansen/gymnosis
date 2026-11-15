@@ -61,7 +61,12 @@ const PlanSchema = new Schema(
     version: { type: Number, default: 1 },
     days: [DaySchema],
     source: {
-      kind: { type: String, enum: ["ai", "manual", "legacy"], required: true },
+      // seed: example plans in a demo gym, written for the demo rather than drafted by the AI.
+      kind: {
+        type: String,
+        enum: ["ai", "manual", "legacy", "seed"],
+        required: true,
+      },
       model: String,
       promptVersion: String,
       questionnaire: Schema.Types.Mixed,

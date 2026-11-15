@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import styled from "styled-components";
 
+import DemoLauncher from "../components/demo/DemoLauncher";
 import SignInForm from "../components/forms/SignInForm";
 import SEOHead from "../components/seo/SEOHead";
 
@@ -40,6 +41,10 @@ const AuthPage = ({ providers, initialTab }: AuthPageProps) => {
         <CardWrapper>
           <SignInForm providers={providers} initialTab={initialTab} />
         </CardWrapper>
+        <DemoSection aria-labelledby="demo-heading">
+          <h2 id="demo-heading">Or look around first</h2>
+          <DemoLauncher />
+        </DemoSection>
 
         <FooterNote>
           By continuing you agree to our{" "}
@@ -49,6 +54,19 @@ const AuthPage = ({ providers, initialTab }: AuthPageProps) => {
     </PageWrapper>
   );
 };
+
+const DemoSection = styled.section`
+  width: 100%;
+  max-width: 420px;
+  margin-top: 24px;
+
+  h2 {
+    margin: 0 0 12px;
+    font-size: 15px;
+    color: ${Colors.lightGray};
+    text-align: center;
+  }
+`;
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const providers = await getProviders();

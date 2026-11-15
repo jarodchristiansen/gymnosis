@@ -34,6 +34,7 @@ const SOURCE_LABELS = {
   ai: "AI draft",
   manual: "Written by hand",
   legacy: "Saved before review states",
+  seed: "Example plan in the demo gym",
 };
 
 const PlanPage = () => {

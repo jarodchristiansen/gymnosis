@@ -1,5 +1,5 @@
+import DemoLauncher from "@/components/demo/DemoLauncher";
 import { Colors, FontFamily, MediaQueries } from "@/styles/variables";
-import { useRouter } from "next/router";
 import React from "react";
 import styled from "styled-components";
 
@@ -39,53 +39,23 @@ const Description = styled.p`
   margin: 0 auto;
 `;
 
-const CTAButton = styled.button`
-  padding: 16px 40px;
-  font-size: 17px;
-  font-weight: 700;
-  background-color: ${Colors.brand.accent};
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease,
-    box-shadow 0.2s ease;
-  width: 240px;
-  align-self: center;
-  box-shadow: 0 0 28px rgba(255, 107, 43, 0.4);
-
-  &:hover {
-    background-color: ${Colors.brand.accentHover};
-    transform: translateY(-2px);
-    box-shadow: 0 0 44px rgba(255, 107, 43, 0.55);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-`;
-
-const NoCreditCard = styled.p`
-  font-size: 12px;
-  color: ${Colors.midGray};
-  margin: -8px 0 0;
-  letter-spacing: 0.3px;
+const DemoWrap = styled.div`
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: left;
 `;
 
 const CTACard: React.FC = () => {
-  const router = useRouter();
-
   return (
     <CallToActionContainer>
       <Title>Try Gymnosis.</Title>
       <Description>
-        Create an account with Google or GitHub. New accounts start as clients;
-        a one-click demo as a trainer, client, or gym owner is on the way.
+        Step into a demo gym as a trainer, a client, or the owner. No sign-up.
       </Description>
-      <CTAButton onClick={() => router.push("/auth?path=SignUp")}>
-        Create an account
-      </CTAButton>
-      <NoCreditCard>Free · No card needed</NoCreditCard>
+      <DemoWrap>
+        <DemoLauncher />
+      </DemoWrap>
     </CallToActionContainer>
   );
 };
