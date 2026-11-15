@@ -38,7 +38,6 @@ Gymnosis is a portfolio project. No gyms use it, and the numbers on the site des
 | Database      | MongoDB (Mongoose)                                            |
 | AI            | Groq, OpenAI-compatible API (`openai/gpt-oss-120b` by default) |
 | Testing       | Jest, React Testing Library                                   |
-| Component dev | Storybook                                                     |
 | Code quality  | ESLint, Prettier, Husky pre-commit hooks                      |
 | CI            | GitHub Actions, Codecov                                       |
 | Deployment    | Vercel                                                        |
@@ -52,7 +51,8 @@ Gymnosis is a portfolio project. No gyms use it, and the numbers on the site des
 - `lib/workoutDraft.js` owns the AI call: questionnaire validation, the prompt, the JSON schema, and the checks on the reply.
 - `lib/safetyRules.js` is the rules engine; `lib/planLifecycle.js` the transitions and approval checks; `lib/planDays.js` validation and diffs. All three are pure and unit-tested.
 - `lib/rateLimit.js` is a fixed-window limit stored in MongoDB, so it holds across serverless instances.
-- `components/` are developed in Storybook; `client_types/` is generated from the schema, and a test validates every client operation against it.
+- `components/ui` holds the design system's primitives (buttons, sheets, stamps, headings) and `styles/variables.ts` its colour tokens; every text colour pairing passes WCAG AA, and a test checks them. Fonts (Barlow Condensed, Inter) are self-hosted through Fontsource.
+- `client_types/` is generated from the schema, and a test validates every client operation against it.
 
 **Human-in-the-loop AI.** The AI writes drafts and nothing else. A draft can't reach a client until a trainer has resolved its blocking flags, approved it, and sent it, and the plan's history shows who did each step.
 
@@ -99,7 +99,6 @@ npm test             # unit and component tests, with coverage
 npm run eval         # score AI drafts against the fixtures (needs GROQ_API_KEY)
 npm run check-types  # TypeScript
 npm run check-lint   # ESLint
-npm run storybook    # components in isolation
 ```
 
 ---
