@@ -14,16 +14,6 @@ a {
   box-sizing: border-box;
 }
 
-/* Horizontal scroll menu — hide scrollbar */
-.react-horizontal-scrolling-menu--scroll-container::-webkit-scrollbar {
-  display: none;
-}
-
-.react-horizontal-scrolling-menu--scroll-container {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
 .heading-text {
   font-size: 32px;
   font-weight: 600;
