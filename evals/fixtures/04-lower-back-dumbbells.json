@@ -1,0 +1,16 @@
+{
+  "description": "Dumbbells at home and a lower back injury: no barbells, machines, or deadlifts.",
+  "input": {
+    "goal": "bulking",
+    "weightLbs": 170,
+    "heightInches": 69,
+    "age": 51,
+    "activityLevel": "moderately active",
+    "sports": [],
+    "weightTraining": true,
+    "sessionsPerWeek": 3,
+    "experience": "intermediate",
+    "equipment": "dumbbells only",
+    "injuries": ["lower back"]
+  }
+}

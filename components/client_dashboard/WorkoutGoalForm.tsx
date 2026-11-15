@@ -1,6 +1,4 @@
-import { DRAFT_WORKOUT } from "@/helpers/mutations/user";
 import { Colors, MediaQueries } from "@/styles/variables";
-import { useMutation } from "@apollo/client";
 import { useState } from "react";
 import styled, { keyframes } from "styled-components";
 
@@ -9,6 +7,13 @@ const SPORTS_OPTIONS = [
   { value: "swimming", label: "Swimming" },
   { value: "cycling", label: "Cycling" },
   { value: "weightlifting", label: "Weightlifting" },
+];
+
+const INJURY_OPTIONS = [
+  { value: "knee", label: "Knee" },
+  { value: "lower back", label: "Lower back" },
+  { value: "shoulder", label: "Shoulder" },
+  { value: "wrist", label: "Wrist" },
 ];
 
 const GOAL_OPTIONS = [
@@ -29,15 +34,31 @@ const GOAL_OPTIONS = [
   },
 ];
 
-interface WorkoutGoalFormProps {
-  setFormIsOpen: (open: boolean) => void;
-  setAiWorkoutData: (data: unknown) => void;
+export interface WorkoutGoalInput {
+  goal: string;
+  weightLbs: number;
+  heightInches: number;
+  age: number;
+  activityLevel: string;
+  sports: string[];
+  weightTraining: boolean;
+  sessionsPerWeek: number;
+  experience: string;
+  equipment: string;
+  injuries: string[];
 }
 
-const WorkoutGoalForm = ({
-  setFormIsOpen,
-  setAiWorkoutData,
-}: WorkoutGoalFormProps) => {
+interface WorkoutGoalFormProps {
+  // Resolves when the draft exists; rejects with the message to show.
+  onSubmit: (input: WorkoutGoalInput) => Promise<void>;
+  isGenerating: boolean;
+}
+
+/**
+ * The client questionnaire. The server builds the prompt from these fields; nothing free-form
+ * goes to the model.
+ */
+const WorkoutGoalForm = ({ onSubmit, isGenerating }: WorkoutGoalFormProps) => {
   const [clientGoal, setClientGoal] = useState("");
   const [clientWeight, setClientWeight] = useState("");
   const [clientHeight, setClientHeight] = useState("");
@@ -46,14 +67,23 @@ const WorkoutGoalForm = ({
   const [sports, setSports] = useState<string[]>([]);
   const [weightTraining, setWeightTraining] = useState(false);
   const [weightTrainingFrequency, setWeightTrainingFrequency] = useState("");
+  const [experience, setExperience] = useState("");
+  const [equipment, setEquipment] = useState("");
+  const [injuries, setInjuries] = useState<string[]>([]);
 
   const [error, setError] = useState("");
-
-  const [draftWorkout, { loading: isGenerating }] = useMutation(DRAFT_WORKOUT);
 
   const handleSportToggle = (sport: string) => {
     setSports((prev) =>
       prev.includes(sport) ? prev.filter((s) => s !== sport) : [...prev, sport]
+    );
+  };
+
+  const handleInjuryToggle = (injury: string) => {
+    setInjuries((prev) =>
+      prev.includes(injury)
+        ? prev.filter((i) => i !== injury)
+        : [...prev, injury]
     );
   };
 
@@ -66,27 +96,20 @@ const WorkoutGoalForm = ({
       return;
     }
 
-    // The server builds the prompt from these fields; nothing free-form goes to the model.
     try {
-      const { data } = await draftWorkout({
-        variables: {
-          input: {
-            goal: clientGoal,
-            weightLbs: Number(clientWeight),
-            heightInches: Number(clientHeight),
-            age: Number(clientAge),
-            activityLevel,
-            sports,
-            weightTraining,
-            sessionsPerWeek: Number(weightTrainingFrequency),
-          },
-        },
+      await onSubmit({
+        goal: clientGoal,
+        weightLbs: Number(clientWeight),
+        heightInches: Number(clientHeight),
+        age: Number(clientAge),
+        activityLevel,
+        sports,
+        weightTraining,
+        sessionsPerWeek: Number(weightTrainingFrequency),
+        experience,
+        equipment,
+        injuries,
       });
-
-      if (data?.draftWorkout?.days) {
-        setAiWorkoutData(data.draftWorkout.days);
-        setFormIsOpen(false);
-      }
     } catch (err) {
       setError(
         err?.graphQLErrors?.[0]?.message ??
@@ -100,8 +123,8 @@ const WorkoutGoalForm = ({
       <FormIntro>
         <FormTitle>Client Profile</FormTitle>
         <FormSubtitle>
-          Provide your client&apos;s details to generate a personalized
-          AI-powered workout plan.
+          Answer a few questions about the client. AI drafts a week of training,
+          and you review it before the client sees anything.
         </FormSubtitle>
       </FormIntro>
 
@@ -271,13 +294,65 @@ const WorkoutGoalForm = ({
           </FieldGroup>
         </TrainingGrid>
 
+        <Divider />
+        <SectionHeading>Safety</SectionHeading>
+        <FieldGrid>
+          <FieldGroup>
+            <FieldLabel htmlFor="experience">Training experience</FieldLabel>
+            <FieldSelect
+              id="experience"
+              value={experience}
+              onChange={(e) => setExperience(e.target.value)}
+              required
+            >
+              <option value="">Select experience</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </FieldSelect>
+          </FieldGroup>
+          <FieldGroup>
+            <FieldLabel htmlFor="equipment">Equipment available</FieldLabel>
+            <FieldSelect
+              id="equipment"
+              value={equipment}
+              onChange={(e) => setEquipment(e.target.value)}
+              required
+            >
+              <option value="">Select equipment</option>
+              <option value="full gym">Full gym</option>
+              <option value="dumbbells only">Dumbbells only</option>
+              <option value="bodyweight only">Bodyweight only</option>
+            </FieldSelect>
+          </FieldGroup>
+        </FieldGrid>
+        <FieldGroup>
+          <FieldLabel as="span" id="injuries-label">
+            Injuries to work around
+            <FieldHint>Select any that apply</FieldHint>
+          </FieldLabel>
+          <SportsGrid role="group" aria-labelledby="injuries-label">
+            {INJURY_OPTIONS.map(({ value, label }) => (
+              <SportChip
+                key={value}
+                selected={injuries.includes(value)}
+                aria-pressed={injuries.includes(value)}
+                type="button"
+                onClick={() => handleInjuryToggle(value)}
+              >
+                {label}
+              </SportChip>
+            ))}
+          </SportsGrid>
+        </FieldGroup>
+
         <SubmitArea>
           {error && <FormError role="alert">{error}</FormError>}
           <GenerateButton type="submit" disabled={isGenerating}>
             {isGenerating ? (
               <>
                 <SpinnerIcon />
-                Generating your plan&hellip;
+                Drafting the plan&hellip;
               </>
             ) : (
               <>
@@ -291,14 +366,14 @@ const WorkoutGoalForm = ({
                 >
                   <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
                 </svg>
-                Generate Workout Plan
+                Draft a plan
               </>
             )}
           </GenerateButton>
           <AiHint>
             {isGenerating
-              ? "AI is building a personalized plan — this usually takes 10–20 seconds."
-              : "AI will create a fully personalized plan based on these details."}
+              ? "Drafting can take up to half a minute."
+              : "You'll check the draft and its safety flags before anything reaches the client."}
           </AiHint>
         </SubmitArea>
       </StyledForm>

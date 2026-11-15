@@ -1,26 +1,9 @@
-import { checkIsAdminOrTrainer } from "@/helpers/auth/auth";
+import { checkIsStaff } from "@/helpers/auth/auth";
 import { Colors, MediaQueries } from "@/styles/variables";
 import Image from "next/image";
 import { useState } from "react";
 import styled from "styled-components";
 import WorkoutView from "./WorkoutView";
-
-interface Exercise {
-  exercise: string;
-  sets: number;
-  reps: number;
-}
-
-interface WorkoutRoutineDay {
-  day: number;
-  bodyPart: string;
-  exercises: Exercise[];
-}
-
-export interface WorkoutHistoryEntry {
-  date: string;
-  routine: WorkoutRoutineDay[];
-}
 
 interface ClientUser {
   id?: string;
@@ -29,7 +12,6 @@ interface ClientUser {
   username?: string;
   image?: string;
   createAt?: string;
-  workoutHistory?: WorkoutHistoryEntry[];
 }
 
 interface DashboardContainerProps {
@@ -91,8 +73,7 @@ const DashboardContainer = ({
         return (
           <WorkoutView
             clientId={clientId}
-            workoutHistory={clientUser?.workoutHistory ?? []}
-            canBuild={checkIsAdminOrTrainer(session?.user?.role)}
+            canBuild={checkIsStaff(session?.user?.role)}
           />
         );
       case "MealPlan":

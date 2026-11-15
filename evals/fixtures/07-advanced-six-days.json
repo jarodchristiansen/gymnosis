@@ -1,0 +1,16 @@
+{
+  "description": "Advanced lifter, six days: checks the schedule matches and a rest day remains.",
+  "input": {
+    "goal": "bulking",
+    "weightLbs": 170,
+    "heightInches": 69,
+    "age": 30,
+    "activityLevel": "moderately active",
+    "sports": ["weightlifting"],
+    "weightTraining": true,
+    "sessionsPerWeek": 6,
+    "experience": "advanced",
+    "equipment": "full gym",
+    "injuries": []
+  }
+}

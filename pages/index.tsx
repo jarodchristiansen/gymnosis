@@ -47,13 +47,13 @@ const cardContent = [
     image: "/landing/avatar-icon.svg",
     alt: "Client profile and tracking icon",
     title: "Stop losing track of clients",
-    text: "Every client's saved plans in one place, newest first, so you're not digging through notes or spreadsheets before a session.",
+    text: "Every client's plans in one place, from first draft to the plan they were sent, so you're not digging through notes or spreadsheets before a session.",
   },
   {
     image: "/landing/connected-icon.svg",
     alt: "AI planning and connections icon",
     title: "Build better plans, faster",
-    text: "Fill in a short client questionnaire and get a structured 7-day workout draft. You edit it and save it; nothing reaches the client until you do.",
+    text: "Fill in a short client questionnaire and get a structured 7-day workout draft, checked against the client's injuries, equipment, and experience. You edit it, approve it, and send it.",
   },
   {
     image: "/landing/growth-chart-icon.svg",
@@ -68,7 +68,7 @@ const features = [
     icon: "/landing/metrics.svg",
     title: "AI writes the first draft. You make it perfect.",
     description:
-      "The draft follows the client's goal, activity level, and training days. You swap exercises, adjust sets and reps, and decide what gets saved.",
+      "The draft follows the client's goal, training days, injuries, and equipment. You swap exercises, adjust sets and reps, and decide what gets sent.",
   },
   {
     icon: "/landing/security.svg",
@@ -80,15 +80,15 @@ const features = [
     icon: "/landing/ui.svg",
     title: "Plans you can actually edit.",
     description:
-      "The draft opens in an editor, not a wall of text. Change anything, then save it to the client's history in one step.",
+      "The draft opens in an editor, not a wall of text. Change anything; every edit is recorded in the plan's history, with who made it and when.",
   },
 ];
 
 const howItWorksSteps = [
   {
     n: "01",
-    title: "Clients sign up",
-    body: "Clients create an account with Google or GitHub, and appear in the client list.",
+    title: "Each client has a trainer",
+    body: "Clients belong to a gym and are assigned a trainer, who writes and reviews their plans.",
   },
   {
     n: "02",
@@ -98,7 +98,7 @@ const howItWorksSteps = [
   {
     n: "03",
     title: "Review and deliver",
-    body: "Edit the draft and save it. The client sees the plan you saved, never the raw draft.",
+    body: "Fix or sign off any safety flags, approve the plan, and send it. Clients only ever see plans their trainer has sent.",
   },
 ];
 
@@ -108,7 +108,7 @@ export default function Home() {
       <SEOHead
         isHomePage={true}
         metaTitle="Gymnosis — Gym Management Software for Professional Trainers"
-        metaDescription="AI-assisted workout planning for personal trainers: the AI drafts a plan from a client questionnaire, and a trainer edits and saves it before the client sees it."
+        metaDescription="AI-assisted workout planning for personal trainers: the AI drafts a plan from a client questionnaire, and a trainer reviews, approves, and sends it before the client sees it."
         previewImage="/assets/gymnosis.png"
       />
 
@@ -146,8 +146,8 @@ export default function Home() {
               Trainers stay in charge of every plan.
             </span>
             <span className="trust-subline">
-              AI drafts never go straight to a client. Only trainers and admins
-              can save a plan to a client&apos;s record.
+              AI drafts are checked against safety rules and never go straight
+              to a client. Only a trainer&apos;s approval sends a plan.
             </span>
           </TrustStatement>
           <StatsRow>
@@ -164,7 +164,7 @@ export default function Home() {
             <StatItem>
               <span className="stat-value">Every</span>
               <span className="stat-label">
-                plan saved by a trainer, not the AI
+                plan a client sees, approved by a trainer
               </span>
             </StatItem>
           </StatsRow>

@@ -1,0 +1,16 @@
+{
+  "description": "Cyclist with dumbbells only and a lower back injury.",
+  "input": {
+    "goal": "sport specific",
+    "weightLbs": 170,
+    "heightInches": 69,
+    "age": 30,
+    "activityLevel": "moderately active",
+    "sports": ["cycling"],
+    "weightTraining": true,
+    "sessionsPerWeek": 3,
+    "experience": "intermediate",
+    "equipment": "dumbbells only",
+    "injuries": ["lower back"]
+  }
+}

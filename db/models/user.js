@@ -27,19 +27,19 @@ const UsersSchema = new Schema({
   },
   createAt: {
     type: Date,
-    default: Date.now(),
+    default: Date.now,
   },
   role: {
     type: String,
-    enum: ["admin", "trainer", "client"],
+    enum: ["admin", "owner", "trainer", "client"],
     default: "client",
   },
-  facilities: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Facility",
-    },
-  ],
+  gym: { type: Schema.Types.ObjectId, ref: "Gym", index: true },
+  // Clients only: the trainer who writes their plans.
+  trainer: { type: Schema.Types.ObjectId, ref: "User", index: true },
+  // Demo sandbox accounts expire with their gym.
+  expiresAt: { type: Date, index: { expires: 0 } },
+  // Before plans had their own collection; kept until scripts/migrate-to-plans.js has run.
   workoutHistory: [
     {
       date: Date,

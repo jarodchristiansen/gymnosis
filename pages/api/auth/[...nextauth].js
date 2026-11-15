@@ -6,6 +6,7 @@ import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import connectDb from "../../../db/config";
 import User from "../../../db/models/user";
+import { clientIp, createDemoSandbox } from "../../../lib/demo";
 import clientPromise from "../../../lib/mongodb";
 
 function makeid(length) {
@@ -61,6 +62,24 @@ export const authOptions = {
         }
       },
     }),
+    // "Try as…": each sign-in creates a private demo gym for the visitor; it expires in a day.
+    CredentialsProvider({
+      id: "demo",
+      name: "Demo",
+      credentials: { role: { label: "Role", type: "text" } },
+      async authorize(credentials, req) {
+        await connectDb();
+        try {
+          return await createDemoSandbox(credentials?.role, clientIp(req));
+        } catch (err) {
+          // NextAuth passes a thrown message back to the sign-in page.
+          if (err.extensions?.code === "RATE_LIMITED")
+            throw new Error(err.message);
+          console.error("[auth] demo sandbox error:", err);
+          throw new Error("Couldn't start the demo. Try again in a moment.");
+        }
+      },
+    }),
     GithubProvider({
       clientId: process.env.GITHUB_ID,
       clientSecret: process.env.GITHUB_SECRET,
@@ -82,6 +101,7 @@ export const authOptions = {
         token.id = user.id;
         token.role = user.role || "client";
         token.username = user.username;
+        token.demo = !!user.demo;
       }
       return token;
     },
@@ -92,13 +112,12 @@ export const authOptions = {
         session.user.id = token.id || user?.id;
         session.user.role = token.role || user?.role || "client";
         session.user.username = token.username || user?.username;
+        session.user.demo = !!token.demo;
       } else if (user) {
         session.user.id = user.id;
         session.user.role = user.role || "client";
         session.user.username = user.username;
       }
-      session.user.facilities = user?.facilities || [];
-      session.user.workoutHistory = user?.workoutHistory || [];
       return session;
     },
     async signIn({ user, account }) {
@@ -114,8 +133,6 @@ export const authOptions = {
         }
       } else {
         user.role = "client";
-        user.facilities = [];
-        user.workoutHistory = [];
       }
 
       return true;

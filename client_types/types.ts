@@ -36,22 +36,122 @@ export type ExerciseInput = {
 
 export type Mutation = {
   __typename?: "Mutation";
-  addWorkoutRoutine?: Maybe<User>;
-  draftWorkout?: Maybe<WorkoutDraft>;
+  acknowledgeFlag: Plan;
+  approvePlan: Plan;
+  createManualPlan: Plan;
+  deliverPlan: Plan;
+  draftPlan: Plan;
+  reopenPlan: Plan;
+  updatePlanDays: Plan;
   updateUsername?: Maybe<User>;
 };
 
-export type MutationAddWorkoutRoutineArgs = {
-  input?: InputMaybe<WorkoutInput>;
+export type MutationAcknowledgeFlagArgs = {
+  flagId: Scalars["ID"]["input"];
+  id: Scalars["ID"]["input"];
+  note: Scalars["String"]["input"];
+  version: Scalars["Int"]["input"];
 };
 
-export type MutationDraftWorkoutArgs = {
+export type MutationApprovePlanArgs = {
+  id: Scalars["ID"]["input"];
+  version: Scalars["Int"]["input"];
+};
+
+export type MutationCreateManualPlanArgs = {
+  clientId: Scalars["ID"]["input"];
+};
+
+export type MutationDeliverPlanArgs = {
+  id: Scalars["ID"]["input"];
+  version: Scalars["Int"]["input"];
+};
+
+export type MutationDraftPlanArgs = {
+  clientId: Scalars["ID"]["input"];
   input: WorkoutGoalInput;
+};
+
+export type MutationReopenPlanArgs = {
+  id: Scalars["ID"]["input"];
+  note: Scalars["String"]["input"];
+  version: Scalars["Int"]["input"];
+};
+
+export type MutationUpdatePlanDaysArgs = {
+  days: Array<WorkoutRoutineInput>;
+  id: Scalars["ID"]["input"];
+  version: Scalars["Int"]["input"];
 };
 
 export type MutationUpdateUsernameArgs = {
   input?: InputMaybe<UsernameInput>;
 };
+
+export type Person = {
+  __typename?: "Person";
+  id: Scalars["ID"]["output"];
+  image?: Maybe<Scalars["String"]["output"]>;
+  name?: Maybe<Scalars["String"]["output"]>;
+};
+
+export type Plan = {
+  __typename?: "Plan";
+  /** Why the plan can't be approved yet; empty when it can. */
+  approvalProblems: Array<Scalars["String"]["output"]>;
+  approvedAt?: Maybe<Scalars["Date"]["output"]>;
+  client?: Maybe<Person>;
+  createdAt?: Maybe<Scalars["Date"]["output"]>;
+  days: Array<WorkoutRoutine>;
+  deliveredAt?: Maybe<Scalars["Date"]["output"]>;
+  events: Array<PlanEvent>;
+  flags: Array<PlanFlag>;
+  id: Scalars["ID"]["output"];
+  source: PlanSource;
+  status: PlanStatus;
+  trainer?: Maybe<Person>;
+  updatedAt?: Maybe<Scalars["Date"]["output"]>;
+  version: Scalars["Int"]["output"];
+};
+
+export type PlanEvent = {
+  __typename?: "PlanEvent";
+  action: Scalars["String"]["output"];
+  actor?: Maybe<Person>;
+  at: Scalars["Date"]["output"];
+  changes: Array<Scalars["String"]["output"]>;
+  from?: Maybe<Scalars["String"]["output"]>;
+  note?: Maybe<Scalars["String"]["output"]>;
+  to?: Maybe<Scalars["String"]["output"]>;
+};
+
+export type PlanFlag = {
+  __typename?: "PlanFlag";
+  acknowledged: Scalars["Boolean"]["output"];
+  acknowledgedAt?: Maybe<Scalars["Date"]["output"]>;
+  acknowledgedBy?: Maybe<Person>;
+  day?: Maybe<Scalars["Int"]["output"]>;
+  exercise?: Maybe<Scalars["String"]["output"]>;
+  id: Scalars["ID"]["output"];
+  message: Scalars["String"]["output"];
+  note?: Maybe<Scalars["String"]["output"]>;
+  rule: Scalars["String"]["output"];
+  severity: Scalars["String"]["output"];
+};
+
+export type PlanSource = {
+  __typename?: "PlanSource";
+  draftFailed: Scalars["Boolean"]["output"];
+  kind: Scalars["String"]["output"];
+  model?: Maybe<Scalars["String"]["output"]>;
+  promptVersion?: Maybe<Scalars["String"]["output"]>;
+};
+
+export enum PlanStatus {
+  Approved = "approved",
+  Delivered = "delivered",
+  Draft = "draft",
+}
 
 export type Post = {
   __typename?: "Post";
@@ -82,6 +182,8 @@ export type Query = {
   getPosts?: Maybe<Array<Maybe<Post>>>;
   getUser?: Maybe<User>;
   getUsers?: Maybe<Array<Maybe<User>>>;
+  plan?: Maybe<Plan>;
+  plans: Array<Plan>;
 };
 
 export type QueryGetPostArgs = {
@@ -103,6 +205,15 @@ export type QueryGetUsersArgs = {
   value?: InputMaybe<Scalars["String"]["input"]>;
 };
 
+export type QueryPlanArgs = {
+  id: Scalars["ID"]["input"];
+};
+
+export type QueryPlansArgs = {
+  clientId?: InputMaybe<Scalars["ID"]["input"]>;
+  status?: InputMaybe<PlanStatus>;
+};
+
 export type User = {
   __typename?: "User";
   createAt?: Maybe<Scalars["Date"]["output"]>;
@@ -112,40 +223,27 @@ export type User = {
   name?: Maybe<Scalars["String"]["output"]>;
   role?: Maybe<Scalars["String"]["output"]>;
   username?: Maybe<Scalars["String"]["output"]>;
-  workoutHistory?: Maybe<Array<Maybe<WorkoutHistoryEntry>>>;
 };
 
 export type UsernameInput = {
   username: Scalars["String"]["input"];
 };
 
-export type WorkoutDraft = {
-  __typename?: "WorkoutDraft";
-  days: Array<WorkoutRoutine>;
-  model: Scalars["String"]["output"];
-  promptVersion: Scalars["String"]["output"];
-};
-
 export type WorkoutGoalInput = {
   activityLevel: Scalars["String"]["input"];
   age: Scalars["Int"]["input"];
+  /** full gym, dumbbells only, or bodyweight only */
+  equipment: Scalars["String"]["input"];
+  /** beginner, intermediate, or advanced */
+  experience: Scalars["String"]["input"];
   goal: Scalars["String"]["input"];
   heightInches: Scalars["Float"]["input"];
+  /** Any of: knee, lower back, shoulder, wrist */
+  injuries: Array<Scalars["String"]["input"]>;
   sessionsPerWeek: Scalars["Int"]["input"];
   sports: Array<Scalars["String"]["input"]>;
   weightLbs: Scalars["Float"]["input"];
   weightTraining: Scalars["Boolean"]["input"];
-};
-
-export type WorkoutHistoryEntry = {
-  __typename?: "WorkoutHistoryEntry";
-  date?: Maybe<Scalars["Date"]["output"]>;
-  routine?: Maybe<Array<Maybe<WorkoutRoutine>>>;
-};
-
-export type WorkoutInput = {
-  id?: InputMaybe<Scalars["String"]["input"]>;
-  routine?: InputMaybe<Array<InputMaybe<WorkoutRoutineInput>>>;
 };
 
 export type WorkoutRoutine = {

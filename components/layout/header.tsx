@@ -1,4 +1,4 @@
-import { checkIsAdmin, checkIsAdminOrTrainer } from "@/helpers/auth/auth";
+import { checkIsAdmin, checkIsStaff } from "@/helpers/auth/auth";
 import { Colors, MediaQueries } from "@/styles/variables";
 import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
@@ -50,11 +50,18 @@ function Header() {
         text: "Admin",
       },
       // @ts-ignore: next-auth type issue v3
-      checkIsAdminOrTrainer(session?.user?.role) && {
+      checkIsStaff(session?.user?.role) && {
         key: 4,
         route: "/client",
         guarded: true,
-        text: "Client Dashboard",
+        text: "Clients",
+      },
+      // @ts-ignore: next-auth type issue v3
+      checkIsStaff(session?.user?.role) && {
+        key: 6,
+        route: "/plans",
+        guarded: true,
+        text: "Plans",
       },
       !session && {
         key: 5,

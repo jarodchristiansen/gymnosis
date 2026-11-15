@@ -1,5 +1,5 @@
 import { FILTER_CONSTS, SEARCH_VALUE_CONSTS } from "@/helpers/Consts";
-import { checkIsAdminOrTrainer } from "@/helpers/auth/auth";
+import { checkIsStaff } from "@/helpers/auth/auth";
 import { GET_USERS } from "@/helpers/queries/user";
 import { Colors, MediaQueries } from "@/styles/variables";
 import { useLazyQuery } from "@apollo/client";
@@ -362,7 +362,7 @@ export async function getServerSideProps(context) {
   const session = await getSession(context);
 
   // @ts-ignore
-  if (!checkIsAdminOrTrainer(session?.user?.role)) {
+  if (!checkIsStaff(session?.user?.role)) {
     return {
       redirect: {
         destination: "/",

@@ -9,18 +9,6 @@ export const GET_USER = gql`
       username
       image
       createAt
-      workoutHistory {
-        date
-        routine {
-          day
-          bodyPart
-          exercises {
-            exercise
-            sets
-            reps
-          }
-        }
-      }
     }
   }
 `;

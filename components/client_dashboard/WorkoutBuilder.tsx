@@ -1,39 +1,61 @@
+import { SecondaryButton } from "@/components/plans/PlanEditor";
+import { errorMessage } from "@/components/plans/types";
+import { CREATE_MANUAL_PLAN, DRAFT_PLAN } from "@/helpers/mutations/plans";
 import { Colors } from "@/styles/variables";
+import { useMutation } from "@apollo/client";
+import { useRouter } from "next/router";
 import { useState } from "react";
 import styled from "styled-components";
-import RoutineBuilder from "./RoutineBuilder";
-import WorkoutGoalForm from "./WorkoutGoalForm";
+import WorkoutGoalForm, { type WorkoutGoalInput } from "./WorkoutGoalForm";
 
 interface WorkoutBuilderProps {
   clientId: string;
 }
 
+/**
+ * Starts a plan for a client, from an AI draft or from scratch, then opens it for review.
+ */
 const WorkoutBuilder = ({ clientId }: WorkoutBuilderProps) => {
-  const [formIsOpen, setFormIsOpen] = useState(true);
-  const [aiWorkoutData, setAiWorkoutData] = useState(null);
+  const router = useRouter();
+  const [manualError, setManualError] = useState("");
+  const [draftPlan, { loading: drafting }] = useMutation(DRAFT_PLAN);
+  const [createManual, { loading: creating }] = useMutation(CREATE_MANUAL_PLAN);
+
+  const handleDraft = async (input: WorkoutGoalInput) => {
+    const { data } = await draftPlan({ variables: { clientId, input } });
+    if (data?.draftPlan?.id) router.push(`/plans/${data.draftPlan.id}`);
+  };
+
+  const handleManual = async () => {
+    setManualError("");
+    try {
+      const { data } = await createManual({ variables: { clientId } });
+      if (data?.createManualPlan?.id) {
+        router.push(`/plans/${data.createManualPlan.id}`);
+      }
+    } catch (err) {
+      setManualError(errorMessage(err, "Couldn't start a plan. Try again."));
+    }
+  };
 
   return (
     <WorkoutBuilderContainer>
       <BuilderHeader>
-        <BuilderTitle>Build a Workout Plan</BuilderTitle>
-        {formIsOpen && (
-          <StepIndicator>Step 1 of 2 &mdash; Client details</StepIndicator>
-        )}
-        {!formIsOpen && (
-          <StepIndicator>Step 2 of 2 &mdash; Review &amp; save</StepIndicator>
-        )}
+        <BuilderTitle>Start a workout plan</BuilderTitle>
+        <ManualRow>
+          <span>Rather write it yourself?</span>
+          <SecondaryButton
+            type="button"
+            onClick={handleManual}
+            disabled={creating}
+          >
+            Start from scratch
+          </SecondaryButton>
+        </ManualRow>
+        {manualError && <Problem role="alert">{manualError}</Problem>}
       </BuilderHeader>
 
-      {formIsOpen && !aiWorkoutData && (
-        <WorkoutGoalForm
-          setFormIsOpen={setFormIsOpen}
-          setAiWorkoutData={setAiWorkoutData}
-        />
-      )}
-
-      {!formIsOpen && (
-        <RoutineBuilder aiWorkoutData={aiWorkoutData} clientId={clientId} />
-      )}
+      <WorkoutGoalForm onSubmit={handleDraft} isGenerating={drafting} />
     </WorkoutBuilderContainer>
   );
 };
@@ -46,9 +68,8 @@ const WorkoutBuilderContainer = styled.div`
 
 const BuilderHeader = styled.div`
   display: flex;
-  align-items: baseline;
-  gap: 12px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 10px;
 `;
 
 const BuilderTitle = styled.h2`
@@ -58,9 +79,19 @@ const BuilderTitle = styled.h2`
   margin: 0;
 `;
 
-const StepIndicator = styled.span`
-  font-size: 12px;
+const ManualRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
   color: ${Colors.midGray};
+`;
+
+const Problem = styled.p`
+  margin: 0;
+  font-size: 14px;
+  color: #ff8a80;
 `;
 
 export default WorkoutBuilder;
