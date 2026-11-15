@@ -21,7 +21,6 @@ const typeDefs = gql`
 
   input UsernameInput {
     username: String!
-    email: String
   }
 
   type Post {
@@ -78,7 +77,7 @@ const typeDefs = gql`
   type Query {
     createWorkout(prompt: String): [WorkoutRoutine]
     getUsers(filter: String, value: String): [User]
-    getUser(email: String, id: String): User
+    getUser(email: String, id: String, username: String): User
     getPost(slug: String): Post
     getPosts(filter: String): [Post]
   }

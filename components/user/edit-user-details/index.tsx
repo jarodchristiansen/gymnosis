@@ -30,7 +30,6 @@ const EditUserDetails = ({ user, fetchedUser }) => {
     updateUsername({
       variables: {
         input: {
-          email: user.email,
           username: usernameInput,
         },
       },
