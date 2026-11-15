@@ -40,7 +40,15 @@ function Header() {
   const routes: NavRoute[] = useMemo(() => {
     return [
       { key: 0, route: "/education", guarded: false, text: "Features" },
-      id && { key: 2, route: `/client/${id}`, guarded: false, text: "Profile" },
+      // Clients' own plans live on their dashboard; staff work from Clients and Plans.
+      id &&
+        // @ts-ignore: next-auth type issue v3
+        session?.user?.role === "client" && {
+          key: 2,
+          route: `/client/${id}`,
+          guarded: false,
+          text: "My plan",
+        },
       // @ts-ignore: next-auth type issue v3
       checkIsAdmin(session?.user?.role) && {
         key: 3,

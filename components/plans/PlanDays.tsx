@@ -1,9 +1,9 @@
-import { Colors, MediaQueries } from "@/styles/variables";
+import { Colors, FontFamily, MediaQueries } from "@/styles/variables";
 import styled from "styled-components";
 import type { PlanDay } from "./types";
 
 /**
- * A read-only view of a plan's week.
+ * A read-only week, laid out like a training sheet: one ruled table, a group per day.
  */
 const PlanDays = ({ days }: { days: PlanDay[] }) => {
   if (days.length === 0) {
@@ -11,96 +11,106 @@ const PlanDays = ({ days }: { days: PlanDay[] }) => {
   }
 
   return (
-    <DayList>
-      {days.map((day) => (
-        <DayCard key={day.day}>
-          <DayHeading>
-            <span className="day">Day {day.day}</span>
-            <span className="focus">{day.bodyPart}</span>
-          </DayHeading>
-          {day.exercises.length === 0 ? (
-            <Rest>Rest and recovery</Rest>
-          ) : (
-            <ExerciseList>
-              {day.exercises.map((e, i) => (
-                <li key={i}>
-                  <span>{e.exercise}</span>
-                  <span className="dose">
+    <Sheet>
+      <table>
+        <caption className="visually-hidden">The week, day by day</caption>
+        <thead>
+          <tr>
+            <th scope="col">Exercise</th>
+            <th scope="col" className="dose">
+              Sets × reps
+            </th>
+          </tr>
+        </thead>
+        {days.map((day) => (
+          <tbody key={day.day}>
+            <tr className="day">
+              <th scope="rowgroup" colSpan={2}>
+                <span className="n">D{day.day}</span> {day.bodyPart}
+              </th>
+            </tr>
+            {day.exercises.length === 0 ? (
+              <tr className="rest">
+                <td colSpan={2}>Rest and recovery</td>
+              </tr>
+            ) : (
+              day.exercises.map((e, i) => (
+                <tr key={i}>
+                  <td>{e.exercise}</td>
+                  <td className="dose">
                     {e.sets} × {e.reps}
-                  </span>
-                </li>
-              ))}
-            </ExerciseList>
-          )}
-        </DayCard>
-      ))}
-    </DayList>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        ))}
+      </table>
+    </Sheet>
   );
 };
 
-const DayList = styled.ol`
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 12px;
+const Sheet = styled.div`
+  padding: 6px 16px 14px;
+  background: ${Colors.surface};
+  border: 1px solid ${Colors.rule};
+  border-radius: 8px;
 
   @media ${MediaQueries.MD} {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 8px 24px 18px;
   }
-`;
 
-const DayCard = styled.li`
-  background: ${Colors.surface};
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 10px;
-  padding: 16px;
-`;
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+  }
 
-const DayHeading = styled.h3`
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin: 0 0 10px;
-  font-size: 14px;
-
-  .day {
-    color: ${Colors.midGray};
+  thead th {
+    padding: 12px 0 6px;
+    font-family: ${FontFamily.display};
+    font-size: 13px;
     font-weight: 600;
-  }
-
-  .focus {
-    color: ${Colors.brand.white};
-    font-weight: 700;
-  }
-`;
-
-const ExerciseList = styled.ul`
-  list-style: none;
-  margin: 0;
-  padding: 0;
-
-  li {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 6px 0;
-    font-size: 14px;
-    color: ${Colors.lightGray};
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-align: left;
+    color: ${Colors.midGray};
+    border-bottom: 2px solid rgba(242, 238, 232, 0.16);
   }
 
   .dose {
-    color: ${Colors.midGray};
-    font-variant-numeric: tabular-nums;
+    text-align: right;
     white-space: nowrap;
   }
-`;
 
-const Rest = styled.p`
-  margin: 0;
-  font-size: 14px;
-  color: ${Colors.midGray};
+  tr.day th {
+    padding: 16px 0 4px;
+    font-weight: 650;
+    text-align: left;
+    color: ${Colors.lightGray};
+  }
+
+  .n {
+    margin-right: 8px;
+    font-family: ${FontFamily.display};
+    font-weight: 700;
+    color: ${Colors.brand.accentLight};
+  }
+
+  td {
+    padding: 9px 0;
+    border-top: 1px solid ${Colors.rule};
+    color: ${Colors.lightGray};
+  }
+
+  td.dose {
+    color: ${Colors.midGray};
+  }
+
+  tr.rest td {
+    color: ${Colors.midGray};
+  }
 `;
 
 const Empty = styled.p`

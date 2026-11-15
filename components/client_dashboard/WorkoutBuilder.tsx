@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui";
 import { errorMessage } from "@/components/plans/types";
 import { CREATE_MANUAL_PLAN, DRAFT_PLAN } from "@/helpers/mutations/plans";
-import { Colors } from "@/styles/variables";
+import { Colors, FontFamily } from "@/styles/variables";
 import { useMutation } from "@apollo/client";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -74,10 +74,13 @@ const BuilderHeader = styled.div`
 `;
 
 const BuilderTitle = styled.h2`
-  font-size: 20px;
+  margin: 8px 0 0;
+  font-family: ${FontFamily.display};
+  font-size: 34px;
   font-weight: 700;
-  color: ${Colors.brand.white};
-  margin: 0;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: ${Colors.lightGray};
 `;
 
 const ManualRow = styled.div`
@@ -92,7 +95,7 @@ const ManualRow = styled.div`
 const Problem = styled.p`
   margin: 0;
   font-size: 14px;
-  color: #ff8a80;
+  color: ${Colors.flag.block};
 `;
 
 export default WorkoutBuilder;

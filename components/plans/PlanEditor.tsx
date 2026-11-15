@@ -1,8 +1,8 @@
-import { Colors, MediaQueries } from "@/styles/variables";
 import { Button } from "@/components/ui";
+import { Colors, FontFamily, MediaQueries } from "@/styles/variables";
 import { useMemo, useRef, useState } from "react";
 import styled from "styled-components";
-import type { PlanDay } from "./types";
+import type { PlanDay, PlanFlag } from "./types";
 
 // Inputs hold text while editing; the server checks and converts on save.
 interface DraftExercise {
@@ -21,6 +21,8 @@ interface DraftDay {
 
 interface PlanEditorProps {
   days: PlanDay[];
+  // Open findings, marked on the exercise they're about.
+  flags?: PlanFlag[];
   onSave: (days: PlanDay[]) => Promise<void>;
   saving: boolean;
 }
@@ -30,10 +32,10 @@ const MAX_DAYS = 7;
 const toNumber = (value: string) => (value.trim() === "" ? NaN : Number(value));
 
 /**
- * Edits a draft plan's week. The parent remounts it (by plan version) after each save, so the
- * fields always start from what the server holds.
+ * Edits a draft plan's week as a ruled training sheet. The parent remounts it (by plan version)
+ * after each save, so the fields always start from what the server holds.
  */
-const PlanEditor = ({ days, onSave, saving }: PlanEditorProps) => {
+const PlanEditor = ({ days, flags = [], onSave, saving }: PlanEditorProps) => {
   const nextKey = useRef(0);
   const key = () => (nextKey.current += 1);
 
@@ -113,106 +115,151 @@ const PlanEditor = ({ days, onSave, saving }: PlanEditorProps) => {
     await onSave(result);
   };
 
+  // The worst open finding for an exercise, matched the way the rules key them.
+  const flagFor = (day: number, exercise: string) => {
+    const open = flags.filter(
+      (f) => !f.acknowledged && f.day === day && f.exercise === exercise.trim()
+    );
+    if (open.some((f) => f.severity === "block")) return "block";
+    return open.length ? "warn" : undefined;
+  };
+
   return (
     <Editor aria-label="Edit plan">
       {draft.length === 0 && (
-        <Hint>
+        <Empty>
           No days yet. Add the first day, then add exercises to it. A day with
           no exercises is a rest day.
-        </Hint>
+        </Empty>
       )}
 
       {draft.map((d) => (
-        <DayCard key={d.key}>
-          <DayHeader>
-            <h3>Day {d.day}</h3>
-            <FocusField>
-              <label htmlFor={`focus-${d.key}`}>Focus</label>
-              <input
-                id={`focus-${d.key}`}
-                type="text"
-                placeholder="e.g. Legs, or Rest"
-                value={d.bodyPart}
-                onChange={(e) =>
-                  updateDay(d.key, (day) => ({
-                    ...day,
-                    bodyPart: e.target.value,
-                  }))
-                }
-              />
-            </FocusField>
-            <TextButton
-              type="button"
+        <Day key={d.key}>
+          <DayHead>
+            <span className="n" aria-hidden="true">
+              D{d.day}
+            </span>
+            <label className="visually-hidden" htmlFor={`focus-${d.key}`}>
+              Focus for day {d.day}
+            </label>
+            <FocusInput
+              id={`focus-${d.key}`}
+              type="text"
+              placeholder="Focus, e.g. Legs or Rest"
+              value={d.bodyPart}
+              onChange={(e) =>
+                updateDay(d.key, (day) => ({
+                  ...day,
+                  bodyPart: e.target.value,
+                }))
+              }
+            />
+            <Button
+              variant="ghost"
               onClick={() =>
                 setDraft((state) => state.filter((x) => x.key !== d.key))
               }
             >
               Remove day {d.day}
-            </TextButton>
-          </DayHeader>
+            </Button>
+          </DayHead>
 
-          {d.exercises.length === 0 && <Hint>Rest day.</Hint>}
+          {d.exercises.length === 0 ? (
+            <Hint>Rest day.</Hint>
+          ) : (
+            <Rows>
+              <ColumnLabels aria-hidden="true">
+                <span />
+                <span>Exercise</span>
+                <span className="num">Sets</span>
+                <span className="num">Reps</span>
+                <span />
+              </ColumnLabels>
+              {d.exercises.map((e, i) => {
+                const flag = flagFor(d.day, e.exercise);
+                const name = e.exercise.trim() || `exercise ${i + 1}`;
+                return (
+                  <Row key={e.key} className={flag}>
+                    <span className="mark" aria-hidden="true">
+                      {flag ? "!" : ""}
+                    </span>
+                    <label
+                      className="visually-hidden"
+                      htmlFor={`name-${e.key}`}
+                    >
+                      Exercise {i + 1} on day {d.day}
+                      {flag === "block" ? ", flagged" : ""}
+                    </label>
+                    <CellInput
+                      id={`name-${e.key}`}
+                      type="text"
+                      className="name"
+                      value={e.exercise}
+                      onChange={(ev) =>
+                        updateExercise(
+                          d.key,
+                          e.key,
+                          "exercise",
+                          ev.target.value
+                        )
+                      }
+                    />
+                    <label
+                      className="visually-hidden"
+                      htmlFor={`sets-${e.key}`}
+                    >
+                      Sets of exercise {i + 1} on day {d.day}
+                    </label>
+                    <CellInput
+                      id={`sets-${e.key}`}
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      max={10}
+                      value={e.sets}
+                      onChange={(ev) =>
+                        updateExercise(d.key, e.key, "sets", ev.target.value)
+                      }
+                    />
+                    <label
+                      className="visually-hidden"
+                      htmlFor={`reps-${e.key}`}
+                    >
+                      Reps of exercise {i + 1} on day {d.day}
+                    </label>
+                    <CellInput
+                      id={`reps-${e.key}`}
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      max={50}
+                      value={e.reps}
+                      onChange={(ev) =>
+                        updateExercise(d.key, e.key, "reps", ev.target.value)
+                      }
+                    />
+                    <RemoveButton
+                      type="button"
+                      aria-label={`Remove ${name} from day ${d.day}`}
+                      onClick={() =>
+                        updateDay(d.key, (day) => ({
+                          ...day,
+                          exercises: day.exercises.filter(
+                            (x) => x.key !== e.key
+                          ),
+                        }))
+                      }
+                    >
+                      ×
+                    </RemoveButton>
+                  </Row>
+                );
+              })}
+            </Rows>
+          )}
 
-          {d.exercises.map((e, i) => (
-            <ExerciseRow key={e.key}>
-              <Field className="name">
-                <label htmlFor={`name-${e.key}`}>Exercise {i + 1}</label>
-                <input
-                  id={`name-${e.key}`}
-                  type="text"
-                  value={e.exercise}
-                  onChange={(ev) =>
-                    updateExercise(d.key, e.key, "exercise", ev.target.value)
-                  }
-                />
-              </Field>
-              <Field>
-                <label htmlFor={`sets-${e.key}`}>Sets</label>
-                <input
-                  id={`sets-${e.key}`}
-                  type="number"
-                  inputMode="numeric"
-                  min={1}
-                  max={10}
-                  value={e.sets}
-                  onChange={(ev) =>
-                    updateExercise(d.key, e.key, "sets", ev.target.value)
-                  }
-                />
-              </Field>
-              <Field>
-                <label htmlFor={`reps-${e.key}`}>Reps</label>
-                <input
-                  id={`reps-${e.key}`}
-                  type="number"
-                  inputMode="numeric"
-                  min={1}
-                  max={50}
-                  value={e.reps}
-                  onChange={(ev) =>
-                    updateExercise(d.key, e.key, "reps", ev.target.value)
-                  }
-                />
-              </Field>
-              <TextButton
-                type="button"
-                aria-label={`Remove ${
-                  e.exercise || `exercise ${i + 1}`
-                } from day ${d.day}`}
-                onClick={() =>
-                  updateDay(d.key, (day) => ({
-                    ...day,
-                    exercises: day.exercises.filter((x) => x.key !== e.key),
-                  }))
-                }
-              >
-                Remove
-              </TextButton>
-            </ExerciseRow>
-          ))}
-
-          <TextButton
-            type="button"
+          <Button
+            variant="ghost"
             onClick={() =>
               updateDay(d.key, (day) => ({
                 ...day,
@@ -223,137 +270,241 @@ const PlanEditor = ({ days, onSave, saving }: PlanEditorProps) => {
               }))
             }
           >
-            Add exercise to day {d.day}
-          </TextButton>
-        </DayCard>
+            <span aria-hidden="true">+ </span>Add exercise to day {d.day}
+          </Button>
+        </Day>
       ))}
 
-      <Footer>
-        {draft.length < MAX_DAYS && (
-          <Button variant="secondary" type="button" onClick={addDay}>
+      {draft.length < MAX_DAYS && (
+        <AddDay>
+          <Button variant="secondary" onClick={addDay}>
             Add a day
           </Button>
-        )}
-        <Button type="button" onClick={handleSave} disabled={!dirty || saving}>
+        </AddDay>
+      )}
+
+      <SaveBar dirty={dirty}>
+        <span>{dirty ? "Unsaved changes" : "All changes saved"}</span>
+        <Button onClick={handleSave} disabled={!dirty || saving}>
           {saving ? "Saving…" : dirty ? "Save changes" : "Saved"}
         </Button>
         {problem && <Problem role="alert">{problem}</Problem>}
-      </Footer>
+      </SaveBar>
     </Editor>
   );
 };
 
 const Editor = styled.section`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-`;
-
-const DayCard = styled.div`
   background: ${Colors.surface};
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 10px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  border: 1px solid ${Colors.rule};
+  border-radius: 8px;
 `;
 
-const DayHeader = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 12px;
-
-  h3 {
-    margin: 0 0 8px;
-    font-size: 15px;
-    color: ${Colors.brand.white};
-    min-width: 52px;
-  }
-`;
-
-const inputStyles = `
-  width: 100%;
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.04);
-  color: ${Colors.brand.white};
-  font-size: 14px;
-
-  &:focus-visible {
-    outline: 2px solid ${Colors.brand.accent};
-    outline-offset: 1px;
-  }
-`;
-
-const Field = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  width: 72px;
-
-  &.name {
-    flex: 1 1 200px;
-    width: auto;
-  }
-
-  label {
-    font-size: 12px;
-    color: ${Colors.midGray};
-  }
-
-  input {
-    ${inputStyles}
-  }
-`;
-
-const FocusField = styled(Field)`
-  flex: 1 1 180px;
-  width: auto;
-`;
-
-const ExerciseRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 10px;
+const Day = styled.div`
+  padding: 14px 14px 8px;
+  border-bottom: 1px solid ${Colors.rule};
 
   @media ${MediaQueries.MD} {
-    flex-wrap: nowrap;
+    padding: 18px 22px 10px;
   }
 `;
 
-const TextButton = styled.button`
-  align-self: flex-start;
-  background: none;
+const DayHead = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  .n {
+    min-width: 34px;
+    font-family: ${FontFamily.display};
+    font-size: 24px;
+    font-weight: 700;
+    color: ${Colors.brand.accentLight};
+  }
+
+  > button {
+    margin-left: auto;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+`;
+
+// Inputs drawn as lines on a sheet: no boxes until you're in them.
+const underline = `
+  width: 100%;
+  min-width: 0;
+  min-height: 40px;
+  padding: 6px 4px;
   border: none;
-  padding: 8px 4px;
-  color: ${Colors.brand.accentLight};
+  border-bottom: 1px solid rgba(242, 238, 232, 0.2);
+  border-radius: 0;
+  background: transparent;
+  color: ${Colors.lightGray};
+  font: inherit;
+
+  &:hover {
+    border-bottom-color: rgba(242, 238, 232, 0.4);
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-bottom: 2px solid ${Colors.brand.accent};
+    background: rgba(242, 238, 232, 0.04);
+  }
+
+  &::placeholder {
+    color: ${Colors.midGray};
+  }
+`;
+
+const FocusInput = styled.input`
+  ${underline}
+  flex: 1;
+  max-width: 320px;
+  font-size: 16px;
+  font-weight: 650;
+`;
+
+const Rows = styled.div`
+  margin-top: 4px;
+`;
+
+const grid = `
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) 48px 48px 40px;
+  gap: 6px;
+  align-items: center;
+
+  @media ${MediaQueries.MD} {
+    grid-template-columns: 22px minmax(0, 1fr) 72px 72px 44px;
+    gap: 10px;
+  }
+`;
+
+const ColumnLabels = styled.div`
+  ${grid}
+  padding: 6px 0 0;
+  font-family: ${FontFamily.display};
   font-size: 13px;
   font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: ${Colors.midGray};
+
+  .num {
+    text-align: right;
+    padding-right: 4px;
+  }
+`;
+
+const Row = styled.div`
+  ${grid}
+
+  .mark {
+    display: inline-grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  &.block .mark,
+  &.warn .mark {
+    border: 1.5px solid currentColor;
+  }
+
+  &.block {
+    color: ${Colors.flag.block};
+  }
+
+  &.warn {
+    color: ${Colors.flag.warn};
+  }
+
+  /* Pencil under a flagged exercise, as on the sheet on the home page. */
+  &.block .name {
+    text-decoration: underline wavy ${Colors.flag.block};
+    text-underline-offset: 6px;
+  }
+
+  &.warn .name {
+    text-decoration: underline wavy ${Colors.flag.warn};
+    text-underline-offset: 6px;
+  }
+`;
+
+const CellInput = styled.input`
+  ${underline}
+  font-variant-numeric: tabular-nums;
+
+  &[type="number"] {
+    text-align: right;
+  }
+`;
+
+const RemoveButton = styled.button`
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: ${Colors.midGray};
+  font-size: 22px;
+  line-height: 1;
   cursor: pointer;
 
   &:hover {
-    text-decoration: underline;
+    color: ${Colors.flag.block};
+    background: rgba(242, 238, 232, 0.05);
   }
 
-  &:focus-visible {
-    outline: 2px solid ${Colors.brand.accent};
-    border-radius: 4px;
+  @media ${MediaQueries.MD} {
+    width: 44px;
+    height: 44px;
   }
 `;
 
-const Footer = styled.div`
+const AddDay = styled.div`
+  padding: 16px 14px;
+
+  @media ${MediaQueries.MD} {
+    padding: 18px 22px;
+  }
+`;
+
+// Sticks to the bottom of the screen while there's something to save.
+const SaveBar = styled.div<{ dirty: boolean }>`
+  position: ${({ dirty }) => (dirty ? "sticky" : "static")};
+  bottom: 0;
+  z-index: 5;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 12px 14px;
+  border-top: 1px solid ${Colors.rule};
+  border-radius: 0 0 8px 8px;
+  background: ${({ dirty }) => (dirty ? "#24221F" : Colors.surface)};
+  font-size: 14px;
+  color: ${Colors.midGray};
+
+  @media ${MediaQueries.MD} {
+    padding: 12px 22px;
+  }
+`;
+
+const Empty = styled.p`
+  margin: 0;
+  padding: 18px 22px;
+  font-size: 14px;
+  color: ${Colors.midGray};
 `;
 
 const Hint = styled.p`
-  margin: 0;
+  margin: 8px 0 4px;
   font-size: 14px;
   color: ${Colors.midGray};
 `;
@@ -362,7 +513,7 @@ const Problem = styled.p`
   flex-basis: 100%;
   margin: 0;
   font-size: 14px;
-  color: #ff8a80;
+  color: ${Colors.flag.block};
 `;
 
 export default PlanEditor;

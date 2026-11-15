@@ -1,121 +1,102 @@
-import DashboardContainer from "@/components/client_dashboard/DashboardContainer";
+import WorkoutView from "@/components/client_dashboard/WorkoutView";
+import { DisplayHeading, Eyebrow } from "@/components/ui";
+import { checkIsStaff } from "@/helpers/auth/auth";
 import { GET_USER } from "@/helpers/queries/user";
-import { Colors } from "@/styles/variables";
+import { Colors, MediaQueries } from "@/styles/variables";
 import { useQuery } from "@apollo/client";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import styled from "styled-components";
 
-const UserPage = () => {
+/**
+ * One client's plans. Staff see every plan and can start one; a client sees their own sent plans.
+ */
+const ClientPlansPage = () => {
   const router = useRouter();
   const { id } = router.query;
-  const { data: session } = useSession();
-
   const clientId = Array.isArray(id) ? id[0] : id;
+  const { data: session } = useSession();
+  // @ts-expect-error next-auth user extended with role
+  const isStaff = checkIsStaff(session?.user?.role);
 
-  const { data: clientData, loading: clientLoading } = useQuery(GET_USER, {
+  const { data, loading, error } = useQuery(GET_USER, {
     variables: { id: clientId },
     skip: !clientId,
   });
+  const client = data?.getUser;
 
-  const clientUser = clientData?.getUser;
-  const clientName = clientUser?.name ?? "Client";
+  if (!session || !clientId) return <Page aria-busy="true" />;
+
+  if (error) {
+    return (
+      <Page>
+        <Title>Client not found</Title>
+        <Sub>They may have been removed, or you may not have access.</Sub>
+      </Page>
+    );
+  }
 
   return (
-    <PageContainer>
-      <PageHeader>
-        <BackLink href="/client">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-          Your Clients
-        </BackLink>
-        {clientLoading ? (
-          <NameSkeleton />
-        ) : (
-          <ClientHeading>{clientName}</ClientHeading>
+    <Page>
+      {isStaff && <BackLink href="/client">← Clients</BackLink>}
+      <Header>
+        <Eyebrow>{isStaff ? "Client" : "My plan"}</Eyebrow>
+        <Title>
+          {isStaff
+            ? loading
+              ? "Loading…"
+              : client?.name ?? "Client"
+            : "Your plans"}
+        </Title>
+        {isStaff && client?.username && (
+          <Sub>
+            @{client.username}
+            {client.email ? ` · ${client.email}` : ""}
+          </Sub>
         )}
-      </PageHeader>
+      </Header>
 
-      {!!session && clientId && !clientLoading && (
-        <DashboardContainer
-          session={session}
-          clientId={clientId}
-          clientUser={clientUser}
-        />
-      )}
-    </PageContainer>
+      <WorkoutView clientId={clientId} canBuild={isStaff} />
+    </Page>
   );
 };
 
-const PageContainer = styled.div`
-  max-width: 1100px;
+const Page = styled.div`
+  max-width: 960px;
   margin: 0 auto;
-  padding: 0 24px 80px;
-  color: ${Colors.brand.white};
-`;
+  padding: 24px 16px 72px;
+  color: ${Colors.lightGray};
 
-const PageHeader = styled.div`
-  padding: 32px 0 28px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  margin-bottom: 36px;
+  @media ${MediaQueries.MD} {
+    padding: 40px 24px 96px;
+  }
 `;
 
 const BackLink = styled(Link)`
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 500;
+  min-height: 44px;
+  font-size: 14px;
   color: ${Colors.midGray};
-  text-decoration: none;
-  margin-bottom: 16px;
-  transition: color 0.15s ease;
 
   &:hover {
-    color: ${Colors.brand.white};
+    color: ${Colors.lightGray};
   }
 `;
 
-const ClientHeading = styled.h1`
-  font-size: 28px;
-  font-weight: 700;
-  color: ${Colors.brand.white};
-  margin: 0;
-  letter-spacing: -0.4px;
+const Header = styled.header`
+  margin-bottom: 24px;
 `;
 
-const NameSkeleton = styled.div`
-  height: 32px;
-  width: 200px;
-  border-radius: 6px;
-  margin-top: 4px;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.05) 25%,
-    rgba(255, 255, 255, 0.1) 50%,
-    rgba(255, 255, 255, 0.05) 75%
-  );
-  background-size: 800px 100%;
-
-  @keyframes shimmer {
-    0% {
-      background-position: -400px 0;
-    }
-    100% {
-      background-position: 400px 0;
-    }
-  }
-
-  animation: shimmer 1.4s infinite;
+const Title = styled(DisplayHeading)`
+  font-size: clamp(40px, 8vw, 64px);
 `;
 
-export default UserPage;
+const Sub = styled.p`
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: ${Colors.midGray};
+`;
+
+export default ClientPlansPage;

@@ -35,7 +35,13 @@ const PageWrapper = styled.main`
 `;
 
 const DemoBanner = styled.p`
+  max-width: 1168px;
   margin: 0 16px 16px;
+
+  @media (min-width: 1200px) {
+    margin: 0 auto 16px;
+  }
+
   padding: 10px 14px;
   border-radius: 8px;
   background: rgba(255, 107, 43, 0.1);
