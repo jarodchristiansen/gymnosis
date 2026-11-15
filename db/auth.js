@@ -81,7 +81,8 @@ export const canWritePlanFor = (viewer, client) => {
  */
 export const canViewPlan = (viewer, plan, client) => {
   if (!viewer || !plan) return false;
-  if (isSelf(viewer, { _id: plan.client })) return plan.status === "delivered";
+  // plan.client may be an id or a populated user; isSelf reads either.
+  if (isSelf(viewer, plan.client)) return plan.status === "delivered";
   return canWritePlanFor(viewer, client);
 };
 
