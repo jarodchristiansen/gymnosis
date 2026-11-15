@@ -2,65 +2,71 @@
 
 [![codecov](https://codecov.io/gh/jarodchristiansen/gymnosis/branch/main/graph/badge.svg?token=GHT2GI9U4T)](https://codecov.io/gh/jarodchristiansen/gymnosis)
 
-Gym management software for scheduling, membership tracking, and AI-assisted trainer workflows. Built with Next.js, GraphQL, and OpenAI — with a human-in-the-loop validation layer ensuring all AI-generated health recommendations are reviewed by a certified trainer before delivery to clients.
+AI-assisted workout planning for personal trainers. The AI drafts a plan from a client questionnaire; a trainer edits it and saves it before the client ever sees it.
 
 **Live:** [gymnosis.vercel.app](https://gymnosis.vercel.app)
 
----
-
-## Features
-
-- **AI workout & meal planning** — Generates personalized routines from a client questionnaire using OpenAI. All recommendations require trainer sign-off before being surfaced to clients.
-- **Class & trainer scheduling** — Manage class calendars, assign trainers, and handle booking flows.
-- **Workout tracking** — Members log sessions and track progress over time.
-- **Owner dashboard & analytics** — Gym-level reporting on attendance, membership, and trainer utilization.
+Gymnosis is a portfolio project. No gyms use it, and the numbers on the site describe the product, not customers.
 
 ---
 
-## Tech Stack
+## What works today
 
-| Layer | Technology |
-|---|---|
-| Frontend | Next.js, React, TypeScript |
-| Styling | CSS / Tailwind |
-| API | GraphQL (Apollo), GraphQL Codegen |
-| Auth | NextAuth.js |
-| Database | MongoDB |
-| AI/NLP | OpenAI API |
-| Testing | Jest, React Testing Library, Cypress |
-| Component Dev | Storybook |
-| Code Quality | ESLint, Prettier, Husky pre-commit hooks |
-| CI | GitHub Actions |
-| Coverage | Codecov |
-| Deployment | Vercel |
+- **AI plan drafts.** Trainers fill in a short questionnaire (goal, body stats, activity level, sports, training days) and get a structured 7-day workout draft from Groq. The server builds the prompt from validated fields, asks for schema-shaped JSON, and checks the reply again before returning it. Each draft records the model and prompt version that wrote it.
+- **Trainer editing.** The draft opens in an editor. Nothing is saved to a client until the trainer saves it.
+- **Client dashboards.** Trainers see the client list and each client's saved plans. Clients see only their own.
+- **Role-based access, enforced by the API.** Every GraphQL resolver checks the signed-in user: admins see every account, trainers read and write plans for clients, clients read only themselves. Drafting is rate-limited per trainer.
+- **Sign-in** with Google, GitHub, or email and password (email accounts are created with `scripts/create-user.ts`).
 
----
+## Roadmap
 
-## Architecture Notes
-
-The codebase is structured around a clear separation of concerns:
-
-- `components/` — Reusable UI components developed and documented in Storybook
-- `pages/` — Next.js route-based page components
-- `helpers/` — Shared utility functions
-- `lib/` — External service integrations (Apollo client, auth config)
-- `db/` — Database connection and query logic
-- `client_types/` — TypeScript types generated via GraphQL Codegen
-- `stories/` — Storybook stories for component isolation and visual testing
-
-**Human-in-the-loop AI:** The AI integration is intentionally gated. When a trainer triggers workout or meal plan generation, the output enters a review state before any client-facing data is updated. This reflects a deliberate product decision — health recommendations need expert validation, not raw model output.
+- Plan review states (draft, in review, approved, delivered) with an audit trail
+- Safety rules from the questionnaire: injuries, equipment, experience
+- Gyms with their own trainers, and clients assigned to a trainer
+- A small eval harness that scores drafts for schema validity and safety rules
+- A one-click demo as a trainer, client, or gym owner
+- Later: class scheduling, memberships, owner analytics, meal plans
 
 ---
 
-## Getting Started
+## Tech stack
+
+| Layer         | Technology                                                    |
+| ------------- | ------------------------------------------------------------- |
+| Frontend      | Next.js (pages router), React, TypeScript, styled-components |
+| API           | GraphQL (Apollo Server, Apollo Client), GraphQL Codegen       |
+| Auth          | NextAuth.js                                                   |
+| Database      | MongoDB (Mongoose)                                            |
+| AI            | Groq, OpenAI-compatible API (`openai/gpt-oss-120b` by default) |
+| Testing       | Jest, React Testing Library                                   |
+| Component dev | Storybook                                                     |
+| Code quality  | ESLint, Prettier, Husky pre-commit hooks                      |
+| CI            | GitHub Actions, Codecov                                       |
+| Deployment    | Vercel                                                        |
+
+---
+
+## Architecture notes
+
+- `pages/api/graphql.js` builds each request's context from the NextAuth session. The viewer's role is read from the database, so a role change applies without signing out.
+- `db/auth.js` holds the access rules; `db/resolvers/` applies them in every resolver.
+- `lib/workoutDraft.js` owns the AI call: questionnaire validation, the prompt, the JSON schema, and the checks on the reply. A reply that isn't a usable plan becomes a `DRAFT_INVALID` error, not a crash.
+- `lib/rateLimit.js` is a fixed-window limit stored in MongoDB, so it holds across serverless instances.
+- `components/` are developed in Storybook; `client_types/` is generated from the schema.
+
+**Human-in-the-loop AI.** A draft is returned to the trainer's editor and never written to the client's record by the AI. Only a trainer or admin can save a plan to a client.
+
+---
+
+## Getting started
 
 ### Prerequisites
 
-- Node.js v16+
-- MongoDB Atlas connection string
-- OpenAI API key (for AI features; app runs without it in degraded mode)
+- Node.js 24
+- A MongoDB connection string
+- A [Groq API key](https://console.groq.com/keys) for drafting (everything else runs without it)
 
-### Local Setup
+### Local setup
 
 ```bash
 git clone https://github.com/jarodchristiansen/gymnosis
@@ -74,7 +80,8 @@ Create a `.env.local` file:
 MONGODB_URI=your_mongodb_connection_string
 NEXTAUTH_SECRET=your_nextauth_secret
 NEXTAUTH_URL=http://localhost:3000
-OPENAI_API_KEY=your_openai_key
+GROQ_API_KEY=your_groq_key
+# Optional: GROQ_MODEL=openai/gpt-oss-120b
 ```
 
 ```bash
@@ -88,31 +95,11 @@ Open [http://localhost:3000](http://localhost:3000).
 ## Testing
 
 ```bash
-# Unit and component tests
-npm run test
-npm run test:coverage
-
-# End-to-end
-npm run cypress
-
-# Lint
-npm run lint
+npm test             # unit and component tests, with coverage
+npm run check-types  # TypeScript
+npm run check-lint   # ESLint
+npm run storybook    # components in isolation
 ```
-
-Component stories can be viewed in isolation via Storybook:
-
-```bash
-npm run storybook
-```
-
----
-
-## Roadmap
-
-- Re-enable AI features with updated API key / model (OpenAI credits expired; scaffolding intact)
-- Expand Cypress E2E coverage for scheduling and booking flows
-- Add member-facing mobile view
-- Stripe integration for membership billing
 
 ---
 

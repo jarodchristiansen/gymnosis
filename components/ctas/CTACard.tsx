@@ -77,16 +77,15 @@ const CTACard: React.FC = () => {
 
   return (
     <CallToActionContainer>
-      <Title>Your next client deserves a better system.</Title>
+      <Title>Try Gymnosis.</Title>
       <Description>
-        Stop patching together spreadsheets and separate apps. Start your free
-        trial today. Your first plan ships in under 10 minutes, no setup fee, no
-        contract.
+        Create an account with Google or GitHub. New accounts start as clients;
+        a one-click demo as a trainer, client, or gym owner is on the way.
       </Description>
       <CTAButton onClick={() => router.push("/auth?path=SignUp")}>
-        Start your free trial
+        Create an account
       </CTAButton>
-      <NoCreditCard>No credit card · No contract · Cancel anytime</NoCreditCard>
+      <NoCreditCard>Free · No card needed</NoCreditCard>
     </CallToActionContainer>
   );
 };

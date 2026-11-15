@@ -26,40 +26,47 @@ const FadeUp = ({
 const features = [
   {
     label: "01",
-    title: "Client tracking that actually works",
+    title: "Every client's plans in one place",
     summary:
-      "Every client's full history in one place. No more handwritten notes, no more digging through spreadsheets before a session.",
+      "Trainers get a list of clients, and each client has a dashboard with every plan saved for them, newest first.",
     bullets: [
-      "Intake questionnaires with health history, goals, and preferences",
-      "Session-by-session workout logs with notes and progression metrics",
-      "Progress photos, measurements, and milestone tracking",
-      "Shareable progress reports for client check-ins",
+      "Client list for trainers and admins",
+      "Saved plans per client, with the date each was saved",
+      "Day-by-day view of each plan: body part, exercises, sets, and reps",
+      "Clients see their own plans, and nothing else",
     ],
   },
   {
     label: "02",
     title: "AI-assisted planning, with you in control",
     summary:
-      "Generate a complete, personalized workout and meal plan from a client questionnaire in minutes. You review and approve every detail before it reaches the client.",
+      "Answer a short questionnaire about the client and get a structured 7-day workout draft. You edit it and decide what gets saved.",
     bullets: [
-      "AI drafts plans from intake data: goals, fitness level, schedule, and restrictions",
-      "Full edit access before anything is shared with the client",
-      "Your approval required at every step. The AI accelerates your work, not replaces it",
-      "Plan versioning so you can iterate and track what changed",
+      "Drafts from the client's goal, body stats, activity level, sports, and training days",
+      "The server builds the prompt and checks the reply, so a bad draft is caught, not saved",
+      "Full edit access: swap exercises, change sets and reps",
+      "Nothing reaches the client until a trainer saves it",
     ],
   },
   {
     label: "03",
-    title: "Business management for gym owners",
+    title: "Roles and access",
     summary:
-      "Class scheduling, trainer assignments, membership tracking, and analytics — without juggling four separate tools.",
+      "Admins, trainers, and clients each see a different app, and the API checks every request against who is signed in.",
     bullets: [
-      "Class calendar with trainer assignments and capacity limits",
-      "Membership management: active, lapsed, and trial clients at a glance",
-      "Business analytics showing revenue trends, class fill rates, and trainer performance",
-      "Role-based access: admins see everything, trainers see their clients only",
+      "Admins see every account",
+      "Trainers read and write plans for clients",
+      "Clients read only their own record",
+      "Sign in with Google or GitHub",
     ],
   },
+];
+
+const roadmap = [
+  "Plan review states: draft, in review, approved, delivered",
+  "Safety rules from the questionnaire: injuries, equipment, experience",
+  "Gyms with their own trainers, and clients assigned to a trainer",
+  "Class scheduling, memberships, and owner analytics",
 ];
 
 export default function EducationPage() {
@@ -67,7 +74,7 @@ export default function EducationPage() {
     <PageWrapper>
       <SEOHead
         metaTitle="Features — Gymnosis"
-        metaDescription="A complete look at how Gymnosis helps professional trainers manage clients, build plans, and grow their business."
+        metaDescription="What Gymnosis does today: client plans in one place, AI-drafted workouts that a trainer edits and saves, and role-based access."
       />
 
       {/* Hero */}
@@ -77,9 +84,8 @@ export default function EducationPage() {
             <HeroEyebrow>Features</HeroEyebrow>
             <HeroTitle>Built for the way trainers work</HeroTitle>
             <HeroSubtitle>
-              Gymnosis combines client tracking, AI-assisted planning, and
-              business management into a single platform. Here is what each part
-              does.
+              Gymnosis pairs AI-drafted workout plans with a trainer who edits
+              and approves them. Here is what works today, and what comes next.
             </HeroSubtitle>
           </HeroInner>
         </FadeUp>
@@ -110,15 +116,15 @@ export default function EducationPage() {
       <DocsSection>
         <FadeUp>
           <DocsInner>
-            <DocsLabel>Documentation</DocsLabel>
-            <DocsTitle>Full docs are on their way.</DocsTitle>
-            <DocsBody>
-              We are building out reference documentation for every feature.
-              Until then, if you have a question about how something works,
-              reach out directly.
+            <DocsLabel>Roadmap</DocsLabel>
+            <DocsTitle>Not built yet</DocsTitle>
+            <DocsBody as="ul">
+              {roadmap.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
             </DocsBody>
-            <DocsLink href="mailto:hello@gymnosis.app">
-              hello@gymnosis.app
+            <DocsLink href="https://github.com/jarodchristiansen/gymnosis">
+              Follow along on GitHub
             </DocsLink>
           </DocsInner>
         </FadeUp>
@@ -299,7 +305,13 @@ const DocsBody = styled.p`
   font-size: 15px;
   line-height: 1.7;
   color: ${Colors.midGray};
-  margin-bottom: 28px;
+  margin: 0 0 28px;
+  padding: 0;
+  list-style: none;
+
+  li + li {
+    margin-top: 6px;
+  }
 `;
 
 const DocsLink = styled(Link)`
