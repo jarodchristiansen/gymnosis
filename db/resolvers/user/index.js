@@ -10,7 +10,12 @@ import {
   requireStaff,
   requireViewer,
 } from "../../auth";
+import { takeRateLimit } from "../../../lib/rateLimit";
+import { draftWorkout, validateGoal } from "../../../lib/workoutDraft";
 import User from "../../models/user";
+
+// Each draft is a paid-for call upstream, so each trainer gets a few an hour.
+export const DRAFTS_PER_HOUR = 10;
 
 const USERNAME_PATTERN = /^[A-Za-z0-9_.-]{3,30}$/;
 
@@ -37,73 +42,6 @@ export const UserResolver = {
       throw badInput("Unknown user filter.");
     },
 
-    createWorkout: async (_, { prompt }, context) => {
-      requireStaff(context);
-
-      const url = "https://api.openai.com/v1/chat/completions";
-
-      const headers = {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-      };
-
-      const requestData = {
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are an expert personal trainer with years of experience working with JavaScript as well. You output responses solely as a JavaScript Object when queried for workout routines matching the example in the prompt structure precisely.",
-          },
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-      };
-
-      const data = await fetch(url, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(requestData),
-      }).then((response) => response.json());
-
-      const { choices } = data;
-
-      let message;
-      let content;
-
-      if (choices?.length) {
-        message = choices[0].message;
-        content = choices[0].message.content;
-      }
-
-      content = JSON.parse(content);
-
-      console.log({ data, choices, message, content });
-
-      const firstKey = Object.keys(content)[0];
-      if (content[firstKey]) {
-        console.log(content[firstKey], "OBJECT BEFORE MAPPING");
-
-        content[firstKey] = content[firstKey]?.map((day) => {
-          if (day.exercises) {
-            day.exercises = day.exercises.map((exercise) => {
-              exercise.sets = parseInt(exercise.sets);
-              exercise.reps = parseInt(exercise.reps);
-              return exercise;
-            });
-          }
-
-          return day;
-        });
-
-        console.log(content[firstKey], "ROUTINE");
-
-        return content[firstKey];
-      }
-    },
-
     getUser: async (_, { email, id, username }, context) => {
       const viewer = requireViewer(context);
 
@@ -128,6 +66,18 @@ export const UserResolver = {
     },
   },
   mutations: {
+    draftWorkout: async (_, { input }, context) => {
+      const viewer = requireStaff(context);
+      const goal = validateGoal(input);
+
+      await takeRateLimit(`draft:${viewer.id}`, {
+        limit: DRAFTS_PER_HOUR,
+        windowMs: 60 * 60 * 1000,
+      });
+
+      return draftWorkout(goal);
+    },
+
     addWorkoutRoutine: async (_, { input }, context) => {
       const viewer = requireStaff(context);
       const { id, routine } = input ?? {};

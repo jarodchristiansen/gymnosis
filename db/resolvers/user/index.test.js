@@ -1,14 +1,21 @@
 /**
  * @jest-environment node
  */
-import { UserResolver } from "./index";
+import { DRAFTS_PER_HOUR, UserResolver } from "./index";
 import User from "../../models/user";
+import { takeRateLimit } from "../../../lib/rateLimit";
+import { draftWorkout, validateGoal } from "../../../lib/workoutDraft";
 
 jest.mock("../../models/user", () => ({
   find: jest.fn(),
   findOne: jest.fn(),
   exists: jest.fn(),
   findOneAndUpdate: jest.fn(),
+}));
+jest.mock("../../../lib/rateLimit", () => ({ takeRateLimit: jest.fn() }));
+jest.mock("../../../lib/workoutDraft", () => ({
+  draftWorkout: jest.fn(),
+  validateGoal: jest.fn(),
 }));
 
 const { queries, mutations } = UserResolver;
@@ -197,15 +204,38 @@ describe("updateUsername", () => {
   });
 });
 
-describe("createWorkout", () => {
+describe("draftWorkout", () => {
+  const input = { goal: "bulking" };
+
   it("is closed to signed-out callers and clients", async () => {
-    global.fetch = jest.fn();
     expect(
-      await codeOf(queries.createWorkout(null, { prompt: "x" }, as(null)))
+      await codeOf(mutations.draftWorkout(null, { input }, as(null)))
     ).toBe("UNAUTHENTICATED");
     expect(
-      await codeOf(queries.createWorkout(null, { prompt: "x" }, as(CLIENT)))
+      await codeOf(mutations.draftWorkout(null, { input }, as(CLIENT)))
     ).toBe("FORBIDDEN");
-    expect(global.fetch).not.toHaveBeenCalled();
+    expect(takeRateLimit).not.toHaveBeenCalled();
+    expect(draftWorkout).not.toHaveBeenCalled();
+  });
+
+  it("validates, then spends one of the trainer's hourly drafts", async () => {
+    validateGoal.mockReturnValue(input);
+    draftWorkout.mockResolvedValue({ days: [] });
+    await mutations.draftWorkout(null, { input }, as(TRAINER));
+
+    expect(takeRateLimit).toHaveBeenCalledWith(`draft:${TRAINER.id}`, {
+      limit: DRAFTS_PER_HOUR,
+      windowMs: 60 * 60 * 1000,
+    });
+    expect(draftWorkout).toHaveBeenCalledWith(input);
+  });
+
+  it("doesn't call the model once the limit is hit", async () => {
+    validateGoal.mockReturnValue(input);
+    takeRateLimit.mockRejectedValue(new Error("limited"));
+    await expect(
+      mutations.draftWorkout(null, { input }, as(TRAINER))
+    ).rejects.toThrow("limited");
+    expect(draftWorkout).not.toHaveBeenCalled();
   });
 });
