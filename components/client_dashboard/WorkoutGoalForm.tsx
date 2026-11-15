@@ -11,6 +11,13 @@ const SPORTS_OPTIONS = [
   { value: "weightlifting", label: "Weightlifting" },
 ];
 
+const INJURY_OPTIONS = [
+  { value: "knee", label: "Knee" },
+  { value: "lower back", label: "Lower back" },
+  { value: "shoulder", label: "Shoulder" },
+  { value: "wrist", label: "Wrist" },
+];
+
 const GOAL_OPTIONS = [
   {
     value: "bulking",
@@ -46,6 +53,9 @@ const WorkoutGoalForm = ({
   const [sports, setSports] = useState<string[]>([]);
   const [weightTraining, setWeightTraining] = useState(false);
   const [weightTrainingFrequency, setWeightTrainingFrequency] = useState("");
+  const [experience, setExperience] = useState("");
+  const [equipment, setEquipment] = useState("");
+  const [injuries, setInjuries] = useState<string[]>([]);
 
   const [error, setError] = useState("");
 
@@ -54,6 +64,14 @@ const WorkoutGoalForm = ({
   const handleSportToggle = (sport: string) => {
     setSports((prev) =>
       prev.includes(sport) ? prev.filter((s) => s !== sport) : [...prev, sport]
+    );
+  };
+
+  const handleInjuryToggle = (injury: string) => {
+    setInjuries((prev) =>
+      prev.includes(injury)
+        ? prev.filter((i) => i !== injury)
+        : [...prev, injury]
     );
   };
 
@@ -79,6 +97,9 @@ const WorkoutGoalForm = ({
             sports,
             weightTraining,
             sessionsPerWeek: Number(weightTrainingFrequency),
+            experience,
+            equipment,
+            injuries,
           },
         },
       });
@@ -270,6 +291,58 @@ const WorkoutGoalForm = ({
             />
           </FieldGroup>
         </TrainingGrid>
+
+        <Divider />
+        <SectionHeading>Safety</SectionHeading>
+        <FieldGrid>
+          <FieldGroup>
+            <FieldLabel htmlFor="experience">Training experience</FieldLabel>
+            <FieldSelect
+              id="experience"
+              value={experience}
+              onChange={(e) => setExperience(e.target.value)}
+              required
+            >
+              <option value="">Select experience</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </FieldSelect>
+          </FieldGroup>
+          <FieldGroup>
+            <FieldLabel htmlFor="equipment">Equipment available</FieldLabel>
+            <FieldSelect
+              id="equipment"
+              value={equipment}
+              onChange={(e) => setEquipment(e.target.value)}
+              required
+            >
+              <option value="">Select equipment</option>
+              <option value="full gym">Full gym</option>
+              <option value="dumbbells only">Dumbbells only</option>
+              <option value="bodyweight only">Bodyweight only</option>
+            </FieldSelect>
+          </FieldGroup>
+        </FieldGrid>
+        <FieldGroup>
+          <FieldLabel as="span" id="injuries-label">
+            Injuries to work around
+            <FieldHint>Select any that apply</FieldHint>
+          </FieldLabel>
+          <SportsGrid role="group" aria-labelledby="injuries-label">
+            {INJURY_OPTIONS.map(({ value, label }) => (
+              <SportChip
+                key={value}
+                selected={injuries.includes(value)}
+                aria-pressed={injuries.includes(value)}
+                type="button"
+                onClick={() => handleInjuryToggle(value)}
+              >
+                {label}
+              </SportChip>
+            ))}
+          </SportsGrid>
+        </FieldGroup>
 
         <SubmitArea>
           {error && <FormError role="alert">{error}</FormError>}

@@ -82,6 +82,9 @@ const goal = {
   sports: [],
   weightTraining: true,
   sessionsPerWeek: 3,
+  experience: "intermediate",
+  equipment: "full gym",
+  injuries: [],
 };
 
 beforeEach(() => {
@@ -199,6 +202,34 @@ describe("draftPlan", () => {
     expect(created.days).toEqual([]);
     expect(created.source.draftFailed).toBe(true);
     expect(created.events[0]).toMatchObject({ action: "draft_failed" });
+  });
+
+  it("runs the safety rules on the draft before anyone sees it", async () => {
+    draftWorkout.mockResolvedValue({
+      days: [
+        {
+          day: 1,
+          bodyPart: "Legs",
+          exercises: [{ exercise: "Box jumps", sets: 3, reps: 8 }],
+        },
+      ],
+      model: "m",
+      promptVersion: "p",
+    });
+    await mutations.draftPlan(
+      null,
+      { clientId: CLIENT.id, input: { ...goal, injuries: ["knee"] } },
+      as(TRAINER)
+    );
+
+    const { flags } = Plan.create.mock.calls[0][0];
+    expect(flags).toContainEqual(
+      expect.objectContaining({
+        rule: "injury:knee",
+        severity: "block",
+        exercise: "Box jumps",
+      })
+    );
   });
 
   it("saves nothing when the service is down", async () => {

@@ -83,6 +83,12 @@ const typeDefs = gql`
     sports: [String!]!
     weightTraining: Boolean!
     sessionsPerWeek: Int!
+    "beginner, intermediate, or advanced"
+    experience: String!
+    "full gym, dumbbells only, or bodyweight only"
+    equipment: String!
+    "Any of: knee, lower back, shoulder, wrist"
+    injuries: [String!]!
   }
 
   type WorkoutDraft {
