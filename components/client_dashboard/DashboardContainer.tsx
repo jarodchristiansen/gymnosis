@@ -1,4 +1,4 @@
-import { checkIsAdminOrTrainer } from "@/helpers/auth/auth";
+import { checkIsStaff } from "@/helpers/auth/auth";
 import { Colors, MediaQueries } from "@/styles/variables";
 import Image from "next/image";
 import { useState } from "react";
@@ -92,7 +92,7 @@ const DashboardContainer = ({
           <WorkoutView
             clientId={clientId}
             workoutHistory={clientUser?.workoutHistory ?? []}
-            canBuild={checkIsAdminOrTrainer(session?.user?.role)}
+            canBuild={checkIsStaff(session?.user?.role)}
           />
         );
       case "MealPlan":

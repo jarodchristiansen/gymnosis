@@ -97,8 +97,6 @@ export const authOptions = {
         session.user.role = user.role || "client";
         session.user.username = user.username;
       }
-      session.user.facilities = user?.facilities || [];
-      session.user.workoutHistory = user?.workoutHistory || [];
       return session;
     },
     async signIn({ user, account }) {
@@ -114,8 +112,6 @@ export const authOptions = {
         }
       } else {
         user.role = "client";
-        user.facilities = [];
-        user.workoutHistory = [];
       }
 
       return true;

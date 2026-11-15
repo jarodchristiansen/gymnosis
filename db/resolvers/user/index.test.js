@@ -20,10 +20,19 @@ jest.mock("../../../lib/workoutDraft", () => ({
 
 const { queries, mutations } = UserResolver;
 
+const GYM = "b00000000000000000000001";
 const ADMIN = { id: "a00000000000000000000001", role: "admin" };
-const TRAINER = { id: "a00000000000000000000002", role: "trainer" };
-const CLIENT = { id: "a00000000000000000000003", role: "client" };
+const TRAINER = { id: "a00000000000000000000002", role: "trainer", gym: GYM };
+const CLIENT = { id: "a00000000000000000000003", role: "client", gym: GYM };
 const OTHER_CLIENT_ID = "a00000000000000000000004";
+// A client in TRAINER's gym, assigned to TRAINER.
+const theirClient = (extra = {}) => ({
+  _id: OTHER_CLIENT_ID,
+  role: "client",
+  gym: GYM,
+  trainer: TRAINER.id,
+  ...extra,
+});
 
 const as = (viewer) => ({ viewer });
 const codeOf = (promise) =>
@@ -57,13 +66,27 @@ describe("getUsers", () => {
     expect(User.find).toHaveBeenCalledWith({});
   });
 
-  it("lists clients for trainers, but not for clients", async () => {
+  it("lists a trainer's own clients, and nothing for clients", async () => {
     User.find.mockResolvedValue([]);
     expect(await codeOf(queries.getUsers(null, clients, as(CLIENT)))).toBe(
       "FORBIDDEN"
     );
     await queries.getUsers(null, clients, as(TRAINER));
-    expect(User.find).toHaveBeenCalledWith({ role: "client" });
+    expect(User.find).toHaveBeenCalledWith({
+      role: "client",
+      gym: GYM,
+      trainer: TRAINER.id,
+    });
+  });
+
+  it("lists nobody for a trainer without a gym", async () => {
+    const result = await queries.getUsers(
+      null,
+      clients,
+      as({ ...TRAINER, gym: null })
+    );
+    expect(result).toEqual([]);
+    expect(User.find).not.toHaveBeenCalled();
   });
 
   it("rejects filters it doesn't know", async () => {
@@ -81,21 +104,24 @@ describe("getUser", () => {
     const me = await queries.getUser(null, { id: CLIENT.id }, as(CLIENT));
     expect(me.id).toBe(CLIENT.id);
 
-    User.findOne.mockReturnValueOnce(
-      lean({ _id: OTHER_CLIENT_ID, role: "client" })
-    );
+    User.findOne.mockReturnValueOnce(lean(theirClient()));
     expect(
       await codeOf(queries.getUser(null, { id: OTHER_CLIENT_ID }, as(CLIENT)))
     ).toBe("NOT_FOUND");
   });
 
-  it("lets trainers read clients but not admins", async () => {
-    User.findOne.mockReturnValueOnce(
-      lean({ _id: OTHER_CLIENT_ID, role: "client" })
-    );
+  it("lets trainers read their clients, but not others or admins", async () => {
+    User.findOne.mockReturnValueOnce(lean(theirClient()));
     await expect(
       queries.getUser(null, { id: OTHER_CLIENT_ID }, as(TRAINER))
     ).resolves.toMatchObject({ id: OTHER_CLIENT_ID });
+
+    User.findOne.mockReturnValueOnce(
+      lean(theirClient({ trainer: "a00000000000000000000009" }))
+    );
+    expect(
+      await codeOf(queries.getUser(null, { id: OTHER_CLIENT_ID }, as(TRAINER)))
+    ).toBe("NOT_FOUND");
 
     User.findOne.mockReturnValueOnce(lean({ _id: ADMIN.id, role: "admin" }));
     expect(
@@ -123,8 +149,7 @@ describe("addWorkoutRoutine", () => {
     routine: [{ day: 1, bodyPart: "Legs", exercises: [] }],
   };
   const clientDoc = () => ({
-    _id: OTHER_CLIENT_ID,
-    role: "client",
+    ...theirClient(),
     workoutHistory: [],
     save: jest.fn(),
   });

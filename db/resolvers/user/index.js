@@ -5,6 +5,7 @@ import {
   badInput,
   canViewUser,
   canWritePlanFor,
+  clientScope,
   notFound,
   requireRole,
   requireStaff,
@@ -27,16 +28,19 @@ export const UserResolver = {
         return User.find({});
       }
 
-      requireStaff(context);
+      const viewer = requireStaff(context);
+      // Trainers get their own clients, owners their gym's, admins everyone's.
+      const scope = clientScope(viewer);
+      if (!scope) return [];
 
       if (
         filter === FILTER_CONSTS.CLIENT_BY_ROLE &&
         value === SEARCH_VALUE_CONSTS.ROLE_CLIENT
       ) {
-        return User.find({ role: ROLES.CLIENT });
+        return User.find(scope);
       }
       if (filter === FILTER_CONSTS.CLIENT_BY_ID && isValidObjectId(value)) {
-        return User.find({ _id: value, role: ROLES.CLIENT });
+        return User.find({ ...scope, _id: value });
       }
 
       throw badInput("Unknown user filter.");
