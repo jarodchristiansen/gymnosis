@@ -26,47 +26,47 @@ const FadeUp = ({
 const features = [
   {
     label: "01",
-    title: "Every client's plans in one place",
+    title: "AI drafts, checked before you see them",
     summary:
-      "Trainers get a list of clients, and each client has a dashboard with every plan saved for them, newest first.",
+      "Answer a short questionnaire about the client and get a structured 7-day workout draft, already checked against safety rules.",
     bullets: [
-      "Client list for trainers and admins",
-      "Saved plans per client, with the date each was saved",
-      "Day-by-day view of each plan: body part, exercises, sets, and reps",
-      "Clients see their own plans, and nothing else",
+      "Drafts from the client's goal, body stats, training days, experience, equipment, and injuries",
+      "The server builds the prompt and checks the reply; an unusable reply becomes a draft for you to write by hand",
+      "Safety rules flag equipment the client doesn't have, movements their injuries rule out, and too much volume for a beginner",
+      "Each plan records the model and prompt version that drafted it",
     ],
   },
   {
     label: "02",
-    title: "AI-assisted planning, with you in control",
+    title: "Review, approve, send",
     summary:
-      "Answer a short questionnaire about the client and get a structured 7-day workout draft. You edit it and decide what gets saved.",
+      "Every plan moves from draft to approved to sent, and the client only ever sees plans that were sent.",
     bullets: [
-      "Drafts from the client's goal, body stats, activity level, sports, and training days",
-      "The server builds the prompt and checks the reply, so a bad draft is caught, not saved",
-      "Full edit access: swap exercises, change sets and reps",
-      "Nothing reaches the client until a trainer saves it",
+      "Edit any part of a draft: days, focus, exercises, sets, and reps",
+      "A blocking safety flag has to be fixed, or kept with a note saying why it's safe",
+      "Approving is the trainer's recorded sign-off; reopening an approved plan needs a reason",
+      "A history on every plan: who changed what, when, and why",
     ],
   },
   {
     label: "03",
     title: "Roles and access",
     summary:
-      "Admins, trainers, and clients each see a different app, and the API checks every request against who is signed in.",
+      "Owners, trainers, and clients each see a different app, and the API checks every request against who is signed in.",
     bullets: [
-      "Admins see every account",
-      "Trainers read and write plans for clients",
-      "Clients read only their own record",
-      "Sign in with Google or GitHub",
+      "Owners see their whole gym: every trainer's clients and plans",
+      "Trainers see and write plans for their own clients",
+      "Clients see only the plans they were sent",
+      "Try each role in a private demo gym, no sign-up",
     ],
   },
 ];
 
 const roadmap = [
-  "Plan review states: draft, in review, approved, delivered",
-  "Safety rules from the questionnaire: injuries, equipment, experience",
-  "Gyms with their own trainers, and clients assigned to a trainer",
+  "Inviting clients and assigning them to trainers (today the demo gym comes set up)",
+  "Progress tracking: logging sessions against a plan",
   "Class scheduling, memberships, and owner analytics",
+  "Meal plans",
 ];
 
 export default function EducationPage() {
@@ -74,7 +74,7 @@ export default function EducationPage() {
     <PageWrapper>
       <SEOHead
         metaTitle="Features — Gymnosis"
-        metaDescription="What Gymnosis does today: client plans in one place, AI-drafted workouts that a trainer edits and saves, and role-based access."
+        metaDescription="What Gymnosis does today: AI-drafted workouts checked against safety rules, a review that ends in a trainer's sign-off, and role-based access."
       />
 
       {/* Hero */}

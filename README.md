@@ -2,29 +2,28 @@
 
 [![codecov](https://codecov.io/gh/jarodchristiansen/gymnosis/branch/main/graph/badge.svg?token=GHT2GI9U4T)](https://codecov.io/gh/jarodchristiansen/gymnosis)
 
-AI-assisted workout planning for personal trainers. The AI drafts a plan from a client questionnaire; a trainer edits it and saves it before the client ever sees it.
+AI-assisted workout planning for personal trainers. The AI drafts a plan from a client questionnaire, deterministic safety rules check it, and a trainer edits, approves, and sends it. Clients only ever see plans a trainer has sent.
 
 **Live:** [gymnosis.vercel.app](https://gymnosis.vercel.app)
 
-Gymnosis is a portfolio project. No gyms use it, and the numbers on the site describe the product, not customers.
+Gymnosis is a portfolio project. No gyms use it, and the numbers on the site describe the product, not customers. To look around, use **Try as a trainer / client / owner** on the home page: each click creates a private demo gym with example data that's deleted after 24 hours.
 
 ---
 
 ## What works today
 
-- **AI plan drafts.** Trainers fill in a short questionnaire (goal, body stats, activity level, sports, training days) and get a structured 7-day workout draft from Groq. The server builds the prompt from validated fields, asks for schema-shaped JSON, and checks the reply again before returning it. Each draft records the model and prompt version that wrote it.
-- **Trainer editing.** The draft opens in an editor. Nothing is saved to a client until the trainer saves it.
-- **Client dashboards.** Trainers see the client list and each client's saved plans. Clients see only their own.
-- **Role-based access, enforced by the API.** Every GraphQL resolver checks the signed-in user: admins see every account, trainers read and write plans for clients, clients read only themselves. Drafting is rate-limited per trainer.
+- **AI plan drafts.** A trainer fills in a questionnaire (goal, body stats, activity level, sports, training days, experience, equipment, injuries) and gets a 7-day draft from Groq. The server builds the prompt from validated fields, asks for strict schema-shaped JSON, and checks the reply again. A reply that isn't a usable plan becomes an empty draft marked for writing by hand. Each plan records the model and prompt version that drafted it.
+- **Safety rules.** Deterministic checks on every draft and every edit: equipment the client doesn't have, movements their injuries rule out (jumps with a knee injury, spinal loading with a back injury, overhead work with a shoulder injury), Olympic lifts and high volume for beginners, a schedule that doesn't match what was asked, no rest day. Blocking flags stop approval until the plan is fixed or the trainer keeps it with a note.
+- **Review loop.** Plans move draft → approved → delivered. Approval is the trainer's recorded sign-off; reopening an approved plan needs a reason; only delivered plans reach the client. Every change is a single conditional write against the version the trainer saw, so concurrent edits can't overwrite each other, and each one appends to the plan's audit trail with a readable diff ("Day 1: Squat 3×5 → Squat 4×5").
+- **Gyms and roles, enforced by the API.** Owners see their gym, trainers see their assigned clients, clients see only plans sent to them. Every GraphQL resolver checks the signed-in user.
+- **Eval harness.** `npm run eval` drafts ten fixture questionnaires, runs the safety rules, and scores the batch (usable, clean, flags per draft, flags by rule) per model and prompt version into `evals/results/`.
+- **Demo mode.** A private sandbox gym per visitor, with plans in every state. Capped per IP and overall; Mongo's TTL index deletes it after a day.
 - **Sign-in** with Google, GitHub, or email and password (email accounts are created with `scripts/create-user.ts`).
 
 ## Roadmap
 
-- Plan review states (draft, in review, approved, delivered) with an audit trail
-- Safety rules from the questionnaire: injuries, equipment, experience
-- Gyms with their own trainers, and clients assigned to a trainer
-- A small eval harness that scores drafts for schema validity and safety rules
-- A one-click demo as a trainer, client, or gym owner
+- Inviting clients and assigning them to trainers in the app (today: the demo gym, or `scripts/migrate-to-plans.js` for existing accounts)
+- Progress tracking against a delivered plan
 - Later: class scheduling, memberships, owner analytics, meal plans
 
 ---
@@ -48,13 +47,14 @@ Gymnosis is a portfolio project. No gyms use it, and the numbers on the site des
 
 ## Architecture notes
 
-- `pages/api/graphql.js` builds each request's context from the NextAuth session. The viewer's role is read from the database, so a role change applies without signing out.
+- `pages/api/graphql.js` builds each request's context from the NextAuth session. The viewer's role and gym are read from the database, so a change applies without signing out.
 - `db/auth.js` holds the access rules; `db/resolvers/` applies them in every resolver.
-- `lib/workoutDraft.js` owns the AI call: questionnaire validation, the prompt, the JSON schema, and the checks on the reply. A reply that isn't a usable plan becomes a `DRAFT_INVALID` error, not a crash.
+- `lib/workoutDraft.js` owns the AI call: questionnaire validation, the prompt, the JSON schema, and the checks on the reply.
+- `lib/safetyRules.js` is the rules engine; `lib/planLifecycle.js` the transitions and approval checks; `lib/planDays.js` validation and diffs. All three are pure and unit-tested.
 - `lib/rateLimit.js` is a fixed-window limit stored in MongoDB, so it holds across serverless instances.
-- `components/` are developed in Storybook; `client_types/` is generated from the schema.
+- `components/` are developed in Storybook; `client_types/` is generated from the schema, and a test validates every client operation against it.
 
-**Human-in-the-loop AI.** A draft is returned to the trainer's editor and never written to the client's record by the AI. Only a trainer or admin can save a plan to a client.
+**Human-in-the-loop AI.** The AI writes drafts and nothing else. A draft can't reach a client until a trainer has resolved its blocking flags, approved it, and sent it, and the plan's history shows who did each step.
 
 ---
 
@@ -96,6 +96,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ```bash
 npm test             # unit and component tests, with coverage
+npm run eval         # score AI drafts against the fixtures (needs GROQ_API_KEY)
 npm run check-types  # TypeScript
 npm run check-lint   # ESLint
 npm run storybook    # components in isolation
