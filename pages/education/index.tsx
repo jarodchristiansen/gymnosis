@@ -1,27 +1,7 @@
-import { Colors, FontFamily, MediaQueries, Padding } from "@/styles/variables";
-import { motion } from "framer-motion";
-import { GetServerSideProps } from "next";
-import Link from "next/link";
+import SEOHead from "@/components/seo/SEOHead";
+import { ButtonLink, DisplayHeading, Eyebrow } from "@/components/ui";
+import { Colors, FontFamily, MediaQueries } from "@/styles/variables";
 import styled from "styled-components";
-
-import SEOHead from "../../components/seo/SEOHead";
-
-const FadeUp = ({
-  children,
-  delay = 0,
-}: {
-  children: React.ReactNode;
-  delay?: number;
-}) => (
-  <motion.div
-    initial={{ opacity: 0, y: 24 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, margin: "-60px" }}
-    transition={{ duration: 0.5, ease: "easeOut", delay }}
-  >
-    {children}
-  </motion.div>
-);
 
 const features = [
   {
@@ -33,7 +13,7 @@ const features = [
       "Drafts from the client's goal, body stats, training days, experience, equipment, and injuries",
       "The server builds the prompt and checks the reply; an unusable reply becomes a draft for you to write by hand",
       "Safety rules flag equipment the client doesn't have, movements their injuries rule out, and too much volume for a beginner",
-      "Each plan records the model and prompt version that drafted it",
+      "Each plan records the model and prompt version that drafted it, and an eval harness scores each prompt version against ten fixture questionnaires",
     ],
   },
   {
@@ -69,266 +49,184 @@ const roadmap = [
   "Meal plans",
 ];
 
-export default function EducationPage() {
+export default function FeaturesPage() {
   return (
-    <PageWrapper>
+    <Page>
       <SEOHead
         metaTitle="Features — Gymnosis"
         metaDescription="What Gymnosis does today: AI-drafted workouts checked against safety rules, a review that ends in a trainer's sign-off, and role-based access."
       />
 
-      {/* Hero */}
-      <PageHero>
-        <FadeUp>
-          <HeroInner>
-            <HeroEyebrow>Features</HeroEyebrow>
-            <HeroTitle>Built for the way trainers work</HeroTitle>
-            <HeroSubtitle>
-              Gymnosis pairs AI-drafted workout plans with a trainer who edits
-              and approves them. Here is what works today, and what comes next.
-            </HeroSubtitle>
-          </HeroInner>
-        </FadeUp>
-      </PageHero>
+      <Header>
+        <Eyebrow>Features</Eyebrow>
+        <Title>What works today</Title>
+        <Lede>
+          Gymnosis pairs AI-drafted workout plans with a trainer who edits and
+          approves them. Here is what it does now, and what it doesn&apos;t yet.
+        </Lede>
+      </Header>
 
-      {/* Feature deep-dives */}
-      <FeaturesSection>
-        {features.map((feature, i) => (
-          <FadeUp key={feature.label} delay={i * 0.08}>
-            <FeatureBlock>
-              <FeatureLabel>{feature.label}</FeatureLabel>
-              <FeatureTitle>{feature.title}</FeatureTitle>
-              <FeatureSummary>{feature.summary}</FeatureSummary>
-              <BulletList>
-                {feature.bullets.map((bullet) => (
-                  <BulletItem key={bullet}>
-                    <BulletDot />
-                    <span>{bullet}</span>
-                  </BulletItem>
+      <Features>
+        {features.map((f) => (
+          <Feature key={f.label} aria-labelledby={`feature-${f.label}`}>
+            <span className="n" aria-hidden="true">
+              {f.label}
+            </span>
+            <div>
+              <h2 id={`feature-${f.label}`}>{f.title}</h2>
+              <p className="summary">{f.summary}</p>
+              <ul>
+                {f.bullets.map((b) => (
+                  <li key={b}>{b}</li>
                 ))}
-              </BulletList>
-            </FeatureBlock>
-          </FadeUp>
+              </ul>
+            </div>
+          </Feature>
         ))}
-      </FeaturesSection>
+      </Features>
 
-      {/* Documentation stub */}
-      <DocsSection>
-        <FadeUp>
-          <DocsInner>
-            <DocsLabel>Roadmap</DocsLabel>
-            <DocsTitle>Not built yet</DocsTitle>
-            <DocsBody as="ul">
-              {roadmap.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </DocsBody>
-            <DocsLink href="https://github.com/jarodchristiansen/gymnosis">
-              Follow along on GitHub
-            </DocsLink>
-          </DocsInner>
-        </FadeUp>
-      </DocsSection>
-    </PageWrapper>
+      <Roadmap aria-labelledby="roadmap-heading">
+        <Eyebrow tone="muted">Roadmap</Eyebrow>
+        <h2 id="roadmap-heading">Not built yet</h2>
+        <ul>
+          {roadmap.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+        <Actions>
+          <ButtonLink href="/#demo">Try the demo</ButtonLink>
+          <ButtonLink
+            variant="secondary"
+            href="https://github.com/jarodchristiansen/gymnosis"
+          >
+            Source on GitHub
+          </ButtonLink>
+        </Actions>
+      </Roadmap>
+    </Page>
   );
 }
 
-// ─── Styled components ────────────────────────────────────────────────────────
-
-const PageWrapper = styled.div`
-  background-color: ${Colors.richBlack};
-  min-height: 100vh;
-`;
-
-const PageHero = styled.section`
-  background-color: ${Colors.midnight};
-  padding: calc(64px + ${Padding.xxlarge}) 24px ${Padding.xxlarge};
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-
-  @media ${MediaQueries.MD} {
-    padding: calc(64px + 64px) 80px 72px;
-  }
-`;
-
-const HeroInner = styled.div`
-  max-width: 700px;
-`;
-
-const HeroEyebrow = styled.span`
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: ${Colors.brand.accent};
-  margin-bottom: 16px;
-`;
-
-const HeroTitle = styled.h1`
-  font-family: ${FontFamily.display};
-  font-size: 48px;
-  font-weight: 800;
-  color: ${Colors.brand.white};
-  line-height: 1.08;
-  letter-spacing: -0.5px;
-  margin-bottom: 20px;
-
-  @media ${MediaQueries.MD} {
-    font-size: 56px;
-  }
-`;
-
-const HeroSubtitle = styled.p`
-  font-size: 17px;
-  line-height: 1.65;
-  color: ${Colors.midGray};
-  max-width: 560px;
-`;
-
-const FeaturesSection = styled.section`
-  padding: 72px 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  max-width: 860px;
+const Page = styled.div`
+  max-width: 960px;
   margin: 0 auto;
+  padding: 32px 16px 80px;
 
   @media ${MediaQueries.MD} {
-    padding: 80px 40px;
+    padding: 64px 24px 112px;
   }
 `;
 
-const FeatureBlock = styled.div`
-  padding: 48px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-
-  &:last-child {
-    border-bottom: none;
-  }
+const Header = styled.header`
+  margin-bottom: 40px;
 `;
 
-const FeatureLabel = styled.span`
-  font-family: ${FontFamily.display};
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  color: ${Colors.brand.accent};
-  text-transform: uppercase;
-  display: block;
-  margin-bottom: 12px;
+const Title = styled(DisplayHeading)`
+  font-size: clamp(46px, 9vw, 80px);
 `;
 
-const FeatureTitle = styled.h2`
-  font-family: ${FontFamily.display};
-  font-size: 32px;
-  font-weight: 700;
-  color: ${Colors.brand.white};
-  line-height: 1.15;
-  margin-bottom: 16px;
+const Lede = styled.p`
+  max-width: 36em;
+  margin: 16px 0 0;
+  font-size: 18px;
+  line-height: 1.6;
+  color: ${Colors.lightGray};
+`;
+
+const Features = styled.div`
+  border-top: 2px solid rgba(242, 238, 232, 0.16);
+`;
+
+const Feature = styled.section`
+  display: grid;
+  gap: 8px 24px;
+  padding: 32px 0;
+  border-bottom: 1px solid ${Colors.rule};
 
   @media ${MediaQueries.MD} {
-    font-size: 36px;
+    grid-template-columns: 96px minmax(0, 1fr);
+  }
+
+  .n {
+    font-family: ${FontFamily.display};
+    font-size: 48px;
+    font-weight: 700;
+    line-height: 1;
+    color: ${Colors.brand.accent};
+  }
+
+  h2 {
+    margin: 0;
+    font-family: ${FontFamily.display};
+    font-size: clamp(28px, 4vw, 36px);
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    line-height: 1.05;
+    text-transform: uppercase;
+  }
+
+  .summary {
+    margin: 10px 0 14px;
+    font-size: 17px;
+    color: ${Colors.lightGray};
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    position: relative;
+    padding: 8px 0 8px 22px;
+    border-top: 1px solid ${Colors.rule};
+    color: ${Colors.midGray};
+  }
+
+  li::before {
+    content: "";
+    position: absolute;
+    left: 2px;
+    top: 18px;
+    width: 8px;
+    height: 2px;
+    background: ${Colors.brand.accent};
   }
 `;
 
-const FeatureSummary = styled.p`
-  font-size: 16px;
-  line-height: 1.7;
-  color: ${Colors.midGray};
-  margin-bottom: 28px;
-  max-width: 640px;
-`;
-
-const BulletList = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-`;
-
-const BulletItem = styled.li`
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  font-size: 15px;
-  color: ${Colors.brand.white};
-  line-height: 1.55;
-  opacity: 0.88;
-`;
-
-const BulletDot = styled.span`
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: ${Colors.brand.accent};
-  flex-shrink: 0;
-  margin-top: 8px;
-`;
-
-const DocsSection = styled.section`
-  background-color: ${Colors.surface};
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 72px 24px;
+const Roadmap = styled.section`
+  margin-top: 48px;
+  padding: 24px 20px;
+  border: 1px dashed rgba(242, 238, 232, 0.24);
+  border-radius: 8px;
 
   @media ${MediaQueries.MD} {
-    padding: 80px;
+    padding: 32px;
   }
-`;
 
-const DocsInner = styled.div`
-  max-width: 560px;
-  margin: 0 auto;
-  text-align: center;
-`;
+  h2 {
+    margin: 0 0 12px;
+    font-family: ${FontFamily.display};
+    font-size: 32px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
 
-const DocsLabel = styled.span`
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: ${Colors.brand.accent};
-  margin-bottom: 16px;
-`;
-
-const DocsTitle = styled.h2`
-  font-family: ${FontFamily.display};
-  font-size: 32px;
-  font-weight: 700;
-  color: ${Colors.brand.white};
-  margin-bottom: 16px;
-`;
-
-const DocsBody = styled.p`
-  font-size: 15px;
-  line-height: 1.7;
-  color: ${Colors.midGray};
-  margin: 0 0 28px;
-  padding: 0;
-  list-style: none;
+  ul {
+    margin: 0;
+    padding-left: 20px;
+    color: ${Colors.lightGray};
+  }
 
   li + li {
     margin-top: 6px;
   }
 `;
 
-const DocsLink = styled(Link)`
-  display: inline-block;
-  font-size: 15px;
-  font-weight: 600;
-  color: ${Colors.brand.accent};
-  text-decoration: none;
-  border-bottom: 1px solid rgba(255, 107, 43, 0.4);
-  padding-bottom: 2px;
-  transition: border-color 0.2s ease;
-
-  &:hover {
-    border-color: ${Colors.brand.accent};
-  }
+const Actions = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
 `;
-
-export const getServerSideProps: GetServerSideProps = async () => {
-  return { props: {} };
-};

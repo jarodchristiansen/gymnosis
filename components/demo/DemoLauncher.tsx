@@ -80,7 +80,7 @@ const Options = styled.ul`
   padding: 0;
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 `;
 
 const Option = styled.button`
