@@ -25,7 +25,6 @@
   "dependencies": {
     "@apollo/client": "^3.7.3",
     "@apollo/server": "^4.3.0",
-    "@hotjar/browser": "^1.0.9",
     "@next-auth/mongodb-adapter": "^1.1.1",
     "@types/react-modal": "^3.16.2",
     "apollo-server": "^3.11.1",
