@@ -83,7 +83,7 @@ const ProfilePage = () => {
   return (
     <PageWrapper>
       <Head>
-        <link rel="icon" type="image/png" href="/images/dumbbell.svg" />
+        <link rel="icon" type="image/svg+xml" href="/images/dumbbell.svg" />
         <title>Profile</title>
       </Head>
 

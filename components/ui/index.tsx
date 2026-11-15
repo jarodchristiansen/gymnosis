@@ -88,6 +88,7 @@ export const DisplayHeading = styled.h1`
   line-height: 0.98;
   letter-spacing: 0.01em;
   text-transform: uppercase;
+  text-wrap: balance;
   color: ${Colors.lightGray};
 `;
 

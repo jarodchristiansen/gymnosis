@@ -30,7 +30,7 @@ const SEOHead = ({
   return (
     <Head>
       <meta name="viewport" content="width=device-width, initial-scale=1" />
-      <link rel="icon" type="image/png" href="/images/dumbbell.svg" />
+      <link rel="icon" type="image/svg+xml" href="/images/dumbbell.svg" />
 
       <title>{resolvedTitle}</title>
       {isHomePage ? (

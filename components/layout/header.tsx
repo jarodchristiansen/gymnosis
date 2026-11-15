@@ -82,12 +82,8 @@ function Header() {
     if (!routes?.length) return [];
 
     return routes.map((route) => {
-      if (!route?.key) return null;
-
-      // const isGuardedAndAllowed = route.guarded && !!session;
-      // const isUnguarded = !route.guarded;
-
-      // if (!isGuardedAndAllowed && !isUnguarded) return null;
+      // Keys start at 0, so check for the route itself, not a truthy key.
+      if (!route) return null;
 
       return (
         <NavItem key={route.route}>
@@ -102,7 +98,7 @@ function Header() {
         </NavItem>
       );
     });
-  }, [routes, selectedRoute, session]);
+  }, [routes, selectedRoute]);
 
   return (
     <NavBar role="navigation" aria-label="Main navigation">
