@@ -47,8 +47,8 @@ const AuthPage = ({ providers, initialTab }: AuthPageProps) => {
         </DemoSection>
 
         <FooterNote>
-          By continuing you agree to our{" "}
-          <Link href="/terms-of-service">Terms of Service</Link>.
+          Gymnosis is a portfolio project.{" "}
+          <Link href="/terms-of-service">About and terms</Link>.
         </FooterNote>
       </PageInner>
     </PageWrapper>
