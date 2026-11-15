@@ -1,0 +1,16 @@
+{
+  "description": "Beginner with no equipment: every loaded or hanging exercise is a block.",
+  "input": {
+    "goal": "getting more lean",
+    "weightLbs": 210,
+    "heightInches": 69,
+    "age": 42,
+    "activityLevel": "sedentary",
+    "sports": [],
+    "weightTraining": false,
+    "sessionsPerWeek": 3,
+    "experience": "beginner",
+    "equipment": "bodyweight only",
+    "injuries": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "description": "Intermediate, full gym, no injuries: the easy case.",
+  "input": {
+    "goal": "bulking",
+    "weightLbs": 170,
+    "heightInches": 69,
+    "age": 30,
+    "activityLevel": "moderately active",
+    "sports": [],
+    "weightTraining": true,
+    "sessionsPerWeek": 3,
+    "experience": "intermediate",
+    "equipment": "full gym",
+    "injuries": []
+  }
+}

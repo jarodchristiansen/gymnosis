@@ -37,12 +37,10 @@ export type ExerciseInput = {
 export type Mutation = {
   __typename?: "Mutation";
   acknowledgeFlag: Plan;
-  addWorkoutRoutine?: Maybe<User>;
   approvePlan: Plan;
   createManualPlan: Plan;
   deliverPlan: Plan;
   draftPlan: Plan;
-  draftWorkout?: Maybe<WorkoutDraft>;
   reopenPlan: Plan;
   updatePlanDays: Plan;
   updateUsername?: Maybe<User>;
@@ -53,10 +51,6 @@ export type MutationAcknowledgeFlagArgs = {
   id: Scalars["ID"]["input"];
   note: Scalars["String"]["input"];
   version: Scalars["Int"]["input"];
-};
-
-export type MutationAddWorkoutRoutineArgs = {
-  input?: InputMaybe<WorkoutInput>;
 };
 
 export type MutationApprovePlanArgs = {
@@ -75,10 +69,6 @@ export type MutationDeliverPlanArgs = {
 
 export type MutationDraftPlanArgs = {
   clientId: Scalars["ID"]["input"];
-  input: WorkoutGoalInput;
-};
-
-export type MutationDraftWorkoutArgs = {
   input: WorkoutGoalInput;
 };
 
@@ -233,18 +223,10 @@ export type User = {
   name?: Maybe<Scalars["String"]["output"]>;
   role?: Maybe<Scalars["String"]["output"]>;
   username?: Maybe<Scalars["String"]["output"]>;
-  workoutHistory?: Maybe<Array<Maybe<WorkoutHistoryEntry>>>;
 };
 
 export type UsernameInput = {
   username: Scalars["String"]["input"];
-};
-
-export type WorkoutDraft = {
-  __typename?: "WorkoutDraft";
-  days: Array<WorkoutRoutine>;
-  model: Scalars["String"]["output"];
-  promptVersion: Scalars["String"]["output"];
 };
 
 export type WorkoutGoalInput = {
@@ -262,17 +244,6 @@ export type WorkoutGoalInput = {
   sports: Array<Scalars["String"]["input"]>;
   weightLbs: Scalars["Float"]["input"];
   weightTraining: Scalars["Boolean"]["input"];
-};
-
-export type WorkoutHistoryEntry = {
-  __typename?: "WorkoutHistoryEntry";
-  date?: Maybe<Scalars["Date"]["output"]>;
-  routine?: Maybe<Array<Maybe<WorkoutRoutine>>>;
-};
-
-export type WorkoutInput = {
-  id?: InputMaybe<Scalars["String"]["input"]>;
-  routine?: InputMaybe<Array<InputMaybe<WorkoutRoutineInput>>>;
 };
 
 export type WorkoutRoutine = {

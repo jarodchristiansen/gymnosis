@@ -1,0 +1,16 @@
+{
+  "description": "Knee, wrist, and shoulder injuries at once, bodyweight only.",
+  "input": {
+    "goal": "getting more lean",
+    "weightLbs": 170,
+    "heightInches": 69,
+    "age": 63,
+    "activityLevel": "lightly active",
+    "sports": [],
+    "weightTraining": true,
+    "sessionsPerWeek": 2,
+    "experience": "beginner",
+    "equipment": "bodyweight only",
+    "injuries": ["knee", "wrist", "shoulder"]
+  }
+}

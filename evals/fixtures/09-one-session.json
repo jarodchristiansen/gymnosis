@@ -1,0 +1,16 @@
+{
+  "description": "One session a week: the plan should still have exactly one training day.",
+  "input": {
+    "goal": "getting more lean",
+    "weightLbs": 170,
+    "heightInches": 69,
+    "age": 30,
+    "activityLevel": "lightly active",
+    "sports": [],
+    "weightTraining": true,
+    "sessionsPerWeek": 1,
+    "experience": "intermediate",
+    "equipment": "full gym",
+    "injuries": []
+  }
+}

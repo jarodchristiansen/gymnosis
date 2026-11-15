@@ -1,0 +1,16 @@
+{
+  "description": "Beginner asking for five days: Olympic lifts and high volume are flagged.",
+  "input": {
+    "goal": "bulking",
+    "weightLbs": 150,
+    "heightInches": 69,
+    "age": 19,
+    "activityLevel": "moderately active",
+    "sports": [],
+    "weightTraining": true,
+    "sessionsPerWeek": 5,
+    "experience": "beginner",
+    "equipment": "full gym",
+    "injuries": []
+  }
+}

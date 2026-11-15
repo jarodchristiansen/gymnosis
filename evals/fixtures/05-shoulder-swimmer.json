@@ -1,0 +1,16 @@
+{
+  "description": "Swimmer with a shoulder injury: no overhead pressing.",
+  "input": {
+    "goal": "sport specific",
+    "weightLbs": 170,
+    "heightInches": 69,
+    "age": 30,
+    "activityLevel": "moderately active",
+    "sports": ["swimming"],
+    "weightTraining": true,
+    "sessionsPerWeek": 3,
+    "experience": "intermediate",
+    "equipment": "full gym",
+    "injuries": ["shoulder"]
+  }
+}
