@@ -23,3 +23,21 @@ export const UPDATE_USERNAME = gql`
     }
   }
 `;
+
+export const DRAFT_WORKOUT = gql`
+  mutation draftWorkout($input: WorkoutGoalInput!) {
+    draftWorkout(input: $input) {
+      model
+      promptVersion
+      days {
+        day
+        bodyPart
+        exercises {
+          exercise
+          sets
+          reps
+        }
+      }
+    }
+  }
+`;

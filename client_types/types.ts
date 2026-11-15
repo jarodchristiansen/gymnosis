@@ -37,11 +37,16 @@ export type ExerciseInput = {
 export type Mutation = {
   __typename?: "Mutation";
   addWorkoutRoutine?: Maybe<User>;
+  draftWorkout?: Maybe<WorkoutDraft>;
   updateUsername?: Maybe<User>;
 };
 
 export type MutationAddWorkoutRoutineArgs = {
   input?: InputMaybe<WorkoutInput>;
+};
+
+export type MutationDraftWorkoutArgs = {
+  input: WorkoutGoalInput;
 };
 
 export type MutationUpdateUsernameArgs = {
@@ -73,15 +78,10 @@ export type PostInput = {
 
 export type Query = {
   __typename?: "Query";
-  createWorkout?: Maybe<Array<Maybe<WorkoutRoutine>>>;
   getPost?: Maybe<Post>;
   getPosts?: Maybe<Array<Maybe<Post>>>;
   getUser?: Maybe<User>;
   getUsers?: Maybe<Array<Maybe<User>>>;
-};
-
-export type QueryCreateWorkoutArgs = {
-  prompt?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export type QueryGetPostArgs = {
@@ -95,6 +95,7 @@ export type QueryGetPostsArgs = {
 export type QueryGetUserArgs = {
   email?: InputMaybe<Scalars["String"]["input"]>;
   id?: InputMaybe<Scalars["String"]["input"]>;
+  username?: InputMaybe<Scalars["String"]["input"]>;
 };
 
 export type QueryGetUsersArgs = {
@@ -111,11 +112,35 @@ export type User = {
   name?: Maybe<Scalars["String"]["output"]>;
   role?: Maybe<Scalars["String"]["output"]>;
   username?: Maybe<Scalars["String"]["output"]>;
+  workoutHistory?: Maybe<Array<Maybe<WorkoutHistoryEntry>>>;
 };
 
 export type UsernameInput = {
-  email?: InputMaybe<Scalars["String"]["input"]>;
   username: Scalars["String"]["input"];
+};
+
+export type WorkoutDraft = {
+  __typename?: "WorkoutDraft";
+  days: Array<WorkoutRoutine>;
+  model: Scalars["String"]["output"];
+  promptVersion: Scalars["String"]["output"];
+};
+
+export type WorkoutGoalInput = {
+  activityLevel: Scalars["String"]["input"];
+  age: Scalars["Int"]["input"];
+  goal: Scalars["String"]["input"];
+  heightInches: Scalars["Float"]["input"];
+  sessionsPerWeek: Scalars["Int"]["input"];
+  sports: Array<Scalars["String"]["input"]>;
+  weightLbs: Scalars["Float"]["input"];
+  weightTraining: Scalars["Boolean"]["input"];
+};
+
+export type WorkoutHistoryEntry = {
+  __typename?: "WorkoutHistoryEntry";
+  date?: Maybe<Scalars["Date"]["output"]>;
+  routine?: Maybe<Array<Maybe<WorkoutRoutine>>>;
 };
 
 export type WorkoutInput = {

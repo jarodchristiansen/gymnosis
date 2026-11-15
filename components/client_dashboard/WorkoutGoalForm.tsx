@@ -1,7 +1,7 @@
-import { CREATE_WORKOUT } from "@/helpers/queries/user";
+import { DRAFT_WORKOUT } from "@/helpers/mutations/user";
 import { Colors, MediaQueries } from "@/styles/variables";
-import { useLazyQuery } from "@apollo/client";
-import { useEffect, useState } from "react";
+import { useMutation } from "@apollo/client";
+import { useState } from "react";
 import styled, { keyframes } from "styled-components";
 
 const SPORTS_OPTIONS = [
@@ -47,8 +47,9 @@ const WorkoutGoalForm = ({
   const [weightTraining, setWeightTraining] = useState(false);
   const [weightTrainingFrequency, setWeightTrainingFrequency] = useState("");
 
-  const [createWorkout, { data, loading: isGenerating }] =
-    useLazyQuery(CREATE_WORKOUT);
+  const [error, setError] = useState("");
+
+  const [draftWorkout, { loading: isGenerating }] = useMutation(DRAFT_WORKOUT);
 
   const handleSportToggle = (sport: string) => {
     setSports((prev) =>
@@ -56,84 +57,43 @@ const WorkoutGoalForm = ({
     );
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
 
-    const clientDetails = `Client Weight Goal: ${clientGoal}
-Client Weight: ${clientWeight} lbs
-Client Height: ${clientHeight} inches
-Client Age: ${clientAge}
-Activity Level: ${activityLevel}
-Sports Participation: ${sports.join(", ")}
-Weight Training: ${weightTraining ? "Yes" : "No"}
-Weight Training Frequency: ${weightTrainingFrequency}`;
-
-    const workoutPlanPlaceholders = `
-[
-  {
-    "day": 1,
-    "bodyPart": "Chest",
-    "exercises": [
-      {
-        "exercise": "[Exercise1Name]",
-        "sets": [Exercise1Sets],
-        "reps": [Exercise1Reps]
-      },
-      {
-        "exercise": "[Exercise2Name]",
-        "sets": [Exercise2Sets],
-        "reps": [Exercise2Reps]
-      }
-    ]
-  },
-  {
-    "day": 2,
-    "bodyPart": "Back",
-    "exercises": [
-      {
-        "exercise": "[Exercise3Name]",
-        "sets": [Exercise3Sets],
-        "reps": [Exercise3Reps]
-      },
-      {
-        "exercise": "[Exercise4Name]",
-        "sets": [Exercise4Sets],
-        "reps": [Exercise4Reps]
-      }
-    ]
-  },
- {
-    "day": 3,
-    "bodyPart": "Rest",
-    "exercises": [
-    
-    ]
-  }
-]
-`;
-
-    const prompt = `Generate a personalized workout plan for the client based on the following details and don't worry about adding text aside from the JavaScript object output:
-${clientDetails}
-
-Based on the client's details provided above, create a workout plan. Replace the placeholders in the plan with exercise names, sets, and reps. Ensure that the workout plan is suitable for their ${activityLevel} and ${sports.join(
-      ", "
-    )} and incorporates ${weightTrainingFrequency} sessions with a minimum of ${
-      parseInt(weightTrainingFrequency) > 2 ? 4 : 2
-    } lifts per day. Please include rest days for the remaining days that do not have workouts.
-
-${workoutPlanPlaceholders}
-
-Please provide a workout plan in the format of the JavaScript object array above. Complete the entire plan in the object and don't use placeholder data as this will be used in an application. The plan must include ${weightTrainingFrequency} weight training days days to have your recommended routine and can't use things like "continue this pattern for the remaining days". Please also include rest days to fill the remainder of the days that are not used for weight training. Please only provide the JavaScript Object output as the workout routine and no additional text`;
-
-    createWorkout({ variables: { prompt } });
-  };
-
-  useEffect(() => {
-    if (data?.createWorkout) {
-      setAiWorkoutData(data.createWorkout);
-      setFormIsOpen(false);
+    if (!clientGoal) {
+      setError("Choose a primary goal.");
+      return;
     }
-  }, [data, setAiWorkoutData, setFormIsOpen]);
+
+    // The server builds the prompt from these fields; nothing free-form goes to the model.
+    try {
+      const { data } = await draftWorkout({
+        variables: {
+          input: {
+            goal: clientGoal,
+            weightLbs: Number(clientWeight),
+            heightInches: Number(clientHeight),
+            age: Number(clientAge),
+            activityLevel,
+            sports,
+            weightTraining,
+            sessionsPerWeek: Number(weightTrainingFrequency),
+          },
+        },
+      });
+
+      if (data?.draftWorkout?.days) {
+        setAiWorkoutData(data.draftWorkout.days);
+        setFormIsOpen(false);
+      }
+    } catch (err) {
+      setError(
+        err?.graphQLErrors?.[0]?.message ??
+          "Couldn't draft a plan. Check your connection and try again."
+      );
+    }
+  };
 
   return (
     <FormWrap>
@@ -312,6 +272,7 @@ Please provide a workout plan in the format of the JavaScript object array above
         </TrainingGrid>
 
         <SubmitArea>
+          {error && <FormError role="alert">{error}</FormError>}
           <GenerateButton type="submit" disabled={isGenerating}>
             {isGenerating ? (
               <>
@@ -554,6 +515,12 @@ const RadioOption = styled.button<{ selected: boolean }>`
   &:hover {
     border-color: rgba(255, 107, 43, 0.3);
   }
+`;
+
+const FormError = styled.p`
+  margin: 0;
+  font-size: 14px;
+  color: #ff8a80;
 `;
 
 const SubmitArea = styled.div`

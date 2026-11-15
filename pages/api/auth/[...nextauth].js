@@ -29,10 +29,7 @@ export const authOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          console.log("[auth] authorize: missing email or password");
-          return null;
-        }
+        if (!credentials?.email || !credentials?.password) return null;
 
         try {
           await connectDb();
@@ -41,21 +38,12 @@ export const authOptions = {
             "+password"
           );
 
-          console.log(
-            "[auth] authorize: user found =",
-            !!user,
-            "| has password =",
-            !!user?.password
-          );
-
           if (!user?.password) return null;
 
           const isValid = await bcrypt.compare(
             credentials.password,
             user.password
           );
-
-          console.log("[auth] authorize: bcrypt isValid =", isValid);
 
           if (!isValid) return null;
 
@@ -133,7 +121,11 @@ export const authOptions = {
       return true;
     },
   },
-  secret: process.env.NEXTAUTH_SECRET || "PLACE-HERE-ANY-STRING",
+  // A guessable fallback secret would let anyone sign their own session tokens, so production
+  // has none: NextAuth refuses to start without NEXTAUTH_SECRET.
+  secret:
+    process.env.NEXTAUTH_SECRET ||
+    (process.env.NODE_ENV === "production" ? undefined : "gymnosis-dev-only"),
   pages: {
     signIn: "/auth",
   },

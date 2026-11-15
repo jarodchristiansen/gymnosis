@@ -5,7 +5,8 @@ import type { WorkoutHistoryEntry } from "./DashboardContainer";
 
 interface WorkoutHistoryProps {
   workoutHistory: WorkoutHistoryEntry[];
-  onBuildWorkout: () => void;
+  // Only trainers and admins build plans; clients get no build actions.
+  onBuildWorkout?: () => void;
 }
 
 const formatDate = (dateStr: string): string => {
@@ -50,23 +51,26 @@ const WorkoutHistory = ({
         </EmptyIcon>
         <EmptyTitle>No workout plans yet</EmptyTitle>
         <EmptyMessage>
-          This client does not have a workout plan assigned. Build a
-          personalized AI-generated plan to get them started.
+          {onBuildWorkout
+            ? "This client doesn't have a workout plan yet. Draft one from their questionnaire to get them started."
+            : "Your trainer hasn't saved a plan for you yet. It will show up here once they do."}
         </EmptyMessage>
-        <BuildButton type="button" onClick={onBuildWorkout}>
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-          >
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-          Build a Workout Plan
-        </BuildButton>
+        {onBuildWorkout && (
+          <BuildButton type="button" onClick={onBuildWorkout}>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            >
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Build a Workout Plan
+          </BuildButton>
+        )}
       </EmptyContainer>
     );
   }
@@ -82,20 +86,22 @@ const WorkoutHistory = ({
         <HistoryTitle>
           {sorted.length} {sorted.length === 1 ? "plan" : "plans"} on file
         </HistoryTitle>
-        <NewPlanButton type="button" onClick={onBuildWorkout}>
-          <svg
-            width="13"
-            height="13"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-          >
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-          New Plan
-        </NewPlanButton>
+        {onBuildWorkout && (
+          <NewPlanButton type="button" onClick={onBuildWorkout}>
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            >
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            New Plan
+          </NewPlanButton>
+        )}
       </HistoryHeader>
 
       <EntryList>

@@ -8,24 +8,33 @@ import type { WorkoutHistoryEntry } from "./DashboardContainer";
 interface WorkoutViewProps {
   clientId: string;
   workoutHistory: WorkoutHistoryEntry[];
+  canBuild: boolean;
 }
 
 type WorkoutTab = "history" | "builder";
 
-const WorkoutView = ({ clientId, workoutHistory }: WorkoutViewProps) => {
+const WorkoutView = ({
+  clientId,
+  workoutHistory,
+  canBuild,
+}: WorkoutViewProps) => {
   const [view, setView] = useState<WorkoutTab>("history");
 
   const renderContent = () => {
-    if (view === "history") {
+    if (view === "history" || !canBuild) {
       return (
         <WorkoutHistory
           workoutHistory={workoutHistory}
-          onBuildWorkout={() => setView("builder")}
+          onBuildWorkout={canBuild ? () => setView("builder") : undefined}
         />
       );
     }
     return <WorkoutBuilder clientId={clientId} />;
   };
+
+  if (!canBuild) {
+    return <WorkoutContainer>{renderContent()}</WorkoutContainer>;
+  }
 
   return (
     <WorkoutContainer>

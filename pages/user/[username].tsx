@@ -32,7 +32,7 @@ const ProfilePage = () => {
     }
     fetchUserDetails({
       variables: {
-        id: username,
+        username,
       },
     });
     return username;

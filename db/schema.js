@@ -21,7 +21,6 @@ const typeDefs = gql`
 
   input UsernameInput {
     username: String!
-    email: String
   }
 
   type Post {
@@ -75,15 +74,32 @@ const typeDefs = gql`
     id: String
   }
 
+  input WorkoutGoalInput {
+    goal: String!
+    weightLbs: Float!
+    heightInches: Float!
+    age: Int!
+    activityLevel: String!
+    sports: [String!]!
+    weightTraining: Boolean!
+    sessionsPerWeek: Int!
+  }
+
+  type WorkoutDraft {
+    days: [WorkoutRoutine!]!
+    model: String!
+    promptVersion: String!
+  }
+
   type Query {
-    createWorkout(prompt: String): [WorkoutRoutine]
     getUsers(filter: String, value: String): [User]
-    getUser(email: String, id: String): User
+    getUser(email: String, id: String, username: String): User
     getPost(slug: String): Post
     getPosts(filter: String): [Post]
   }
 
   type Mutation {
+    draftWorkout(input: WorkoutGoalInput!): WorkoutDraft
     addWorkoutRoutine(input: WorkoutInput): User
     updateUsername(input: UsernameInput): User
   }

@@ -47,19 +47,19 @@ const cardContent = [
     image: "/landing/avatar-icon.svg",
     alt: "Client profile and tracking icon",
     title: "Stop losing track of clients",
-    text: "Log workouts, track every metric, and see each client's full progress history in one place. No more chasing down handwritten notes or digging through spreadsheets before a session.",
+    text: "Every client's saved plans in one place, newest first, so you're not digging through notes or spreadsheets before a session.",
   },
   {
     image: "/landing/connected-icon.svg",
     alt: "AI planning and connections icon",
     title: "Build better plans, faster",
-    text: "AI-generated workout and meal plans from client questionnaires. You review and approve before anything reaches the client. 30 minutes instead of 3 hours, with your expertise still in the loop.",
+    text: "Fill in a short client questionnaire and get a structured 7-day workout draft. You edit it and save it; nothing reaches the client until you do.",
   },
   {
     image: "/landing/growth-chart-icon.svg",
-    alt: "Business growth and analytics icon",
-    title: "Manage your business, not just sessions",
-    text: "Class scheduling, trainer assignments, membership tracking, and business analytics: all in one dashboard. Know which classes fill, which trainers are booked, and where revenue is trending.",
+    alt: "Roles and access icon",
+    title: "A view for everyone in the gym",
+    text: "Admins see every account, trainers see clients, and clients see only their own plans. The API enforces it, not just the menus.",
   },
 ];
 
@@ -68,37 +68,37 @@ const features = [
     icon: "/landing/metrics.svg",
     title: "AI writes the first draft. You make it perfect.",
     description:
-      "Generate personalized client plans in minutes. The AI handles the structure. You apply your expertise and approve before anything goes to the client.",
+      "The draft follows the client's goal, activity level, and training days. You swap exercises, adjust sets and reps, and decide what gets saved.",
   },
   {
     icon: "/landing/security.svg",
-    title: "Your client data, secured.",
+    title: "Client data, scoped by role.",
     description:
-      "Member health data stays in your control. Role-based access means trainers see their clients, admins see the business, and clients see only what you share.",
+      "Every request is checked against who's signed in. Trainers can read and write plans for clients, and clients can read only their own.",
   },
   {
     icon: "/landing/ui.svg",
-    title: "One dashboard, not five apps.",
+    title: "Plans you can actually edit.",
     description:
-      "Scheduling, tracking, planning, and analytics. Stop paying for four separate tools. Gymnosis brings it together so your workflow actually flows.",
+      "The draft opens in an editor, not a wall of text. Change anything, then save it to the client's history in one step.",
   },
 ];
 
 const howItWorksSteps = [
   {
     n: "01",
-    title: "Add your clients",
-    body: "Import or create client profiles with health history, goals, and preferences. Everything in one place from day one.",
+    title: "Clients sign up",
+    body: "Clients create an account with Google or GitHub, and appear in the client list.",
   },
   {
     n: "02",
     title: "Generate a plan",
-    body: "AI drafts a personalized workout and meal plan from the client questionnaire, structured and ready for your review.",
+    body: "Answer a few questions about the client, and AI drafts a 7-day workout plan, structured and ready for your review.",
   },
   {
     n: "03",
     title: "Review and deliver",
-    body: "Apply your expertise, approve, and the client receives their verified plan. Your sign-off, every time.",
+    body: "Edit the draft and save it. The client sees the plan you saved, never the raw draft.",
   },
 ];
 
@@ -108,7 +108,7 @@ export default function Home() {
       <SEOHead
         isHomePage={true}
         metaTitle="Gymnosis — Gym Management Software for Professional Trainers"
-        metaDescription="AI-assisted workout planning, client tracking, and gym scheduling for personal trainers and gym owners. Human-verified recommendations, built for professionals."
+        metaDescription="AI-assisted workout planning for personal trainers: the AI drafts a plan from a client questionnaire, and a trainer edits and saves it before the client sees it."
         previewImage="/assets/gymnosis.png"
       />
 
@@ -118,7 +118,7 @@ export default function Home() {
           <FadeUp>
             <LandingCard
               headerText="Run a smarter gym."
-              bodyText="AI-assisted planning, client tracking, and scheduling. All in one place. Built for professional trainers."
+              bodyText="AI drafts the workout plan. A trainer edits and approves it before the client sees it."
               renderSignIn={false}
               renderLearnMore={true}
               renderGetStarted={true}
@@ -131,7 +131,7 @@ export default function Home() {
             src="/assets/gymnosis.png"
             width={600}
             height={400}
-            alt="Gymnosis client dashboard showing workout tracking and analytics"
+            alt="Gymnosis client dashboard showing a client's workout plans"
             priority
             className="hero-image"
           />
@@ -143,30 +143,28 @@ export default function Home() {
         <SocialProofRow>
           <TrustStatement>
             <span className="trust-headline">
-              Most trainers lose 10+ hours a week to admin work.
+              Trainers stay in charge of every plan.
             </span>
             <span className="trust-subline">
-              Gymnosis gives that time back, without taking your expertise out
-              of the loop.
+              AI drafts never go straight to a client. Only trainers and admins
+              can save a plan to a client&apos;s record.
             </span>
           </TrustStatement>
           <StatsRow>
             <StatItem>
-              <span className="stat-value">8+</span>
+              <span className="stat-value">3</span>
+              <span className="stat-label">roles, each with its own view</span>
+            </StatItem>
+            <StatItem>
+              <span className="stat-value">7-day</span>
               <span className="stat-label">
-                hours saved on admin every week
+                plans drafted from a questionnaire
               </span>
             </StatItem>
             <StatItem>
-              <span className="stat-value">100%</span>
+              <span className="stat-value">Every</span>
               <span className="stat-label">
-                of plans reviewed and approved by you
-              </span>
-            </StatItem>
-            <StatItem>
-              <span className="stat-value">4-in-1</span>
-              <span className="stat-label">
-                scheduling, tracking, planning &amp; analytics
+                plan saved by a trainer, not the AI
               </span>
             </StatItem>
           </StatsRow>
@@ -205,7 +203,7 @@ export default function Home() {
       {/* How it works */}
       <HowItWorksSection>
         <FadeUp>
-          <h3>From signup to first plan in 10 minutes</h3>
+          <h3>How it works</h3>
         </FadeUp>
         <div className="steps-row">
           {howItWorksSteps.map((step, i) => (
