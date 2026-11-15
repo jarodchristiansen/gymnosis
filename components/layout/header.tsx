@@ -70,6 +70,12 @@ function Header() {
         guarded: true,
         text: "Plans",
       },
+      session && {
+        key: 7,
+        route: "/account",
+        guarded: true,
+        text: "Account",
+      },
       !session && {
         key: 5,
         route: "/auth?path=SignIn",

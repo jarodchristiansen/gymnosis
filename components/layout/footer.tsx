@@ -1,48 +1,59 @@
 import { Colors, FontFamily, MediaQueries } from "@/styles/variables";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import styled from "styled-components";
 
-const Footer = () => (
-  <FooterContainer>
-    <FooterInner>
-      <BrandBlock>
-        <BrandRow>
-          <Image src="/assets/dumbbell.svg" height={24} width={24} alt="" />
-          <BrandName>Gymnosis</BrandName>
-        </BrandRow>
-        <BrandTagline>
-          AI drafts the workout plan. Safety rules check it. A trainer signs it
-          off.
-        </BrandTagline>
-        <Credit>
-          A portfolio project by{" "}
-          <a href="https://jarod-christiansen.vercel.app">Jarod Christiansen</a>
-          .
-        </Credit>
-      </BrandBlock>
+const Footer = () => {
+  const { data: session } = useSession();
 
-      <LinksBlock aria-label="Footer">
-        <LinkColumn>
-          <ColumnHeading>Product</ColumnHeading>
-          <FooterLink href="/education">Features</FooterLink>
-          <FooterLink href="/#demo">Try the demo</FooterLink>
-        </LinkColumn>
-        <LinkColumn>
-          <ColumnHeading>Account</ColumnHeading>
-          <FooterLink href="/auth?path=SignIn">Sign in</FooterLink>
-        </LinkColumn>
-        <LinkColumn>
-          <ColumnHeading>About</ColumnHeading>
-          <FooterExternal href="https://github.com/jarodchristiansen/gymnosis">
-            Source on GitHub
-          </FooterExternal>
-          <FooterLink href="/terms-of-service">About and terms</FooterLink>
-        </LinkColumn>
-      </LinksBlock>
-    </FooterInner>
-  </FooterContainer>
-);
+  return (
+    <FooterContainer>
+      <FooterInner>
+        <BrandBlock>
+          <BrandRow>
+            <Image src="/assets/dumbbell.svg" height={24} width={24} alt="" />
+            <BrandName>Gymnosis</BrandName>
+          </BrandRow>
+          <BrandTagline>
+            AI drafts the workout plan. Safety rules check it. A trainer signs
+            it off.
+          </BrandTagline>
+          <Credit>
+            A portfolio project by{" "}
+            <a href="https://jarod-christiansen.vercel.app">
+              Jarod Christiansen
+            </a>
+            .
+          </Credit>
+        </BrandBlock>
+
+        <LinksBlock aria-label="Footer">
+          <LinkColumn>
+            <ColumnHeading>Product</ColumnHeading>
+            <FooterLink href="/education">Features</FooterLink>
+            <FooterLink href="/#demo">Try the demo</FooterLink>
+          </LinkColumn>
+          <LinkColumn>
+            <ColumnHeading>Account</ColumnHeading>
+            {session ? (
+              <FooterLink href="/account">Your account</FooterLink>
+            ) : (
+              <FooterLink href="/auth?path=SignIn">Sign in</FooterLink>
+            )}
+          </LinkColumn>
+          <LinkColumn>
+            <ColumnHeading>About</ColumnHeading>
+            <FooterExternal href="https://github.com/jarodchristiansen/gymnosis">
+              Source on GitHub
+            </FooterExternal>
+            <FooterLink href="/terms-of-service">About and terms</FooterLink>
+          </LinkColumn>
+        </LinksBlock>
+      </FooterInner>
+    </FooterContainer>
+  );
+};
 
 const FooterContainer = styled.footer`
   background: ${Colors.midnight};
