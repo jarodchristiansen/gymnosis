@@ -1,30 +1,25 @@
 import { Colors } from "@/styles/variables";
 import { useState } from "react";
 import styled from "styled-components";
+import ClientPlans from "./ClientPlans";
 import WorkoutBuilder from "./WorkoutBuilder";
-import WorkoutHistory from "./WorkoutHistory";
-import type { WorkoutHistoryEntry } from "./DashboardContainer";
 
 interface WorkoutViewProps {
   clientId: string;
-  workoutHistory: WorkoutHistoryEntry[];
   canBuild: boolean;
 }
 
 type WorkoutTab = "history" | "builder";
 
-const WorkoutView = ({
-  clientId,
-  workoutHistory,
-  canBuild,
-}: WorkoutViewProps) => {
+const WorkoutView = ({ clientId, canBuild }: WorkoutViewProps) => {
   const [view, setView] = useState<WorkoutTab>("history");
 
   const renderContent = () => {
     if (view === "history" || !canBuild) {
       return (
-        <WorkoutHistory
-          workoutHistory={workoutHistory}
+        <ClientPlans
+          clientId={clientId}
+          isStaff={canBuild}
           onBuildWorkout={canBuild ? () => setView("builder") : undefined}
         />
       );
@@ -46,7 +41,7 @@ const WorkoutView = ({
           active={view === "history"}
           onClick={() => setView("history")}
         >
-          History
+          Plans
         </SubTabButton>
         <SubTabButton
           role="tab"
@@ -55,7 +50,7 @@ const WorkoutView = ({
           active={view === "builder"}
           onClick={() => setView("builder")}
         >
-          Build Plan
+          Start a plan
         </SubTabButton>
       </SubTabBar>
 

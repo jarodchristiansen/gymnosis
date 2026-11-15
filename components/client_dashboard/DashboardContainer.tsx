@@ -5,23 +5,6 @@ import { useState } from "react";
 import styled from "styled-components";
 import WorkoutView from "./WorkoutView";
 
-interface Exercise {
-  exercise: string;
-  sets: number;
-  reps: number;
-}
-
-interface WorkoutRoutineDay {
-  day: number;
-  bodyPart: string;
-  exercises: Exercise[];
-}
-
-export interface WorkoutHistoryEntry {
-  date: string;
-  routine: WorkoutRoutineDay[];
-}
-
 interface ClientUser {
   id?: string;
   name?: string;
@@ -29,7 +12,6 @@ interface ClientUser {
   username?: string;
   image?: string;
   createAt?: string;
-  workoutHistory?: WorkoutHistoryEntry[];
 }
 
 interface DashboardContainerProps {
@@ -91,7 +73,6 @@ const DashboardContainer = ({
         return (
           <WorkoutView
             clientId={clientId}
-            workoutHistory={clientUser?.workoutHistory ?? []}
             canBuild={checkIsStaff(session?.user?.role)}
           />
         );

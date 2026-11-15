@@ -54,7 +54,14 @@ function Header() {
         key: 4,
         route: "/client",
         guarded: true,
-        text: "Client Dashboard",
+        text: "Clients",
+      },
+      // @ts-ignore: next-auth type issue v3
+      checkIsStaff(session?.user?.role) && {
+        key: 6,
+        route: "/plans",
+        guarded: true,
+        text: "Plans",
       },
       !session && {
         key: 5,

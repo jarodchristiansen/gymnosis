@@ -11,12 +11,6 @@ const typeDefs = gql`
     image: String
     createAt: Date
     role: String
-    workoutHistory: [WorkoutHistoryEntry]
-  }
-
-  type WorkoutHistoryEntry {
-    date: Date
-    routine: [WorkoutRoutine]
   }
 
   input UsernameInput {
@@ -69,11 +63,6 @@ const typeDefs = gql`
     reps: Int
   }
 
-  input WorkoutInput {
-    routine: [WorkoutRoutineInput]
-    id: String
-  }
-
   input WorkoutGoalInput {
     goal: String!
     weightLbs: Float!
@@ -89,12 +78,6 @@ const typeDefs = gql`
     equipment: String!
     "Any of: knee, lower back, shoulder, wrist"
     injuries: [String!]!
-  }
-
-  type WorkoutDraft {
-    days: [WorkoutRoutine!]!
-    model: String!
-    promptVersion: String!
   }
 
   enum PlanStatus {
@@ -174,8 +157,6 @@ const typeDefs = gql`
     approvePlan(id: ID!, version: Int!): Plan!
     reopenPlan(id: ID!, version: Int!, note: String!): Plan!
     deliverPlan(id: ID!, version: Int!): Plan!
-    draftWorkout(input: WorkoutGoalInput!): WorkoutDraft
-    addWorkoutRoutine(input: WorkoutInput): User
     updateUsername(input: UsernameInput): User
   }
 `;

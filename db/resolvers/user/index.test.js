@@ -1,21 +1,14 @@
 /**
  * @jest-environment node
  */
-import { DRAFTS_PER_HOUR, UserResolver } from "./index";
+import { UserResolver } from "./index";
 import User from "../../models/user";
-import { takeRateLimit } from "../../../lib/rateLimit";
-import { draftWorkout, validateGoal } from "../../../lib/workoutDraft";
 
 jest.mock("../../models/user", () => ({
   find: jest.fn(),
   findOne: jest.fn(),
   exists: jest.fn(),
   findOneAndUpdate: jest.fn(),
-}));
-jest.mock("../../../lib/rateLimit", () => ({ takeRateLimit: jest.fn() }));
-jest.mock("../../../lib/workoutDraft", () => ({
-  draftWorkout: jest.fn(),
-  validateGoal: jest.fn(),
 }));
 
 const { queries, mutations } = UserResolver;
@@ -143,52 +136,6 @@ describe("getUser", () => {
   });
 });
 
-describe("addWorkoutRoutine", () => {
-  const input = {
-    id: OTHER_CLIENT_ID,
-    routine: [{ day: 1, bodyPart: "Legs", exercises: [] }],
-  };
-  const clientDoc = () => ({
-    ...theirClient(),
-    workoutHistory: [],
-    save: jest.fn(),
-  });
-
-  it("is for trainers and admins", async () => {
-    expect(
-      await codeOf(mutations.addWorkoutRoutine(null, { input }, as(CLIENT)))
-    ).toBe("FORBIDDEN");
-    expect(User.findOne).not.toHaveBeenCalled();
-  });
-
-  it("saves a trainer's plan onto a client", async () => {
-    const doc = clientDoc();
-    User.findOne.mockResolvedValue(doc);
-    await mutations.addWorkoutRoutine(null, { input }, as(TRAINER));
-    expect(doc.workoutHistory).toHaveLength(1);
-    expect(doc.save).toHaveBeenCalled();
-  });
-
-  it("won't write to another trainer", async () => {
-    User.findOne.mockResolvedValue({ ...clientDoc(), role: "trainer" });
-    expect(
-      await codeOf(mutations.addWorkoutRoutine(null, { input }, as(TRAINER)))
-    ).toBe("NOT_FOUND");
-  });
-
-  it("needs at least one day", async () => {
-    expect(
-      await codeOf(
-        mutations.addWorkoutRoutine(
-          null,
-          { input: { ...input, routine: [] } },
-          as(TRAINER)
-        )
-      )
-    ).toBe("BAD_USER_INPUT");
-  });
-});
-
 describe("updateUsername", () => {
   it("only ever renames the viewer", async () => {
     User.exists.mockResolvedValue(null);
@@ -226,41 +173,5 @@ describe("updateUsername", () => {
       )
     ).toBe("BAD_USER_INPUT");
     expect(User.findOneAndUpdate).not.toHaveBeenCalled();
-  });
-});
-
-describe("draftWorkout", () => {
-  const input = { goal: "bulking" };
-
-  it("is closed to signed-out callers and clients", async () => {
-    expect(
-      await codeOf(mutations.draftWorkout(null, { input }, as(null)))
-    ).toBe("UNAUTHENTICATED");
-    expect(
-      await codeOf(mutations.draftWorkout(null, { input }, as(CLIENT)))
-    ).toBe("FORBIDDEN");
-    expect(takeRateLimit).not.toHaveBeenCalled();
-    expect(draftWorkout).not.toHaveBeenCalled();
-  });
-
-  it("validates, then spends one of the trainer's hourly drafts", async () => {
-    validateGoal.mockReturnValue(input);
-    draftWorkout.mockResolvedValue({ days: [] });
-    await mutations.draftWorkout(null, { input }, as(TRAINER));
-
-    expect(takeRateLimit).toHaveBeenCalledWith(`draft:${TRAINER.id}`, {
-      limit: DRAFTS_PER_HOUR,
-      windowMs: 60 * 60 * 1000,
-    });
-    expect(draftWorkout).toHaveBeenCalledWith(input);
-  });
-
-  it("doesn't call the model once the limit is hit", async () => {
-    validateGoal.mockReturnValue(input);
-    takeRateLimit.mockRejectedValue(new Error("limited"));
-    await expect(
-      mutations.draftWorkout(null, { input }, as(TRAINER))
-    ).rejects.toThrow("limited");
-    expect(draftWorkout).not.toHaveBeenCalled();
   });
 });

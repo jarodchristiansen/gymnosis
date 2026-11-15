@@ -4,19 +4,13 @@ import {
   ROLES,
   badInput,
   canViewUser,
-  canWritePlanFor,
   clientScope,
   notFound,
   requireRole,
   requireStaff,
   requireViewer,
 } from "../../auth";
-import { takeRateLimit } from "../../../lib/rateLimit";
-import { draftWorkout, validateGoal } from "../../../lib/workoutDraft";
 import User from "../../models/user";
-
-// Each draft is a paid-for call upstream, so each trainer gets a few an hour.
-export const DRAFTS_PER_HOUR = 10;
 
 const USERNAME_PATTERN = /^[A-Za-z0-9_.-]{3,30}$/;
 
@@ -70,36 +64,6 @@ export const UserResolver = {
     },
   },
   mutations: {
-    draftWorkout: async (_, { input }, context) => {
-      const viewer = requireStaff(context);
-      const goal = validateGoal(input);
-
-      await takeRateLimit(`draft:${viewer.id}`, {
-        limit: DRAFTS_PER_HOUR,
-        windowMs: 60 * 60 * 1000,
-      });
-
-      return draftWorkout(goal);
-    },
-
-    addWorkoutRoutine: async (_, { input }, context) => {
-      const viewer = requireStaff(context);
-      const { id, routine } = input ?? {};
-
-      if (!isValidObjectId(id)) throw notFound();
-      if (!Array.isArray(routine) || routine.length === 0) {
-        throw badInput("A routine needs at least one day.");
-      }
-
-      const user = await User.findOne({ _id: id });
-      if (!canWritePlanFor(viewer, user)) throw notFound();
-
-      user.workoutHistory.push({ date: new Date(), routine });
-      await user.save();
-
-      return user;
-    },
-
     updateUsername: async (_, { input }, context) => {
       const viewer = requireViewer(context);
       const username = input?.username?.trim();
