@@ -1,7 +1,7 @@
 import { Colors } from "@/styles/variables";
 import { useState } from "react";
 import styled from "styled-components";
-import { PrimaryButton } from "./PlanEditor";
+import { Button } from "@/components/ui";
 import { formatDate, type PlanFlag } from "./types";
 
 interface FlagListProps {
@@ -53,9 +53,9 @@ const AcknowledgeForm = ({
           onChange={(e) => setNote(e.target.value)}
           required
         />
-        <PrimaryButton type="submit" disabled={busy || !note.trim()}>
+        <Button type="submit" disabled={busy || !note.trim()}>
           Acknowledge
-        </PrimaryButton>
+        </Button>
       </NoteRow>
     </form>
   );

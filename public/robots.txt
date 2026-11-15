@@ -1,7 +1,5 @@
-User-agent: nameOfBot
-Disallow: /user/
-
 User-agent: *
 Allow: /
+Disallow: /api/
 
-Sitemap: https://hodl-watch.vercel.app/sitemap.xml
+Sitemap: https://gymnosis.vercel.app/sitemap.xml

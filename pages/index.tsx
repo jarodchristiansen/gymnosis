@@ -1,586 +1,428 @@
-import {
-  Colors,
-  FontFamily,
-  FontWeight,
-  MediaQueries,
-  Padding,
-} from "@/styles/variables";
-import LandingCard from "components/commons/info-cards/landing-card";
-import CTACard from "components/ctas/CTACard";
-import { motion } from "framer-motion";
-import type { GetServerSideProps } from "next";
-import Image from "next/image";
+import DemoLauncher from "@/components/demo/DemoLauncher";
+import PlanSheetPreview from "@/components/landing/PlanSheetPreview";
+import SEOHead from "@/components/seo/SEOHead";
+import { ButtonLink, DisplayHeading, Eyebrow, Sheet } from "@/components/ui";
+import { Colors, FontFamily, MediaQueries } from "@/styles/variables";
 import styled from "styled-components";
 
-import SEOHead from "../components/seo/SEOHead";
-
-const FadeUp = ({
-  children,
-  delay = 0,
-}: {
-  children: React.ReactNode;
-  delay?: number;
-}) => (
-  <motion.div
-    initial={{ opacity: 0, y: 28 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, margin: "-60px" }}
-    transition={{ duration: 0.5, ease: "easeOut", delay }}
-  >
-    {children}
-  </motion.div>
-);
-
-const ScaleUp = ({ children }: { children: React.ReactNode }) => (
-  <motion.div
-    initial={{ opacity: 0, scale: 0.97 }}
-    whileInView={{ opacity: 1, scale: 1 }}
-    viewport={{ once: true, margin: "-40px" }}
-    transition={{ duration: 0.55, ease: "easeOut" }}
-  >
-    {children}
-  </motion.div>
-);
-
-const cardContent = [
-  {
-    image: "/landing/avatar-icon.svg",
-    alt: "Client profile and tracking icon",
-    title: "Stop losing track of clients",
-    text: "Every client's plans in one place, from first draft to the plan they were sent, so you're not digging through notes or spreadsheets before a session.",
-  },
-  {
-    image: "/landing/connected-icon.svg",
-    alt: "AI planning and connections icon",
-    title: "Build better plans, faster",
-    text: "Fill in a short client questionnaire and get a structured 7-day workout draft, checked against the client's injuries, equipment, and experience. You edit it, approve it, and send it.",
-  },
-  {
-    image: "/landing/growth-chart-icon.svg",
-    alt: "Roles and access icon",
-    title: "A view for everyone in the gym",
-    text: "Admins see every account, trainers see clients, and clients see only their own plans. The API enforces it, not just the menus.",
-  },
-];
-
-const features = [
-  {
-    icon: "/landing/metrics.svg",
-    title: "AI writes the first draft. You make it perfect.",
-    description:
-      "The draft follows the client's goal, training days, injuries, and equipment. You swap exercises, adjust sets and reps, and decide what gets sent.",
-  },
-  {
-    icon: "/landing/security.svg",
-    title: "Client data, scoped by role.",
-    description:
-      "Every request is checked against who's signed in. Trainers can read and write plans for clients, and clients can read only their own.",
-  },
-  {
-    icon: "/landing/ui.svg",
-    title: "Plans you can actually edit.",
-    description:
-      "The draft opens in an editor, not a wall of text. Change anything; every edit is recorded in the plan's history, with who made it and when.",
-  },
-];
-
-const howItWorksSteps = [
+const STEPS = [
   {
     n: "01",
-    title: "Each client has a trainer",
-    body: "Clients belong to a gym and are assigned a trainer, who writes and reviews their plans.",
+    title: "Draft",
+    body: "A short questionnaire becomes a 7-day draft. The server builds the prompt from validated answers, asks the model for schema-shaped JSON, and checks the reply. The safety rules run before anyone sees it.",
+    recorded: "The model and prompt version that wrote it",
   },
   {
     n: "02",
-    title: "Generate a plan",
-    body: "Answer a few questions about the client, and AI drafts a 7-day workout plan, structured and ready for your review.",
+    title: "Review",
+    body: "The trainer edits anything: days, exercises, sets, reps. Each blocking flag has to be fixed, or kept with a note saying why it's safe for this client.",
+    recorded: "Every edit as a readable diff, every flag kept and why",
   },
   {
     n: "03",
-    title: "Review and deliver",
-    body: "Fix or sign off any safety flags, approve the plan, and send it. Clients only ever see plans their trainer has sent.",
+    title: "Approve and send",
+    body: "Approval is the trainer's sign-off. The client sees the plan only once it's sent, and never sees the draft, the flags, or the notes.",
+    recorded: "Who approved it, who sent it, and when",
+  },
+];
+
+const RULES = [
+  {
+    rule: "Equipment",
+    example: "Barbell back squat, for a client training with bodyweight only",
+    effect: "block",
+  },
+  {
+    rule: "Knee injury",
+    example: "Box jumps; deep lunges are worth a second look",
+    effect: "block",
+  },
+  {
+    rule: "Lower back",
+    example: "Deadlifts and other heavy spinal loading",
+    effect: "block",
+  },
+  {
+    rule: "Shoulder",
+    example: "Overhead pressing, snatches, handstands",
+    effect: "block",
+  },
+  {
+    rule: "Beginners",
+    example:
+      "Olympic lifts like cleans and snatches; high volume is worth a second look",
+    effect: "block",
+  },
+  {
+    rule: "Schedule",
+    example: "Five training days drafted when the client asked for three",
+    effect: "warn",
+  },
+];
+
+const ROLES = [
+  {
+    role: "Trainer",
+    sees: "Their own clients and every plan for them, flags, notes, and history included.",
+  },
+  {
+    role: "Owner",
+    sees: "The whole gym: every trainer, every client, every plan.",
+  },
+  {
+    role: "Client",
+    sees: "Only the plans their trainer has sent. Nothing in draft, ever.",
   },
 ];
 
 export default function Home() {
   return (
-    <AlternateHomePageWrapper>
+    <>
       <SEOHead
-        isHomePage={true}
-        metaTitle="Gymnosis — Gym Management Software for Professional Trainers"
-        metaDescription="AI-assisted workout planning for personal trainers: the AI drafts a plan from a client questionnaire, and a trainer reviews, approves, and sends it before the client sees it."
+        isHomePage
+        metaTitle="Gymnosis: AI drafts the plan, a trainer signs it off"
+        metaDescription="Workout plans drafted by AI, checked against the client's injuries, equipment, and experience, and approved by a trainer before the client sees them."
         previewImage="/assets/gymnosis.png"
       />
 
-      {/* Hero */}
-      <div className="top-row">
-        <div className="left-card">
-          <FadeUp>
-            <LandingCard
-              headerText="Run a smarter gym."
-              bodyText="AI drafts the workout plan. A trainer edits and approves it before the client sees it."
-              renderSignIn={false}
-              renderLearnMore={true}
-              renderGetStarted={true}
-            />
-          </FadeUp>
-        </div>
+      <Hero>
+        <HeroText>
+          <Eyebrow>AI-assisted · human-verified</Eyebrow>
+          <Title>
+            AI drafts the plan.
+            <br />A trainer signs it off.
+          </Title>
+          <Lede>
+            Gymnosis drafts a week of training from a client questionnaire,
+            checks it against their injuries, equipment, and experience, and
+            holds it until a trainer approves it.
+          </Lede>
+          <Actions>
+            <ButtonLink href="#demo">Try the demo</ButtonLink>
+            <ButtonLink href="#review" variant="secondary">
+              How review works
+            </ButtonLink>
+          </Actions>
+          <Footnote>
+            A portfolio project: working software, made-up data. No gyms use it
+            yet.
+          </Footnote>
+        </HeroText>
+        <PlanSheetPreview />
+      </Hero>
 
-        <FadeUp delay={0.1}>
-          <Image
-            src="/assets/gymnosis.png"
-            width={600}
-            height={400}
-            alt="Gymnosis client dashboard showing a client's workout plans"
-            priority
-            className="hero-image"
-          />
-        </FadeUp>
-      </div>
-
-      {/* Social proof strip */}
-      <FadeUp>
-        <SocialProofRow>
-          <TrustStatement>
-            <span className="trust-headline">
-              Trainers stay in charge of every plan.
-            </span>
-            <span className="trust-subline">
-              AI drafts are checked against safety rules and never go straight
-              to a client. Only a trainer&apos;s approval sends a plan.
-            </span>
-          </TrustStatement>
-          <StatsRow>
-            <StatItem>
-              <span className="stat-value">3</span>
-              <span className="stat-label">roles, each with its own view</span>
-            </StatItem>
-            <StatItem>
-              <span className="stat-value">7-day</span>
-              <span className="stat-label">
-                plans drafted from a questionnaire
+      <Section id="review" aria-labelledby="review-heading">
+        <SectionHead>
+          <Eyebrow>The review</Eyebrow>
+          <SectionTitle id="review-heading">
+            Nothing reaches a client unchecked
+          </SectionTitle>
+        </SectionHead>
+        <Steps>
+          {STEPS.map((step) => (
+            <Step key={step.n}>
+              <span className="n" aria-hidden="true">
+                {step.n}
               </span>
-            </StatItem>
-            <StatItem>
-              <span className="stat-value">Every</span>
-              <span className="stat-label">
-                plan a client sees, approved by a trainer
+              <h3>{step.title}</h3>
+              <p>{step.body}</p>
+              <p className="recorded">
+                <span>Recorded</span>
+                {step.recorded}
+              </p>
+            </Step>
+          ))}
+        </Steps>
+      </Section>
+
+      <Section aria-labelledby="rules-heading">
+        <SectionHead>
+          <Eyebrow>Safety rules</Eyebrow>
+          <SectionTitle id="rules-heading">
+            What gets flagged before a trainer sees it
+          </SectionTitle>
+          <SectionLede>
+            The rules read exercise names against the client&apos;s answers.
+            They&apos;re simple and deterministic, so the trainer knows exactly
+            why something was flagged. They support the trainer&apos;s
+            judgement; they don&apos;t replace it.
+          </SectionLede>
+        </SectionHead>
+        <RuleList>
+          {RULES.map((r) => (
+            <li key={r.rule}>
+              <span className="rule">{r.rule}</span>
+              <span className="example">{r.example}</span>
+              <span className={`effect ${r.effect}`}>
+                {r.effect === "block" ? "Blocks approval" : "Worth a look"}
               </span>
-            </StatItem>
-          </StatsRow>
-        </SocialProofRow>
-      </FadeUp>
-
-      {/* Feature cards */}
-      <Row>
-        <FadeUp>
-          <h3>Built to solve real trainer problems</h3>
-        </FadeUp>
-        <div className="site-description-container">
-          {cardContent.map((card, i) => (
-            <FadeUp key={card.title} delay={i * 0.1}>
-              <div className="card">
-                <div className="card-content">
-                  {card.image ? (
-                    <div className="card-background">
-                      <Image
-                        src={card.image}
-                        height={36}
-                        width={36}
-                        alt={card.alt}
-                      />
-                    </div>
-                  ) : null}
-                  <h4>{card.title}</h4>
-                  <div>{card.text}</div>
-                </div>
-              </div>
-            </FadeUp>
+            </li>
           ))}
-        </div>
-      </Row>
+        </RuleList>
+      </Section>
 
-      {/* How it works */}
-      <HowItWorksSection>
-        <FadeUp>
-          <h3>How it works</h3>
-        </FadeUp>
-        <div className="steps-row">
-          {howItWorksSteps.map((step, i) => (
-            <FadeUp key={step.n} delay={i * 0.12}>
-              <StepCard>
-                <span className="step-number-bg">{step.n}</span>
-                <div className="step-content">
-                  <span className="step-label">{step.n}</span>
-                  <h4>{step.title}</h4>
-                  <p>{step.body}</p>
-                </div>
-              </StepCard>
-            </FadeUp>
+      <Section aria-labelledby="roles-heading">
+        <SectionHead>
+          <Eyebrow>Who sees what</Eyebrow>
+          <SectionTitle id="roles-heading">
+            Enforced by the API, not just the menus
+          </SectionTitle>
+        </SectionHead>
+        <Roles>
+          {ROLES.map((r) => (
+            <RoleCard key={r.role}>
+              <h3>{r.role}</h3>
+              <p>{r.sees}</p>
+            </RoleCard>
           ))}
-        </div>
-      </HowItWorksSection>
+        </Roles>
+      </Section>
 
-      {/* Key features strip */}
-      <FeaturesStrip aria-label="Key features">
-        <FadeUp>
-          <FeaturesHeading>
-            Everything you need, nothing you don&apos;t
-          </FeaturesHeading>
-        </FadeUp>
-        <FeaturesGrid>
-          {features.map((feature) => (
-            <FeatureItem key={feature.title}>
-              <Image src={feature.icon} width={44} height={44} alt="" />
-              <h4>{feature.title}</h4>
-              <p>{feature.description}</p>
-            </FeatureItem>
-          ))}
-        </FeaturesGrid>
-      </FeaturesStrip>
-
-      {/* CTA */}
-      <ScaleUp>
-        <CTACard />
-      </ScaleUp>
-    </AlternateHomePageWrapper>
+      <DemoSection id="demo" aria-labelledby="demo-heading">
+        <SectionHead>
+          <Eyebrow>Try it</Eyebrow>
+          <SectionTitle id="demo-heading">
+            Step into a demo gym. <Nowrap>No sign-up.</Nowrap>
+          </SectionTitle>
+          <SectionLede>
+            Review Riley&apos;s flagged draft as their trainer, see the plan
+            Marcus was sent as a client, or look across the whole gym as its
+            owner. You can also draft a real plan for a client who has none.
+          </SectionLede>
+        </SectionHead>
+        <DemoLauncher />
+      </DemoSection>
+    </>
   );
 }
 
-// ─── Styled components ────────────────────────────────────────────────────────
+const Hero = styled.section`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 16px 64px;
+  display: grid;
+  gap: 48px;
+  align-items: center;
 
-const AlternateHomePageWrapper = styled.div`
-  .top-row {
-    display: flex;
-    flex-direction: column;
-    gap: 48px;
-    padding: ${Padding.xxlarge} 24px 64px;
-    align-items: center;
-    background-color: ${Colors.midnight};
-
-    .hero-image {
-      width: 100%;
-      align-self: center;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0px 8px 40px rgba(0, 0, 0, 0.5),
-        0 0 80px rgba(255, 107, 43, 0.07);
-      aspect-ratio: 16/9;
-      object-fit: cover;
-    }
-
-    @media ${MediaQueries.MD} {
-      flex-direction: row;
-      justify-content: space-between;
-      gap: 64px;
-      padding: 80px 64px;
-
-      .hero-image {
-        width: 52%;
-        flex-shrink: 0;
-      }
-    }
+  @media ${MediaQueries.LG} {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    gap: 64px;
+    padding: 72px 24px 96px;
   }
 `;
 
-const SocialProofRow = styled.section`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 32px;
-  padding: 48px 24px;
-  background-color: ${Colors.richBlack};
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+const HeroText = styled.div`
+  max-width: 600px;
+`;
+
+const Title = styled(DisplayHeading)`
+  font-size: clamp(46px, 10.5vw, 92px);
+`;
+
+const Lede = styled.p`
+  margin: 20px 0 0;
+  max-width: 34em;
+  font-size: 18px;
+  line-height: 1.6;
+  color: ${Colors.lightGray};
 
   @media ${MediaQueries.MD} {
-    flex-direction: row;
-    justify-content: space-between;
-    padding: 48px 80px;
-    gap: 64px;
+    font-size: 19px;
   }
 `;
 
-const TrustStatement = styled.div`
-  max-width: 440px;
+const Actions = styled.div`
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   gap: 12px;
+  margin-top: 28px;
+`;
 
-  .trust-headline {
+const Footnote = styled.p`
+  margin: 18px 0 0;
+  font-size: 14px;
+  color: ${Colors.midGray};
+`;
+
+const Section = styled.section`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 64px 16px;
+  border-top: 1px solid ${Colors.rule};
+  scroll-margin-top: 72px;
+
+  @media ${MediaQueries.MD} {
+    padding: 88px 24px;
+  }
+`;
+
+const SectionHead = styled.div`
+  max-width: 720px;
+  margin-bottom: 36px;
+`;
+
+const SectionTitle = styled(DisplayHeading).attrs({ as: "h2" })`
+  font-size: clamp(34px, 6vw, 56px);
+`;
+
+const SectionLede = styled.p`
+  margin: 16px 0 0;
+  font-size: 17px;
+  line-height: 1.65;
+  color: ${Colors.midGray};
+`;
+
+const Steps = styled.ol`
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 16px;
+
+  @media ${MediaQueries.LG} {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+`;
+
+const Step = styled.li`
+  position: relative;
+  padding: 24px 22px;
+  background: ${Colors.surface};
+  border: 1px solid ${Colors.rule};
+  border-radius: 8px;
+
+  .n {
+    display: block;
+    font-family: ${FontFamily.display};
+    font-size: 44px;
+    font-weight: 700;
+    line-height: 1;
+    color: ${Colors.brand.accent};
+  }
+
+  h3 {
+    margin: 10px 0 8px;
+    font-family: ${FontFamily.display};
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.65;
+    color: ${Colors.lightGray};
+  }
+
+  .recorded {
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px dashed rgba(242, 238, 232, 0.18);
+    color: ${Colors.midGray};
+  }
+
+  .recorded span {
+    display: block;
+    font-family: ${FontFamily.display};
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: ${Colors.brand.accentLight};
+  }
+`;
+
+const RuleList = styled.ul`
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 2px solid rgba(242, 238, 232, 0.16);
+
+  li {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "rule effect"
+      "example example";
+    gap: 4px 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid ${Colors.rule};
+  }
+
+  .rule {
+    grid-area: rule;
     font-family: ${FontFamily.display};
     font-size: 22px;
     font-weight: 700;
-    color: ${Colors.brand.white};
-    line-height: 1.3;
-    letter-spacing: -0.2px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
   }
 
-  .trust-subline {
-    font-size: 15px;
-    line-height: 1.65;
+  .example {
+    grid-area: example;
     color: ${Colors.midGray};
   }
-`;
 
-const StatsRow = styled.div`
-  display: flex;
-  gap: 32px;
-  flex-wrap: wrap;
-  justify-content: center;
-
-  @media ${MediaQueries.MD} {
-    flex-wrap: nowrap;
-  }
-`;
-
-const StatItem = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  min-width: 110px;
-
-  .stat-value {
-    font-family: ${FontFamily.display};
-    font-size: 28px;
-    font-weight: 700;
-    color: ${Colors.brand.accent};
-    text-align: center;
-    line-height: 1;
-  }
-
-  .stat-label {
-    font-size: 12px;
-    color: ${Colors.midGray};
-    text-align: center;
-    line-height: 1.4;
-    max-width: 100px;
-  }
-`;
-
-const Row = styled.div`
-  display: flex;
-  flex-direction: column;
-  background-color: ${Colors.richBlack};
-  gap: 32px;
-  padding: 64px 24px;
-
-  h3 {
-    text-align: center;
-    font-family: ${FontFamily.display};
-    font-size: 32px;
-    font-weight: 700;
-    color: ${Colors.brand.white};
-    margin-bottom: 0;
-  }
-
-  .site-description-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    grid-gap: 24px;
-
-    .card {
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-      padding: 32px;
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.03);
-      text-align: center;
-      border-top: 3px solid ${Colors.brand.accent};
-      border-left: 1px solid rgba(255, 255, 255, 0.08);
-      border-right: 1px solid rgba(255, 255, 255, 0.08);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      transition: background 0.2s ease;
-      height: 100%;
-
-      &:hover {
-        background: rgba(255, 107, 43, 0.04);
-      }
-
-      h4 {
-        font-weight: ${FontWeight.bold};
-        font-size: 17px;
-        color: ${Colors.brand.white};
-        padding: 0 0 4px 0;
-      }
-
-      div {
-        font-size: 15px;
-        line-height: 1.7;
-        color: ${Colors.midGray};
-      }
-
-      .card-background {
-        width: 72px;
-        height: 72px;
-        border-radius: 50%;
-        background: rgba(255, 107, 43, 0.1);
-        border: 1px solid rgba(255, 107, 43, 0.2);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 8px;
-      }
-    }
-  }
-
-  @media ${MediaQueries.MD} {
-    padding: 80px;
-  }
-`;
-
-const HowItWorksSection = styled.section`
-  padding: 64px 24px;
-  background-color: ${Colors.surface};
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-
-  h3 {
-    text-align: center;
-    font-family: ${FontFamily.display};
-    font-size: 32px;
-    font-weight: 700;
-    color: ${Colors.brand.white};
-    margin-bottom: 48px;
-  }
-
-  .steps-row {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 24px;
-    max-width: 960px;
-    margin: 0 auto;
-
-    @media ${MediaQueries.MD} {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-
-  @media ${MediaQueries.MD} {
-    padding: 80px;
-  }
-`;
-
-const StepCard = styled.div`
-  position: relative;
-  padding: 32px 28px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border-top: 3px solid ${Colors.brand.accent};
-  border-left: 1px solid rgba(255, 255, 255, 0.07);
-  border-right: 1px solid rgba(255, 255, 255, 0.07);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  overflow: hidden;
-  height: 100%;
-
-  .step-number-bg {
-    position: absolute;
-    top: -12px;
-    right: 16px;
-    font-family: ${FontFamily.display};
-    font-size: 80px;
-    font-weight: 800;
-    color: white;
-    opacity: 0.05;
-    line-height: 1;
-    pointer-events: none;
-    user-select: none;
-  }
-
-  .step-content {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .step-label {
-    font-family: ${FontFamily.display};
+  .effect {
+    grid-area: effect;
+    align-self: center;
     font-size: 13px;
-    font-weight: 700;
-    color: ${Colors.brand.accent};
-    letter-spacing: 1.5px;
+    font-weight: 650;
+    white-space: nowrap;
   }
 
-  h4 {
-    font-size: 18px;
-    font-weight: 700;
-    color: ${Colors.brand.white};
-    line-height: 1.3;
+  .effect.block {
+    color: ${Colors.flag.block};
   }
 
-  p {
-    font-size: 14px;
-    color: ${Colors.midGray};
-    line-height: 1.75;
-  }
-`;
-
-const FeaturesStrip = styled.section`
-  display: flex;
-  flex-direction: column;
-  background-color: ${Colors.midnight};
-  padding: 64px 24px;
-  gap: 40px;
-
-  @media ${MediaQueries.MD} {
-    padding: 72px 80px;
-    gap: 48px;
-  }
-`;
-
-const FeaturesHeading = styled.h3`
-  text-align: center;
-  font-family: ${FontFamily.display};
-  font-size: 32px;
-  font-weight: 700;
-  color: ${Colors.brand.white};
-  margin: 0;
-`;
-
-const FeaturesGrid = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-
-  @media ${MediaQueries.MD} {
-    flex-direction: row;
-  }
-`;
-
-const FeatureItem = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 32px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-
-  h4 {
-    font-size: 17px;
-    font-weight: 700;
-    color: ${Colors.brand.white};
-    line-height: 1.35;
-  }
-
-  p {
-    font-size: 14px;
-    color: ${Colors.midGray};
-    line-height: 1.75;
+  .effect.warn {
+    color: ${Colors.flag.warn};
   }
 
   @media ${MediaQueries.MD} {
-    flex: 1;
-    border-bottom: none;
-    border-right: 1px solid rgba(255, 255, 255, 0.06);
-
-    &:last-child {
-      border-right: none;
+    li {
+      grid-template-columns: 200px 1fr auto;
+      grid-template-areas: "rule example effect";
+      align-items: baseline;
     }
   }
 `;
 
-export const getServerSideProps: GetServerSideProps = async () => {
-  return { props: {} };
-};
+const Roles = styled.div`
+  display: grid;
+  gap: 16px;
+
+  @media ${MediaQueries.MD} {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+`;
+
+const RoleCard = styled(Sheet)`
+  padding: 22px;
+
+  h3 {
+    margin: 0 0 6px;
+    font-family: ${FontFamily.display};
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: ${Colors.lightGray};
+  }
+`;
+
+const Nowrap = styled.span`
+  white-space: nowrap;
+`;
+
+const DemoSection = styled(Section)`
+  padding-bottom: 96px;
+`;

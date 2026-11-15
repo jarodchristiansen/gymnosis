@@ -1,5 +1,5 @@
 import { checkIsAdmin, checkIsStaff } from "@/helpers/auth/auth";
-import { Colors, MediaQueries } from "@/styles/variables";
+import { Colors, FontFamily, MediaQueries } from "@/styles/variables";
 import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -40,8 +40,15 @@ function Header() {
   const routes: NavRoute[] = useMemo(() => {
     return [
       { key: 0, route: "/education", guarded: false, text: "Features" },
-      { key: 1, route: "/news", guarded: false, text: "News" },
-      id && { key: 2, route: `/client/${id}`, guarded: false, text: "Profile" },
+      // Clients' own plans live on their dashboard; staff work from Clients and Plans.
+      id &&
+        // @ts-ignore: next-auth type issue v3
+        session?.user?.role === "client" && {
+          key: 2,
+          route: `/client/${id}`,
+          guarded: false,
+          text: "My plan",
+        },
       // @ts-ignore: next-auth type issue v3
       checkIsAdmin(session?.user?.role) && {
         key: 3,
@@ -63,6 +70,12 @@ function Header() {
         guarded: true,
         text: "Plans",
       },
+      session && {
+        key: 7,
+        route: "/account",
+        guarded: true,
+        text: "Account",
+      },
       !session && {
         key: 5,
         route: "/auth?path=SignIn",
@@ -83,12 +96,8 @@ function Header() {
     if (!routes?.length) return [];
 
     return routes.map((route) => {
-      if (!route?.key) return null;
-
-      // const isGuardedAndAllowed = route.guarded && !!session;
-      // const isUnguarded = !route.guarded;
-
-      // if (!isGuardedAndAllowed && !isUnguarded) return null;
+      // Keys start at 0, so check for the route itself, not a truthy key.
+      if (!route) return null;
 
       return (
         <NavItem key={route.route}>
@@ -103,18 +112,13 @@ function Header() {
         </NavItem>
       );
     });
-  }, [routes, selectedRoute, session]);
+  }, [routes, selectedRoute]);
 
   return (
     <NavBar role="navigation" aria-label="Main navigation">
       <NavInner>
         <BrandLink href="/" onClick={() => setSelectedRoute("")}>
-          <Image
-            src="/assets/dumbbell.svg"
-            height={40}
-            width={40}
-            alt="Gymnosis logo"
-          />
+          <Image src="/assets/dumbbell.svg" height={28} width={28} alt="" />
           <BrandName>Gymnosis</BrandName>
         </BrandLink>
 
@@ -135,7 +139,7 @@ function Header() {
           {session && (
             <NavItem>
               <SignOutButton type="button" onClick={handleSignout}>
-                Sign Out
+                Sign out
               </SignOutButton>
             </NavItem>
           )}
@@ -147,36 +151,43 @@ function Header() {
 
 const NavBar = styled.nav`
   background-color: ${Colors.midnight};
-  color: ${Colors.brand.white};
+  color: ${Colors.lightGray};
   position: fixed;
   top: 0;
-  width: 100vw;
+  width: 100%;
   z-index: 1000;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid ${Colors.rule};
 `;
 
 const NavInner = styled.div`
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 16px;
   height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+
+  @media ${MediaQueries.MD} {
+    padding: 0 24px;
+  }
 `;
 
 const BrandLink = styled(Link)`
   display: flex;
   align-items: center;
   gap: 10px;
+  min-height: 44px;
   text-decoration: none;
 `;
 
 const BrandName = styled.span`
-  font-size: 20px;
+  font-family: ${FontFamily.display};
+  font-size: 24px;
   font-weight: 700;
-  color: ${Colors.brand.accent};
-  letter-spacing: -0.3px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: ${Colors.lightGray};
 `;
 
 const NavMenu = styled.div<{ open: boolean }>`
@@ -187,9 +198,9 @@ const NavMenu = styled.div<{ open: boolean }>`
   left: 0;
   right: 0;
   background-color: ${Colors.midnight};
-  padding: 16px 24px 24px;
-  gap: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 8px 16px 20px;
+  gap: 2px;
+  border-bottom: 1px solid ${Colors.rule};
 
   @media ${MediaQueries.MD} {
     display: flex;
@@ -209,35 +220,47 @@ const NavItem = styled.div`
   flex-direction: column;
 `;
 
-const NavLink = styled(Link)`
-  color: ${Colors.brand.white};
+const navText = `
+  font-family: ${FontFamily.display};
+  font-size: 17px;
   font-weight: 600;
-  font-size: 14px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+`;
+
+const NavLink = styled(Link)`
+  ${navText}
+  color: ${Colors.lightGray};
   text-decoration: none;
-  padding: 10px 14px;
-  border-radius: 6px;
+  padding: 10px 12px;
+  border-radius: 4px;
   transition: background-color 0.15s ease;
 
   &:hover {
-    background-color: rgba(255, 255, 255, 0.07);
+    background-color: rgba(242, 238, 232, 0.06);
+  }
+
+  &[aria-current="page"] {
+    color: ${Colors.brand.accentLight};
   }
 `;
 
 const ActiveIndicator = styled.span`
   height: 2px;
   background-color: ${Colors.brand.accent};
-  border-radius: 1px;
-  margin: 0 14px;
+  margin: 0 12px;
 `;
 
 const MobileToggle = styled.button`
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
   gap: 5px;
+  width: 44px;
+  height: 44px;
   background: none;
   border: none;
-  padding: 8px;
   cursor: pointer;
 
   @media ${MediaQueries.MD} {
@@ -249,25 +272,22 @@ const HamburgerBar = styled.span`
   display: block;
   width: 22px;
   height: 2px;
-  background-color: ${Colors.brand.white};
-  border-radius: 1px;
+  background-color: ${Colors.lightGray};
 `;
 
 const SignOutButton = styled.button`
+  ${navText}
   background: none;
   border: none;
-  padding: 10px 14px;
-  font: inherit;
-  font-weight: 600;
-  font-size: 14px;
-  color: ${Colors.brand.white};
+  padding: 10px 12px;
+  color: ${Colors.midGray};
   cursor: pointer;
   text-align: left;
-  border-radius: 6px;
-  transition: background-color 0.15s ease;
+  border-radius: 4px;
 
   &:hover {
-    background-color: rgba(255, 255, 255, 0.07);
+    color: ${Colors.lightGray};
+    background-color: rgba(242, 238, 232, 0.06);
   }
 `;
 

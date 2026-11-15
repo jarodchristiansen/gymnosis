@@ -1,8 +1,13 @@
-import { Colors, BorderRadius, MediaQueries } from "@/styles/variables";
+import { DisplayHeading, Eyebrow } from "@/components/ui";
+import {
+  Colors,
+  BorderRadius,
+  FontFamily,
+  MediaQueries,
+} from "@/styles/variables";
 import { getProviders } from "next-auth/react";
 import type { GetServerSideProps } from "next";
 import type { ClientSafeProvider } from "next-auth/react";
-import Image from "next/image";
 import Link from "next/link";
 import styled from "styled-components";
 
@@ -20,23 +25,20 @@ const AuthPage = ({ providers, initialTab }: AuthPageProps) => {
     <PageWrapper>
       <SEOHead
         isHomePage={false}
-        metaTitle={initialTab === "signin" ? "Sign In" : "Sign Up"}
-        metaDescription="Sign in to access everything Gymnosis has to offer."
-        previewImage="/assets/assets-page.png"
+        metaTitle={
+          initialTab === "signin"
+            ? "Sign in — Gymnosis"
+            : "Create an account — Gymnosis"
+        }
+        metaDescription="Sign in to Gymnosis, or try it first in a private demo gym."
+        previewImage="/assets/gymnosis.png"
       />
 
       <PageInner>
-        <BrandMark>
-          <Link href="/">
-            <Image
-              src="/assets/dumbbell.svg"
-              height={36}
-              width={36}
-              alt="Gymnosis logo"
-            />
-          </Link>
-          <BrandName>Gymnosis</BrandName>
-        </BrandMark>
+        <Heading>
+          <Eyebrow>Gymnosis</Eyebrow>
+          <Title>Sign in</Title>
+        </Heading>
 
         <CardWrapper>
           <SignInForm providers={providers} initialTab={initialTab} />
@@ -47,8 +49,8 @@ const AuthPage = ({ providers, initialTab }: AuthPageProps) => {
         </DemoSection>
 
         <FooterNote>
-          By continuing you agree to our{" "}
-          <Link href="/terms-of-service">Terms of Service</Link>.
+          Gymnosis is a portfolio project.{" "}
+          <Link href="/terms-of-service">About and terms</Link>.
         </FooterNote>
       </PageInner>
     </PageWrapper>
@@ -62,7 +64,11 @@ const DemoSection = styled.section`
 
   h2 {
     margin: 0 0 12px;
-    font-size: 15px;
+    font-family: ${FontFamily.display};
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     color: ${Colors.lightGray};
     text-align: center;
   }
@@ -82,12 +88,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 };
 
 const PageWrapper = styled.div`
-  min-height: 100vh;
-  background-color: ${Colors.midnight};
   display: flex;
-  align-items: center;
   justify-content: center;
-  padding: 24px 16px;
+  padding: 24px 16px 64px;
 `;
 
 const PageInner = styled.div`
@@ -99,25 +102,20 @@ const PageInner = styled.div`
   gap: 24px;
 `;
 
-const BrandMark = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
+const Heading = styled.div`
+  width: 100%;
+  text-align: center;
 `;
 
-const BrandName = styled.span`
-  font-size: 22px;
-  font-weight: 700;
-  color: ${Colors.brand.accent};
-  letter-spacing: -0.3px;
+const Title = styled(DisplayHeading)`
+  font-size: 52px;
 `;
 
 const CardWrapper = styled.div`
   width: 100%;
   background-color: ${Colors.surface};
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: ${BorderRadius.large};
+  border: 1px solid ${Colors.rule};
+  border-radius: 8px;
   overflow: hidden;
 `;
 

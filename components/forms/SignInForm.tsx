@@ -103,7 +103,7 @@ const SignInForm = ({ providers, initialTab = "signin" }: SignInFormProps) => {
           active={activeTab === "signin"}
           onClick={() => handleTabChange("signin")}
         >
-          Sign In
+          Sign in
           {activeTab === "signin" && <TabUnderline />}
         </TabButton>
         <TabButton
@@ -111,7 +111,7 @@ const SignInForm = ({ providers, initialTab = "signin" }: SignInFormProps) => {
           active={activeTab === "signup"}
           onClick={() => handleTabChange("signup")}
         >
-          Sign Up
+          Sign up
           {activeTab === "signup" && <TabUnderline />}
         </TabButton>
       </TabRow>
@@ -154,7 +154,7 @@ const SignInForm = ({ providers, initialTab = "signin" }: SignInFormProps) => {
                 type="submit"
                 disabled={isSubmitting || !email || !password}
               >
-                {isSubmitting ? <Spinner /> : "Sign In"}
+                {isSubmitting ? <Spinner /> : "Sign in"}
               </SubmitButton>
             </CredentialsForm>
 

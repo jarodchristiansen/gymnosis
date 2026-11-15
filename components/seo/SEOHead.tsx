@@ -8,8 +8,10 @@ interface SEOHeadProps {
   previewImage?: string;
 }
 
-const DEFAULT_META_TITLE = "Gymnosis: Gym Management Software";
-const DEFAULT_META_DESCRIPTION = "Gymnosis: Gym Management Software";
+const DEFAULT_META_TITLE =
+  "Gymnosis: AI-drafted, trainer-approved workout plans";
+const DEFAULT_META_DESCRIPTION =
+  "AI drafts the workout plan, safety rules check it, and a trainer signs it off before the client sees it.";
 
 const SEOHead = ({
   isHomePage = false,
@@ -28,7 +30,7 @@ const SEOHead = ({
   return (
     <Head>
       <meta name="viewport" content="width=device-width, initial-scale=1" />
-      <link rel="icon" type="image/png" href="/images/dumbbell.svg" />
+      <link rel="icon" type="image/svg+xml" href="/images/dumbbell.svg" />
 
       <title>{resolvedTitle}</title>
       {isHomePage ? (

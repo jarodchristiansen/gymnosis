@@ -5,6 +5,10 @@ import type { AppProps } from "next/app";
 import { SessionProvider } from "next-auth/react";
 import type { Session } from "next-auth";
 
+// Self-hosted, Latin-only fonts: no third-party request before first paint.
+import "@fontsource-variable/inter/wght";
+import "@fontsource/barlow-condensed/latin-600";
+import "@fontsource/barlow-condensed/latin-700";
 import "../styles/globals.css";
 
 type AppPageProps = {

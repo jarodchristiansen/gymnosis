@@ -6,6 +6,7 @@ const LABELS: Record<string, string> = {
   drafted: "Drafted by AI",
   draft_failed: "AI draft failed",
   created: "Started a plan by hand",
+  seeded: "Example plan added to the demo gym",
   edited: "Edited the plan",
   flag_acknowledged: "Acknowledged a safety flag",
   approve: "Approved",

@@ -2,7 +2,8 @@ import StatusBadge from "@/components/plans/StatusBadge";
 import { formatDate, type PlanStatus } from "@/components/plans/types";
 import { checkIsStaff } from "@/helpers/auth/auth";
 import { GET_PLANS } from "@/helpers/queries/plans";
-import { Colors } from "@/styles/variables";
+import { DisplayHeading, Eyebrow } from "@/components/ui";
+import { Colors, FontFamily } from "@/styles/variables";
 import { useQuery } from "@apollo/client";
 import { getSession } from "next-auth/react";
 import Link from "next/link";
@@ -59,7 +60,8 @@ const PlansPage = () => {
 
   return (
     <Page>
-      <h1>Plans</h1>
+      <Eyebrow>Your queue</Eyebrow>
+      <Title>Plans</Title>
       <Lede>
         Every plan you&apos;re working on, by where it is in review. Clients
         only see plans once you send them.
@@ -113,12 +115,10 @@ const Page = styled.div`
   margin: 0 auto;
   padding: 32px 16px 64px;
   color: ${Colors.lightGray};
+`;
 
-  h1 {
-    margin: 0;
-    font-size: 28px;
-    color: ${Colors.brand.white};
-  }
+const Title = styled(DisplayHeading)`
+  font-size: clamp(44px, 8vw, 64px);
 `;
 
 const Lede = styled.p`
@@ -132,8 +132,12 @@ const Section = styled.section`
 
   h2 {
     margin: 0 0 10px;
-    font-size: 16px;
-    color: ${Colors.brand.white};
+    font-family: ${FontFamily.display};
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: ${Colors.lightGray};
   }
 `;
 
@@ -198,7 +202,7 @@ const Row = styled(Link)`
   }
 
   @media (min-width: 640px) {
-    grid-template-columns: 1.2fr 2fr auto auto;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr) 110px 96px;
     grid-template-areas: "who what when badge";
   }
 `;

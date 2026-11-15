@@ -128,7 +128,8 @@ export const authOptions = {
 
       if (existingUser) {
         if (!existingUser.username) {
-          existingUser.username = makeid(12) + "!@$";
+          // Matches the username rule, so the account page can show and change it.
+          existingUser.username = `user-${makeid(8)}`;
           await existingUser.save();
         }
       } else {
