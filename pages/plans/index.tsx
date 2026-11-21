@@ -1,18 +1,24 @@
 import StatusBadge from "@/components/plans/StatusBadge";
+import TrainerFilter, {
+  trainersIn,
+  type TrainerRef,
+} from "@/components/plans/TrainerFilter";
 import { formatDate, type PlanStatus } from "@/components/plans/types";
-import { checkIsStaff } from "@/helpers/auth/auth";
+import { checkIsStaff, checkSeesWholeGym } from "@/helpers/auth/auth";
 import { GET_PLANS } from "@/helpers/queries/plans";
 import { DisplayHeading, Eyebrow } from "@/components/ui";
 import { Colors, FontFamily } from "@/styles/variables";
 import { useQuery } from "@apollo/client";
-import { getSession } from "next-auth/react";
+import { getSession, useSession } from "next-auth/react";
 import Link from "next/link";
+import { useState } from "react";
 import styled from "styled-components";
 
 interface QueuePlan {
   id: string;
   status: PlanStatus;
   client?: { id: string; name?: string | null } | null;
+  trainer?: TrainerRef | null;
   source: { kind: string; draftFailed: boolean };
   flags: { id: string; severity: string; acknowledged: boolean }[];
   days: { exercises: unknown[] }[];
@@ -56,16 +62,33 @@ const PlansPage = () => {
   const { data, loading, error } = useQuery(GET_PLANS, {
     fetchPolicy: "cache-and-network",
   });
-  const plans: QueuePlan[] = data?.plans ?? [];
+  const allPlans: QueuePlan[] = data?.plans ?? [];
+
+  const { data: session } = useSession();
+  // @ts-expect-error next-auth user extended with role
+  const wholeGym = checkSeesWholeGym(session?.user?.role);
+  const [trainerId, setTrainerId] = useState<string | null>(null);
+  const trainers = wholeGym ? trainersIn(allPlans.map((p) => p.trainer)) : [];
+  const plans = trainerId
+    ? allPlans.filter((p) => p.trainer?.id === trainerId)
+    : allPlans;
 
   return (
     <Page>
-      <Eyebrow>Your queue</Eyebrow>
+      <Eyebrow>{wholeGym ? "Your gym" : "Your queue"}</Eyebrow>
       <Title>Plans</Title>
       <Lede>
-        Every plan you&apos;re working on, by where it is in review. Clients
-        only see plans once you send them.
+        {wholeGym
+          ? "Every trainer's plans, by where each is in review."
+          : "Every plan you're working on, by where it is in review."}{" "}
+        Clients only see plans once they&apos;re sent.
       </Lede>
+
+      <TrainerFilter
+        trainers={trainers}
+        selected={trainerId}
+        onChange={setTrainerId}
+      />
 
       {error && <p role="alert">Couldn&apos;t load plans. Try reloading.</p>}
 
@@ -86,7 +109,12 @@ const PlansPage = () => {
                       <span className="who">
                         {plan.client?.name ?? "Client"}
                       </span>
-                      <span className="what">{summary(plan)}</span>
+                      <span className="what">
+                        {wholeGym && plan.trainer?.name
+                          ? `${plan.trainer.name} · `
+                          : ""}
+                        {summary(plan)}
+                      </span>
                       <span className="when">{formatDate(plan.updatedAt)}</span>
                       <StatusBadge status={plan.status} />
                     </Row>

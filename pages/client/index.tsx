@@ -1,20 +1,26 @@
 import StatusBadge from "@/components/plans/StatusBadge";
+import TrainerFilter, {
+  trainersIn,
+  type TrainerRef,
+} from "@/components/plans/TrainerFilter";
 import { formatDate, type PlanStatus } from "@/components/plans/types";
 import { DisplayHeading, Eyebrow } from "@/components/ui";
 import { FILTER_CONSTS, SEARCH_VALUE_CONSTS } from "@/helpers/Consts";
-import { checkIsStaff } from "@/helpers/auth/auth";
+import { checkIsStaff, checkSeesWholeGym } from "@/helpers/auth/auth";
 import { GET_PLANS } from "@/helpers/queries/plans";
 import { GET_USERS } from "@/helpers/queries/user";
-import { Colors, MediaQueries } from "@/styles/variables";
+import { Colors, FontFamily, MediaQueries } from "@/styles/variables";
 import { useQuery } from "@apollo/client";
-import { getSession } from "next-auth/react";
+import { getSession, useSession } from "next-auth/react";
 import Link from "next/link";
+import { useState } from "react";
 import styled from "styled-components";
 
 interface ClientRow {
   id: string;
   name?: string | null;
   createAt?: number | null;
+  trainer?: TrainerRef | null;
 }
 
 interface LatestPlan {
@@ -38,6 +44,32 @@ const summary = (plan?: LatestPlan) => {
   return `Updated ${formatDate(plan.updatedAt)}`;
 };
 
+interface Group {
+  key: string;
+  title?: string;
+  clients: ClientRow[];
+}
+
+/** One untitled group for a trainer; for an owner, a group per trainer, unassigned clients last. */
+const groupClients = (
+  clients: ClientRow[],
+  trainers: TrainerRef[],
+  byTrainer: boolean
+): Group[] => {
+  if (!byTrainer) return [{ key: "all", clients }];
+  const groups: Group[] = trainers.map((t) => ({
+    key: t.id,
+    title: t.name ?? "Trainer",
+    clients: clients.filter((c) => c.trainer?.id === t.id),
+  }));
+  groups.push({
+    key: "none",
+    title: "No trainer yet",
+    clients: clients.filter((c) => !c.trainer),
+  });
+  return groups.filter((g) => g.clients.length > 0);
+};
+
 const ClientsPage = () => {
   const users = useQuery(GET_USERS, {
     variables: {
@@ -53,17 +85,33 @@ const ClientsPage = () => {
   const latest: LatestPlan[] = plans.data?.plans ?? [];
   const loading = users.loading && !users.data;
 
+  const { data: session } = useSession();
+  // @ts-expect-error next-auth user extended with role
+  const wholeGym = checkSeesWholeGym(session?.user?.role);
+  const [trainerId, setTrainerId] = useState<string | null>(null);
+  const trainers = wholeGym ? trainersIn(clients.map((c) => c.trainer)) : [];
+  const shown = trainerId
+    ? clients.filter((c) => c.trainer?.id === trainerId)
+    : clients;
+  const groups = groupClients(shown, trainers, wholeGym);
+
   return (
     <Page>
-      <Eyebrow>Your roster</Eyebrow>
+      <Eyebrow>{wholeGym ? "Your gym" : "Your roster"}</Eyebrow>
       <Title>Clients</Title>
       <Lede>
         {loading
           ? "Loading clients…"
-          : `${clients.length} ${
-              clients.length === 1 ? "client" : "clients"
+          : `${clients.length} ${clients.length === 1 ? "client" : "clients"}${
+              wholeGym ? ", by trainer" : ""
             }, with where each one's latest plan stands.`}
       </Lede>
+
+      <TrainerFilter
+        trainers={trainers}
+        selected={trainerId}
+        onChange={setTrainerId}
+      />
 
       {users.error && (
         <p role="alert">Couldn&apos;t load clients. Try reloading.</p>
@@ -79,26 +127,36 @@ const ClientsPage = () => {
         </Empty>
       )}
 
-      {clients.length > 0 && (
-        <List>
-          {clients.map((client) => {
-            const plan = latestFor(latest, client.id);
-            return (
-              <li key={client.id}>
-                <Row href={`/client/${client.id}`} data-testid="user-card">
-                  <span className="who">{client.name ?? "Client"}</span>
-                  <span className="what">{summary(plan)}</span>
-                  {plan ? (
-                    <StatusBadge status={plan.status} />
-                  ) : (
-                    <span className="none">Start one</span>
-                  )}
-                </Row>
-              </li>
-            );
-          })}
-        </List>
-      )}
+      {groups.map((group) => (
+        <section
+          key={group.key}
+          aria-labelledby={group.title ? `group-${group.key}` : undefined}
+        >
+          {group.title && (
+            <GroupHeading id={`group-${group.key}`}>
+              {group.title} <span>{group.clients.length}</span>
+            </GroupHeading>
+          )}
+          <List>
+            {group.clients.map((client) => {
+              const plan = latestFor(latest, client.id);
+              return (
+                <li key={client.id}>
+                  <Row href={`/client/${client.id}`} data-testid="user-card">
+                    <span className="who">{client.name ?? "Client"}</span>
+                    <span className="what">{summary(plan)}</span>
+                    {plan ? (
+                      <StatusBadge status={plan.status} />
+                    ) : (
+                      <span className="none">Start one</span>
+                    )}
+                  </Row>
+                </li>
+              );
+            })}
+          </List>
+        </section>
+      ))}
     </Page>
   );
 };
@@ -133,6 +191,21 @@ const Lede = styled.p`
   margin: 8px 0 24px;
   font-size: 15px;
   color: ${Colors.midGray};
+`;
+
+const GroupHeading = styled.h2`
+  margin: 24px 0 10px;
+  font-family: ${FontFamily.display};
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: ${Colors.lightGray};
+
+  span {
+    color: ${Colors.midGray};
+    font-weight: 400;
+  }
 `;
 
 const List = styled.ul`

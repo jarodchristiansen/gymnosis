@@ -9,9 +9,10 @@ jest.mock("../../models/user", () => ({
   findOne: jest.fn(),
   exists: jest.fn(),
   findOneAndUpdate: jest.fn(),
+  findById: jest.fn(),
 }));
 
-const { queries, mutations } = UserResolver;
+const { queries, mutations, fields } = UserResolver;
 
 const GYM = "b00000000000000000000001";
 const ADMIN = { id: "a00000000000000000000001", role: "admin" };
@@ -175,5 +176,45 @@ describe("updateUsername", () => {
       )
     ).toBe("BAD_USER_INPUT");
     expect(User.findOneAndUpdate).not.toHaveBeenCalled();
+  });
+});
+
+describe("User.trainer", () => {
+  const sam = { _id: TRAINER.id, name: "Sam Rivera", image: null };
+  const findsTrainer = () =>
+    User.findById.mockReturnValue({
+      select: () => ({ lean: () => Promise.resolve(sam) }),
+    });
+
+  it("names a client's trainer for staff", async () => {
+    findsTrainer();
+    expect(await fields.trainer(theirClient(), null, as(TRAINER))).toEqual({
+      id: TRAINER.id,
+      name: "Sam Rivera",
+      image: null,
+    });
+  });
+
+  it("is null for clients, and for clients without a trainer", async () => {
+    findsTrainer();
+    expect(await fields.trainer(theirClient(), null, as(CLIENT))).toBeNull();
+    expect(
+      await fields.trainer(theirClient({ trainer: null }), null, as(ADMIN))
+    ).toBeNull();
+    expect(User.findById).not.toHaveBeenCalled();
+  });
+
+  it("looks each trainer up once per request", async () => {
+    findsTrainer();
+    const context = as(ADMIN);
+    await Promise.all([
+      fields.trainer(theirClient(), null, context),
+      fields.trainer(
+        theirClient({ _id: "a00000000000000000000009" }),
+        null,
+        context
+      ),
+    ]);
+    expect(User.findById).toHaveBeenCalledTimes(1);
   });
 });

@@ -92,6 +92,10 @@ export const GET_PLANS = gql`
         id
         name
       }
+      trainer {
+        id
+        name
+      }
       source {
         kind
         draftFailed

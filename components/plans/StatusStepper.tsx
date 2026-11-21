@@ -92,6 +92,19 @@ const Steps = styled.ol`
     border-color: ${Colors.brand.accent};
     color: ${Colors.ink};
   }
+
+  /* Keep all three steps on one line on small phones. */
+  @media (max-width: 420px) {
+    li {
+      gap: 6px;
+      font-size: 16px;
+    }
+
+    li + li::before {
+      width: 14px;
+      margin-right: 2px;
+    }
+  }
 `;
 
 export default StatusStepper;
