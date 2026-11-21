@@ -5,11 +5,12 @@
  *
  * Usage:
  *   node --env-file=.env.local scripts/migrate-to-plans.js \
- *     --gym "Gymnosis" --trainer trainer@example.com [--owner owner@example.com] [--apply]
+ *     --gym "Gymnosis" --trainer trainer@example.com [--owner owner@example.com]  *     [--admin admin@example.com] [--apply]
  *
  * - Creates the gym (or reuses one with that name) and puts every non-admin user without a
  *   gym into it.
  * - Assigns clients without a trainer to --trainer.
+ * - Makes --admin an admin, if given. Admins see every gym and belong to none.
  * - Makes --owner the gym's owner, if given. An admin keeps the admin role.
  * - Copies each workoutHistory entry into a delivered plan with source "legacy". The old array
  *   is left in place; drop it once the plans look right.
@@ -24,11 +25,12 @@ const get = (flag) => {
 const gymName = get("--gym");
 const trainerEmail = get("--trainer");
 const ownerEmail = get("--owner");
+const adminEmail = get("--admin");
 const apply = args.includes("--apply");
 
 if (!gymName || !trainerEmail) {
   console.error(
-    "Usage: node --env-file=.env.local scripts/migrate-to-plans.js --gym <name> --trainer <email> [--owner <email>] [--apply]"
+    "Usage: node --env-file=.env.local scripts/migrate-to-plans.js --gym <name> --trainer <email> [--owner <email>] [--admin <email>] [--apply]"
   );
   process.exit(1);
 }
@@ -61,6 +63,20 @@ const main = async () => {
     ? await User.findOne({ email: ownerEmail }).lean()
     : null;
   if (ownerEmail && !owner) throw new Error(`No user with email ${ownerEmail}`);
+
+  // First, so the steps below treat this account as an admin rather than a client.
+  if (adminEmail) {
+    const admin = await User.findOne({ email: adminEmail }).lean();
+    if (!admin) throw new Error(`No user with email ${adminEmail}`);
+    if (admin.role !== "admin") {
+      await write(`Make ${adminEmail} an admin (was ${admin.role})`, () =>
+        User.updateOne(
+          { _id: admin._id },
+          { $set: { role: "admin" }, $unset: { trainer: "", gym: "" } }
+        )
+      );
+    }
+  }
 
   let gym = await Gym.findOne({ name: gymName, isDemo: { $ne: true } }).lean();
   if (!gym) {
