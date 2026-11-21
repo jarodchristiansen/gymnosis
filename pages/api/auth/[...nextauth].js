@@ -124,6 +124,13 @@ export const authOptions = {
       // Only run DB logic for OAuth providers (credentials handled in authorize)
       if (account?.type === "credentials") return true;
 
+      try {
+        await connectDb();
+      } catch {
+        // Send them back to sign-in with an error rather than hang the callback.
+        return false;
+      }
+
       const existingUser = await User.findOne({ email: user?.email });
 
       if (existingUser) {
