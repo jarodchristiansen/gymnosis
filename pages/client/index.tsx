@@ -4,7 +4,10 @@ import TrainerFilter, {
   type TrainerRef,
 } from "@/components/plans/TrainerFilter";
 import { formatDate, type PlanStatus } from "@/components/plans/types";
-import { DisplayHeading, Eyebrow } from "@/components/ui";
+import { Button, DisplayHeading, Eyebrow } from "@/components/ui";
+import AddClientForm, {
+  type AddedClient,
+} from "@/components/user/AddClientForm";
 import { FILTER_CONSTS, SEARCH_VALUE_CONSTS } from "@/helpers/Consts";
 import { checkIsStaff, checkSeesWholeGym } from "@/helpers/auth/auth";
 import { GET_PLANS } from "@/helpers/queries/plans";
@@ -88,7 +91,11 @@ const ClientsPage = () => {
   const { data: session } = useSession();
   // @ts-expect-error next-auth user extended with role
   const wholeGym = checkSeesWholeGym(session?.user?.role);
+  // @ts-expect-error next-auth user extended with demo
+  const isDemo = Boolean(session?.user?.demo);
   const [trainerId, setTrainerId] = useState<string | null>(null);
+  const [adding, setAdding] = useState(false);
+  const [added, setAdded] = useState<AddedClient | null>(null);
   const trainers = wholeGym ? trainersIn(clients.map((c) => c.trainer)) : [];
   const shown = trainerId
     ? clients.filter((c) => c.trainer?.id === trainerId)
@@ -107,6 +114,37 @@ const ClientsPage = () => {
             }, with where each one's latest plan stands.`}
       </Lede>
 
+      {added && (
+        <Notice role="status">
+          Added {added.name ?? "the client"}.{" "}
+          <Link href={`/client/${added.id}`}>Start their plan →</Link>
+        </Notice>
+      )}
+
+      {adding ? (
+        <AddClientForm
+          chooseTrainer={wholeGym}
+          askEmail={!isDemo}
+          onCancel={() => setAdding(false)}
+          onAdded={(client) => {
+            setAdding(false);
+            setAdded(client);
+            users.refetch();
+          }}
+        />
+      ) : (
+        <Actions>
+          <Button
+            onClick={() => {
+              setAdded(null);
+              setAdding(true);
+            }}
+          >
+            Add client
+          </Button>
+        </Actions>
+      )}
+
       <TrainerFilter
         trainers={trainers}
         selected={trainerId}
@@ -121,8 +159,8 @@ const ClientsPage = () => {
         <Empty>
           <h2>No clients yet</h2>
           <p>
-            Clients appear here once they&apos;re assigned to you. To see how it
-            works with a full roster, try the demo from the home page.
+            Add your first client above, and build their plan from their page.
+            To see a full roster first, try the demo from the home page.
           </p>
         </Empty>
       )}
@@ -191,6 +229,24 @@ const Lede = styled.p`
   margin: 8px 0 24px;
   font-size: 15px;
   color: ${Colors.midGray};
+`;
+
+const Actions = styled.div`
+  margin: 0 0 24px;
+`;
+
+const Notice = styled.p`
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border-left: 3px solid ${Colors.flag.ok};
+  background: rgba(134, 217, 160, 0.08);
+  color: ${Colors.lightGray};
+  font-size: 15px;
+
+  a {
+    color: ${Colors.brand.accentLight};
+    font-weight: 650;
+  }
 `;
 
 const GroupHeading = styled.h2`

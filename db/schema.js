@@ -13,6 +13,16 @@ const typeDefs = gql`
     role: String
     "Whose client this is. Staff only; null for everyone else."
     trainer: Person
+    "False for someone who signed up on their own and hasn't been added to a gym."
+    inGym: Boolean
+  }
+
+  input AddClientInput {
+    name: String!
+    "Ignored in demo gyms, which make up an address."
+    email: String
+    "Required for owners and admins; trainers add clients to themselves."
+    trainerId: ID
   }
 
   input UsernameInput {
@@ -125,6 +135,7 @@ const typeDefs = gql`
     plan(id: ID!): Plan
     getUsers(filter: String, value: String): [User]
     getUser(email: String, id: String, username: String): User
+    trainers: [Person!]!
   }
 
   type Mutation {
@@ -136,6 +147,8 @@ const typeDefs = gql`
     reopenPlan(id: ID!, version: Int!, note: String!): Plan!
     deliverPlan(id: ID!, version: Int!): Plan!
     updateUsername(input: UsernameInput): User
+    addClient(input: AddClientInput!): User!
+    assignTrainer(clientId: ID!, trainerId: ID!): User!
   }
 `;
 

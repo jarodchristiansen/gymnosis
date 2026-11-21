@@ -1,4 +1,5 @@
 import { FILTER_CONSTS, SEARCH_VALUE_CONSTS } from "@/helpers/Consts";
+import { randomBytes } from "crypto";
 import { isValidObjectId } from "mongoose";
 import {
   ROLES,
@@ -10,10 +11,35 @@ import {
   requireRole,
   requireStaff,
   requireViewer,
+  sameGym,
 } from "../../auth";
+import Gym from "../../models/gym";
 import User from "../../models/user";
 
 const USERNAME_PATTERN = /^[A-Za-z0-9_.-]{3,30}$/;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Who can have clients assigned to them.
+const COACHES = [ROLES.TRAINER, ROLES.OWNER];
+
+const newTag = () => randomBytes(4).toString("hex");
+const asPerson = (p) => ({ id: String(p._id), name: p.name, image: p.image });
+
+/** The trainer a new client goes to: the trainer adding them, or the one an owner or admin chose. */
+const trainerFor = async (viewer, trainerId) => {
+  if (viewer.role === ROLES.TRAINER) return { _id: viewer.id, gym: viewer.gym };
+
+  if (!isValidObjectId(trainerId)) {
+    throw badInput("Choose a trainer for this client.");
+  }
+  const trainer = await User.findOne({
+    _id: trainerId,
+    role: { $in: COACHES },
+  }).lean();
+  if (!trainer || (viewer.role === ROLES.OWNER && !sameGym(viewer, trainer))) {
+    throw badInput("Choose a trainer from your gym.");
+  }
+  return trainer;
+};
 
 export const UserResolver = {
   queries: {
@@ -66,8 +92,27 @@ export const UserResolver = {
 
       return { ...user, id: String(user._id) };
     },
+
+    // Who a client can be assigned to: the viewer's gym, or every real gym for admins.
+    trainers: async (_, __, context) => {
+      const viewer = requireStaff(context);
+      const filter = { role: { $in: COACHES } };
+      if (viewer.role === ROLES.ADMIN) {
+        filter.expiresAt = { $exists: false };
+      } else if (viewer.gym) {
+        filter.gym = viewer.gym;
+      } else {
+        return [];
+      }
+      const people = await User.find(filter)
+        .select("name image")
+        .sort({ name: 1 })
+        .lean();
+      return people.map(asPerson);
+    },
   },
   fields: {
+    inGym: (user) => Boolean(user.gym),
     trainer: (user, _, context) => {
       if (!STAFF.includes(context.viewer?.role)) return null;
       const id = user.trainer?._id ?? user.trainer;
@@ -82,13 +127,88 @@ export const UserResolver = {
           User.findById(key)
             .select("name image")
             .lean()
-            .then((p) => p && { id: key, name: p.name, image: p.image })
+            .then((p) => p && asPerson(p))
         );
       }
       return context.people.get(key);
     },
   },
   mutations: {
+    addClient: async (_, { input }, context) => {
+      const viewer = requireStaff(context);
+      const name = input?.name?.trim();
+      if (!name || name.length > 80) {
+        throw badInput("Give the client a name of up to 80 characters.");
+      }
+
+      const trainer = await trainerFor(viewer, input?.trainerId);
+      const gym = trainer.gym ? await Gym.findById(trainer.gym).lean() : null;
+      if (!gym) throw badInput("That trainer isn't in a gym yet.");
+
+      const tag = newTag();
+      const client = {
+        name,
+        role: ROLES.CLIENT,
+        gym: gym._id,
+        trainer: trainer._id,
+      };
+
+      // Demo gyms never take a real address, so nobody real can be pulled into a stranger's
+      // sandbox by signing in later. Their clients expire with the gym.
+      if (gym.isDemo) {
+        return User.create({
+          ...client,
+          email: `client.${tag}@demo.invalid`,
+          username: `client-${tag}`,
+          expiresAt: gym.expiresAt,
+        });
+      }
+
+      const email = input?.email?.trim().toLowerCase();
+      if (!email || !EMAIL_PATTERN.test(email)) {
+        throw badInput("Enter the email address the client will sign in with.");
+      }
+
+      const existing = await User.findOne({ email }).lean();
+      if (!existing) {
+        return User.create({ ...client, email, username: `user-${tag}` });
+      }
+
+      // Someone who signed up on their own, and isn't in a gym yet, joins this one.
+      if (existing.role === ROLES.CLIENT && !existing.gym) {
+        return User.findOneAndUpdate(
+          { _id: existing._id, gym: null },
+          { $set: { gym: gym._id, trainer: trainer._id } },
+          { new: true }
+        );
+      }
+      throw badInput("That email already belongs to an account in a gym.");
+    },
+
+    assignTrainer: async (_, { clientId, trainerId }, context) => {
+      const viewer = requireRole(context, [ROLES.ADMIN, ROLES.OWNER]);
+      if (!isValidObjectId(clientId)) throw notFound();
+
+      const client = await User.findOne({
+        _id: clientId,
+        role: ROLES.CLIENT,
+      }).lean();
+      if (!canViewUser(viewer, client)) throw notFound();
+
+      const trainer = isValidObjectId(trainerId)
+        ? await User.findOne({ _id: trainerId, role: { $in: COACHES } }).lean()
+        : null;
+      if (!trainer || !sameGym(trainer, client)) {
+        throw badInput("Choose a trainer from the client's gym.");
+      }
+
+      return User.findOneAndUpdate(
+        { _id: client._id },
+        { $set: { trainer: trainer._id } },
+        { new: true }
+      );
+    },
+
     updateUsername: async (_, { input }, context) => {
       const viewer = requireViewer(context);
       const username = input?.username?.trim();
