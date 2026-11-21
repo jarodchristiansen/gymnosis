@@ -2,6 +2,7 @@ import { FILTER_CONSTS, SEARCH_VALUE_CONSTS } from "@/helpers/Consts";
 import { isValidObjectId } from "mongoose";
 import {
   ROLES,
+  STAFF,
   badInput,
   canViewUser,
   clientScope,
@@ -64,6 +65,27 @@ export const UserResolver = {
       if (!canViewUser(viewer, user)) throw notFound();
 
       return { ...user, id: String(user._id) };
+    },
+  },
+  fields: {
+    trainer: (user, _, context) => {
+      if (!STAFF.includes(context.viewer?.role)) return null;
+      const id = user.trainer?._id ?? user.trainer;
+      if (!id) return null;
+
+      // A roster shares a handful of trainers, so look each one up once per request.
+      context.people ??= new Map();
+      const key = String(id);
+      if (!context.people.has(key)) {
+        context.people.set(
+          key,
+          User.findById(key)
+            .select("name image")
+            .lean()
+            .then((p) => p && { id: key, name: p.name, image: p.image })
+        );
+      }
+      return context.people.get(key);
     },
   },
   mutations: {

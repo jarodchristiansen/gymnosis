@@ -41,6 +41,8 @@ const PlanPage = () => {
   const { data: session } = useSession();
   // @ts-expect-error next-auth user extended with role
   const isStaff = checkIsStaff(session?.user?.role);
+  // @ts-expect-error next-auth user extended with id
+  const viewerId: string | undefined = session?.user?.id;
 
   const { data, loading, error, refetch } = useQuery(GET_PLAN, {
     variables: { id },
@@ -112,6 +114,9 @@ const PlanPage = () => {
         <Title>{plan.client?.name ?? "Client"}</Title>
         <StatusStepper status={plan.status} />
         <Sub>
+          {plan.trainer && plan.trainer.id !== viewerId
+            ? `Trainer: ${plan.trainer.name ?? "unknown"} · `
+            : ""}
           {SOURCE_LABELS[plan.source.kind]}
           {plan.source.model ? ` · ${plan.source.model}` : ""}
           {plan.source.promptVersion ? ` · ${plan.source.promptVersion}` : ""}

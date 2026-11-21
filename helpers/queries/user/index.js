@@ -10,6 +10,10 @@ export const GET_USER = gql`
       image
       createAt
       role
+      trainer {
+        id
+        name
+      }
     }
   }
 `;
@@ -24,6 +28,10 @@ export const GET_USERS = gql`
       image
       createAt
       role
+      trainer {
+        id
+        name
+      }
     }
   }
 `;

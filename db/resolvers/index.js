@@ -9,5 +9,6 @@ const resolvers = {
     ...PlanResolver.queries,
   },
   Mutation: { ...UserResolver.mutations, ...PlanResolver.mutations },
+  User: UserResolver.fields,
 };
 module.exports = resolvers;

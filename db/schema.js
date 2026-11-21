@@ -11,6 +11,8 @@ const typeDefs = gql`
     image: String
     createAt: Date
     role: String
+    "Whose client this is. Staff only; null for everyone else."
+    trainer: Person
   }
 
   input UsernameInput {
