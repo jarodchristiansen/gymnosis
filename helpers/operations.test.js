@@ -7,7 +7,6 @@ import typeDefs from "../db/schema";
 import * as planMutations from "./mutations/plans";
 import * as userMutations from "./mutations/user";
 import * as planQueries from "./queries/plans";
-import * as postQueries from "./queries/posts";
 import * as userQueries from "./queries/user";
 
 // Every query and mutation the client sends, checked against the server's schema, so a typo or
@@ -17,7 +16,6 @@ const operations = Object.entries({
   ...planMutations,
   ...userMutations,
   ...planQueries,
-  ...postQueries,
   ...userQueries,
 }).filter(([, doc]) =>
   doc?.definitions?.some((d) => d.kind === "OperationDefinition")

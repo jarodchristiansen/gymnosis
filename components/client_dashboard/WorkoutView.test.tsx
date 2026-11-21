@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom";
 import { MockedProvider } from "@apollo/client/testing";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { GET_PLANS } from "@/helpers/queries/plans";
 import WorkoutView from "./WorkoutView";
 
@@ -12,18 +12,21 @@ const noPlans = (variables: Record<string, string>) => ({
 });
 
 describe("WorkoutView", () => {
-  it("gives trainers a way to start a plan", async () => {
+  it("lets trainers open the plan builder", async () => {
     render(
       <MockedProvider mocks={[noPlans({ clientId: "c1" })]}>
         <WorkoutView clientId="c1" canBuild />
       </MockedProvider>
     );
 
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Start a plan" })
+    );
     expect(
-      screen.getByRole("tab", { name: "Start a plan" })
+      screen.getByRole("button", { name: "← Back to plans" })
     ).toBeInTheDocument();
     expect(
-      await screen.findByRole("button", { name: "Start a plan" })
+      screen.getByRole("button", { name: "Start from scratch" })
     ).toBeInTheDocument();
   });
 
@@ -37,7 +40,6 @@ describe("WorkoutView", () => {
     expect(
       await screen.findByText(/Your trainer hasn't sent you a plan yet/)
     ).toBeInTheDocument();
-    expect(screen.queryByRole("tab")).not.toBeInTheDocument();
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 });

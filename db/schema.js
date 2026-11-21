@@ -17,28 +17,6 @@ const typeDefs = gql`
     username: String!
   }
 
-  type Post {
-    section: String
-    category: String
-    publish_date: Date
-    slug: String
-    header_image: String
-    post_title: String
-    post_content: String
-    description: String
-  }
-
-  input PostInput {
-    section: String
-    category: String
-    publish_date: Date
-    slug: String
-    header_image: String
-    post_title: String
-    post_content: String
-    description: String
-  }
-
   type WorkoutRoutine {
     day: Int
     bodyPart: String
@@ -145,8 +123,6 @@ const typeDefs = gql`
     plan(id: ID!): Plan
     getUsers(filter: String, value: String): [User]
     getUser(email: String, id: String, username: String): User
-    getPost(slug: String): Post
-    getPosts(filter: String): [Post]
   }
 
   type Mutation {

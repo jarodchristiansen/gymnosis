@@ -19,7 +19,10 @@ export const UserResolver = {
     getUsers: async (_, { filter, value }, context) => {
       if (filter === FILTER_CONSTS.ADMIN && value === SEARCH_VALUE_CONSTS.ALL) {
         requireRole(context, [ROLES.ADMIN]);
-        return User.find({});
+        // Real accounts only: demo sandboxes come and go by the hundred and expire on their own.
+        return User.find({ expiresAt: { $exists: false } }).sort({
+          createAt: -1,
+        });
       }
 
       const viewer = requireStaff(context);

@@ -48,15 +48,17 @@ describe("getUsers", () => {
     expect(User.find).not.toHaveBeenCalled();
   });
 
-  it("lists everyone for admins only", async () => {
-    User.find.mockResolvedValue([]);
+  it("lists every real account for admins only", async () => {
+    const sort = jest.fn().mockResolvedValue([]);
+    User.find.mockReturnValue({ sort });
     expect(await codeOf(queries.getUsers(null, all, as(TRAINER)))).toBe(
       "FORBIDDEN"
     );
     expect(await codeOf(queries.getUsers(null, all, as(ADMIN)))).toBe(
       "resolved"
     );
-    expect(User.find).toHaveBeenCalledWith({});
+    expect(User.find).toHaveBeenCalledWith({ expiresAt: { $exists: false } });
+    expect(sort).toHaveBeenCalledWith({ createAt: -1 });
   });
 
   it("lists a trainer's own clients, and nothing for clients", async () => {

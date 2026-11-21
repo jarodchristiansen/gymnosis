@@ -1,4 +1,4 @@
-import { Colors, MediaQueries } from "@/styles/variables";
+import { Colors, FontFamily, MediaQueries } from "@/styles/variables";
 import { useState } from "react";
 import styled, { keyframes } from "styled-components";
 
@@ -121,7 +121,7 @@ const WorkoutGoalForm = ({ onSubmit, isGenerating }: WorkoutGoalFormProps) => {
   return (
     <FormWrap>
       <FormIntro>
-        <FormTitle>Client Profile</FormTitle>
+        <FormTitle>Client questionnaire</FormTitle>
         <FormSubtitle>
           Answer a few questions about the client. AI drafts a week of training,
           and you review it before the client sees anything.
@@ -129,7 +129,7 @@ const WorkoutGoalForm = ({ onSubmit, isGenerating }: WorkoutGoalFormProps) => {
       </FormIntro>
 
       <StyledForm onSubmit={handleFormSubmit}>
-        <SectionHeading>Physical Profile</SectionHeading>
+        <SectionHeading>Body and activity</SectionHeading>
         <FieldGrid>
           <FieldGroup>
             <FieldLabel htmlFor="client-weight">Weight (lbs)</FieldLabel>
@@ -168,7 +168,7 @@ const WorkoutGoalForm = ({ onSubmit, isGenerating }: WorkoutGoalFormProps) => {
           </FieldGroup>
 
           <FieldGroup>
-            <FieldLabel htmlFor="activity-level">Activity Level</FieldLabel>
+            <FieldLabel htmlFor="activity-level">Activity level</FieldLabel>
             <FieldSelect
               id="activity-level"
               value={activityLevel}
@@ -186,26 +186,21 @@ const WorkoutGoalForm = ({ onSubmit, isGenerating }: WorkoutGoalFormProps) => {
 
         <Divider />
 
-        <SectionHeading>Training Preferences</SectionHeading>
+        <SectionHeading>Training</SectionHeading>
 
         <FieldGroup>
-          <FieldLabel as="span">Primary Goal</FieldLabel>
-          <GoalGrid>
+          <FieldLabel as="span" id="goal-label">
+            Primary goal
+          </FieldLabel>
+          <GoalGrid role="group" aria-labelledby="goal-label">
             {GOAL_OPTIONS.map(({ value, label, description }) => (
               <GoalCard
                 key={value}
                 selected={clientGoal === value}
+                aria-pressed={clientGoal === value}
                 onClick={() => setClientGoal(value)}
                 type="button"
               >
-                <input
-                  type="radio"
-                  name="clientGoal"
-                  value={value}
-                  checked={clientGoal === value}
-                  onChange={() => setClientGoal(value)}
-                  style={{ display: "none" }}
-                />
                 <GoalLabel>{label}</GoalLabel>
                 <GoalDesc>{description}</GoalDesc>
               </GoalCard>
@@ -214,26 +209,19 @@ const WorkoutGoalForm = ({ onSubmit, isGenerating }: WorkoutGoalFormProps) => {
         </FieldGroup>
 
         <FieldGroup>
-          <FieldLabel as="span">
-            Current Sports &amp; Activities
+          <FieldLabel as="span" id="sports-label">
+            Sports and activities
             <FieldHint>Select all that apply</FieldHint>
           </FieldLabel>
-          <SportsGrid>
+          <SportsGrid role="group" aria-labelledby="sports-label">
             {SPORTS_OPTIONS.map(({ value, label }) => (
               <SportChip
                 key={value}
                 selected={sports.includes(value)}
+                aria-pressed={sports.includes(value)}
                 type="button"
                 onClick={() => handleSportToggle(value)}
               >
-                <input
-                  type="checkbox"
-                  id={`sport-${value}`}
-                  value={value}
-                  checked={sports.includes(value)}
-                  onChange={() => handleSportToggle(value)}
-                  style={{ display: "none" }}
-                />
                 {label}
               </SportChip>
             ))}
@@ -242,36 +230,24 @@ const WorkoutGoalForm = ({ onSubmit, isGenerating }: WorkoutGoalFormProps) => {
 
         <TrainingGrid>
           <FieldGroup>
-            <FieldLabel as="span">Currently Weight Training?</FieldLabel>
-            <RadioGroup>
+            <FieldLabel as="span" id="weight-training-label">
+              Currently weight training?
+            </FieldLabel>
+            <RadioGroup role="group" aria-labelledby="weight-training-label">
               <RadioOption
                 selected={weightTraining}
+                aria-pressed={weightTraining}
                 type="button"
                 onClick={() => setWeightTraining(true)}
               >
-                <input
-                  type="radio"
-                  name="weightTraining"
-                  value="yes"
-                  checked={weightTraining}
-                  onChange={() => setWeightTraining(true)}
-                  style={{ display: "none" }}
-                />
                 Yes
               </RadioOption>
               <RadioOption
                 selected={!weightTraining}
+                aria-pressed={!weightTraining}
                 type="button"
                 onClick={() => setWeightTraining(false)}
               >
-                <input
-                  type="radio"
-                  name="weightTraining"
-                  value="no"
-                  checked={!weightTraining}
-                  onChange={() => setWeightTraining(false)}
-                  style={{ display: "none" }}
-                />
                 No
               </RadioOption>
             </RadioGroup>
@@ -386,7 +362,16 @@ const spin = keyframes`
 `;
 
 const FormWrap = styled.div`
-  color: ${Colors.brand.white};
+  margin-top: 16px;
+  padding: 20px 16px;
+  background: ${Colors.surface};
+  border: 1px solid ${Colors.rule};
+  border-radius: 8px;
+  color: ${Colors.lightGray};
+
+  @media ${MediaQueries.MD} {
+    padding: 28px;
+  }
 `;
 
 const FormIntro = styled.div`
@@ -394,10 +379,13 @@ const FormIntro = styled.div`
 `;
 
 const FormTitle = styled.h2`
-  font-size: 20px;
-  font-weight: 700;
-  color: ${Colors.brand.white};
   margin: 0 0 6px;
+  font-family: ${FontFamily.display};
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: ${Colors.lightGray};
 `;
 
 const FormSubtitle = styled.p`
@@ -414,12 +402,13 @@ const StyledForm = styled.form`
 `;
 
 const SectionHeading = styled.h3`
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: ${Colors.midGray};
   margin: 0 0 2px;
+  font-family: ${FontFamily.display};
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: ${Colors.brand.accentLight};
 `;
 
 const Divider = styled.hr`
@@ -504,8 +493,11 @@ const FieldSelect = styled.select`
 
 const GoalGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
+
+  @media ${MediaQueries.MD} {
+    grid-template-columns: repeat(3, 1fr);
+  }
 `;
 
 const GoalCard = styled.button<{ selected: boolean }>`
@@ -612,9 +604,9 @@ const GenerateButton = styled.button`
   align-items: center;
   gap: 8px;
   padding: 12px 24px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
-  color: white;
+  color: ${Colors.ink};
   background: ${Colors.brand.accent};
   border: none;
   border-radius: 8px;
@@ -641,7 +633,7 @@ const SpinnerIcon = styled.span`
   width: 14px;
   height: 14px;
   border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
+  border-top-color: ${Colors.ink};
   border-radius: 50%;
   animation: ${spin} 0.6s linear infinite;
 `;

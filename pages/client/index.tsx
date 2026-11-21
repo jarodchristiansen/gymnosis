@@ -1,379 +1,211 @@
+import StatusBadge from "@/components/plans/StatusBadge";
+import { formatDate, type PlanStatus } from "@/components/plans/types";
+import { DisplayHeading, Eyebrow } from "@/components/ui";
 import { FILTER_CONSTS, SEARCH_VALUE_CONSTS } from "@/helpers/Consts";
 import { checkIsStaff } from "@/helpers/auth/auth";
+import { GET_PLANS } from "@/helpers/queries/plans";
 import { GET_USERS } from "@/helpers/queries/user";
 import { Colors, MediaQueries } from "@/styles/variables";
-import { useLazyQuery } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 import { getSession } from "next-auth/react";
 import Link from "next/link";
-import { useEffect, useMemo } from "react";
 import styled from "styled-components";
 
-const getInitials = (name: string): string => {
-  if (!name) return "?";
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-};
+interface ClientRow {
+  id: string;
+  name?: string | null;
+  createAt?: number | null;
+}
 
-const formatJoinDate = (dateStr: string): string => {
-  if (!dateStr) return "";
-  try {
-    return new Date(dateStr).toLocaleDateString("en-US", {
-      month: "short",
-      year: "numeric",
-    });
-  } catch {
-    return "";
+interface LatestPlan {
+  status: PlanStatus;
+  updatedAt?: number | null;
+  flags: { severity: string; acknowledged: boolean }[];
+  client?: { id: string } | null;
+}
+
+const latestFor = (plans: LatestPlan[], clientId: string) =>
+  plans.find((p) => p.client?.id === clientId);
+
+const summary = (plan?: LatestPlan) => {
+  if (!plan) return "No plan yet";
+  const open = plan.flags.filter(
+    (f) => f.severity === "block" && !f.acknowledged
+  ).length;
+  if (plan.status === "draft" && open > 0) {
+    return `Draft · ${open} flag${open === 1 ? "" : "s"} to resolve`;
   }
+  return `Updated ${formatDate(plan.updatedAt)}`;
 };
 
-const ClientPage = () => {
-  const [fetchUserDetails, { data: userData, loading }] = useLazyQuery(
-    GET_USERS,
-    { fetchPolicy: "cache-and-network" }
-  );
+const ClientsPage = () => {
+  const users = useQuery(GET_USERS, {
+    variables: {
+      filter: FILTER_CONSTS.CLIENT_BY_ROLE,
+      value: SEARCH_VALUE_CONSTS.ROLE_CLIENT,
+    },
+    fetchPolicy: "cache-and-network",
+  });
+  // Plans come newest first, so the first one per client is their latest.
+  const plans = useQuery(GET_PLANS, { fetchPolicy: "cache-and-network" });
 
-  useEffect(() => {
-    fetchUserDetails({
-      variables: {
-        filter: FILTER_CONSTS.CLIENT_BY_ROLE,
-        value: SEARCH_VALUE_CONSTS.ROLE_CLIENT,
-      },
-    });
-  }, [fetchUserDetails]);
-
-  const clients = useMemo(() => userData?.getUsers ?? [], [userData]);
+  const clients: ClientRow[] = users.data?.getUsers ?? [];
+  const latest: LatestPlan[] = plans.data?.plans ?? [];
+  const loading = users.loading && !users.data;
 
   return (
-    <PageContainer>
-      <PageHeader>
-        <div>
-          <PageTitle>Your Clients</PageTitle>
-          {!loading && (
-            <ClientCount>
-              {clients.length} {clients.length === 1 ? "client" : "clients"}
-            </ClientCount>
-          )}
-        </div>
-      </PageHeader>
+    <Page>
+      <Eyebrow>Your roster</Eyebrow>
+      <Title>Clients</Title>
+      <Lede>
+        {loading
+          ? "Loading clients…"
+          : `${clients.length} ${
+              clients.length === 1 ? "client" : "clients"
+            }, with where each one's latest plan stands.`}
+      </Lede>
 
-      {loading && (
-        <CardGrid>
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <SkeletonCard key={i}>
-              <div className="skeleton-avatar" />
-              <div className="skeleton-content">
-                <div className="skeleton-line long" />
-                <div className="skeleton-line short" />
-              </div>
-            </SkeletonCard>
-          ))}
-        </CardGrid>
+      {users.error && (
+        <p role="alert">Couldn&apos;t load clients. Try reloading.</p>
       )}
 
       {!loading && clients.length === 0 && (
-        <EmptyState>
-          <EmptyIcon>
-            <svg
-              width="40"
-              height="40"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-            >
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-            </svg>
-          </EmptyIcon>
-          <h3>No clients yet</h3>
+        <Empty>
+          <h2>No clients yet</h2>
           <p>
-            Clients will appear here once they have been added to your roster.
+            Clients appear here once they&apos;re assigned to you. To see how it
+            works with a full roster, try the demo from the home page.
           </p>
-        </EmptyState>
+        </Empty>
       )}
 
-      {!loading && clients.length > 0 && (
-        <CardGrid>
-          {clients.map((user) => (
-            <ClientCard
-              key={user.id}
-              href={`client/${user.id}`}
-              data-testid="user-card"
-            >
-              <Avatar>{getInitials(user.name)}</Avatar>
-              <ClientInfo>
-                <ClientName>{user.name}</ClientName>
-                <ClientEmail>{user.email}</ClientEmail>
-                {user.createAt && (
-                  <JoinDate>
-                    Member since {formatJoinDate(user.createAt)}
-                  </JoinDate>
-                )}
-              </ClientInfo>
-              <ChevronIcon>
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <polyline points="9 18 15 12 9 6" />
-                </svg>
-              </ChevronIcon>
-            </ClientCard>
-          ))}
-        </CardGrid>
+      {clients.length > 0 && (
+        <List>
+          {clients.map((client) => {
+            const plan = latestFor(latest, client.id);
+            return (
+              <li key={client.id}>
+                <Row href={`/client/${client.id}`} data-testid="user-card">
+                  <span className="who">{client.name ?? "Client"}</span>
+                  <span className="what">{summary(plan)}</span>
+                  {plan ? (
+                    <StatusBadge status={plan.status} />
+                  ) : (
+                    <span className="none">Start one</span>
+                  )}
+                </Row>
+              </li>
+            );
+          })}
+        </List>
       )}
-    </PageContainer>
+    </Page>
   );
 };
-
-const PageContainer = styled.div`
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 0 24px 64px;
-  color: ${Colors.brand.white};
-`;
-
-const PageHeader = styled.div`
-  padding: 40px 0 32px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  margin-bottom: 32px;
-`;
-
-const PageTitle = styled.h1`
-  font-size: 32px;
-  font-weight: 700;
-  color: ${Colors.brand.white};
-  margin: 0 0 6px;
-  letter-spacing: -0.5px;
-`;
-
-const ClientCount = styled.p`
-  font-size: 14px;
-  color: ${Colors.midGray};
-  margin: 0;
-`;
-
-const CardGrid = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-
-  @media ${MediaQueries.MD} {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-`;
-
-const ClientCard = styled(Link)`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 18px 20px;
-  background: ${Colors.surface};
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 10px;
-  text-decoration: none;
-  color: inherit;
-  transition: border-color 0.15s ease, background 0.15s ease;
-
-  &:hover {
-    border-color: rgba(255, 107, 43, 0.4);
-    background: rgba(255, 107, 43, 0.04);
-
-    svg {
-      transform: translateX(2px);
-      color: ${Colors.brand.accent};
-    }
-  }
-`;
-
-const Avatar = styled.div`
-  flex-shrink: 0;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: linear-gradient(
-    135deg,
-    ${Colors.brand.accent},
-    ${Colors.brand.accentHover}
-  );
-  color: white;
-  font-size: 15px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  letter-spacing: 0.5px;
-`;
-
-const ClientInfo = styled.div`
-  flex: 1;
-  min-width: 0;
-`;
-
-const ClientName = styled.h3`
-  font-size: 15px;
-  font-weight: 600;
-  color: ${Colors.brand.white};
-  margin: 0 0 3px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`;
-
-const ClientEmail = styled.p`
-  font-size: 13px;
-  color: ${Colors.midGray};
-  margin: 0 0 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`;
-
-const JoinDate = styled.p`
-  font-size: 11px;
-  color: rgba(138, 159, 176, 0.65);
-  margin: 0;
-  margin-top: 4px;
-`;
-
-const ChevronIcon = styled.div`
-  flex-shrink: 0;
-  color: ${Colors.midGray};
-  display: flex;
-  align-items: center;
-  transition: transform 0.15s ease, color 0.15s ease;
-
-  svg {
-    transition: transform 0.15s ease, color 0.15s ease;
-  }
-`;
-
-const SkeletonCard = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 18px 20px;
-  background: ${Colors.surface};
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 10px;
-
-  @keyframes shimmer {
-    0% {
-      background-position: -400px 0;
-    }
-    100% {
-      background-position: 400px 0;
-    }
-  }
-
-  .skeleton-avatar {
-    flex-shrink: 0;
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.05) 25%,
-      rgba(255, 255, 255, 0.1) 50%,
-      rgba(255, 255, 255, 0.05) 75%
-    );
-    background-size: 800px 100%;
-    animation: shimmer 1.4s infinite;
-  }
-
-  .skeleton-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .skeleton-line {
-    height: 12px;
-    border-radius: 6px;
-    background: linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.05) 25%,
-      rgba(255, 255, 255, 0.1) 50%,
-      rgba(255, 255, 255, 0.05) 75%
-    );
-    background-size: 800px 100%;
-    animation: shimmer 1.4s infinite;
-
-    &.long {
-      width: 55%;
-    }
-
-    &.short {
-      width: 38%;
-    }
-  }
-`;
-
-const EmptyState = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 72px 24px;
-  text-align: center;
-  color: ${Colors.midGray};
-
-  h3 {
-    font-size: 18px;
-    font-weight: 600;
-    color: ${Colors.brand.white};
-    margin: 16px 0 8px;
-  }
-
-  p {
-    font-size: 14px;
-    line-height: 1.6;
-    max-width: 320px;
-    margin: 0;
-  }
-`;
-
-const EmptyIcon = styled.div`
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: ${Colors.midGray};
-`;
 
 export async function getServerSideProps(context) {
   const session = await getSession(context);
 
-  // @ts-ignore
+  // @ts-expect-error next-auth user extended with role
   if (!checkIsStaff(session?.user?.role)) {
-    return {
-      redirect: {
-        destination: "/",
-        permanent: false,
-      },
-    };
+    return { redirect: { destination: "/", permanent: false } };
   }
 
-  return {
-    props: { session },
-  };
+  return { props: { session } };
 }
 
-export default ClientPage;
+const Page = styled.div`
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px 16px 72px;
+  color: ${Colors.lightGray};
+
+  @media ${MediaQueries.MD} {
+    padding: 48px 24px 96px;
+  }
+`;
+
+const Title = styled(DisplayHeading)`
+  font-size: clamp(44px, 8vw, 64px);
+`;
+
+const Lede = styled.p`
+  margin: 8px 0 24px;
+  font-size: 15px;
+  color: ${Colors.midGray};
+`;
+
+const List = styled.ul`
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+
+const Row = styled(Link)`
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "who badge"
+    "what badge";
+  gap: 2px 12px;
+  align-items: center;
+  min-height: 56px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: ${Colors.surface};
+  border: 1px solid ${Colors.rule};
+  color: inherit;
+  text-decoration: none;
+
+  &:hover {
+    border-color: ${Colors.brand.accent};
+  }
+
+  > :last-child {
+    grid-area: badge;
+    justify-self: end;
+  }
+
+  .who {
+    grid-area: who;
+    font-weight: 700;
+  }
+
+  .what {
+    grid-area: what;
+    font-size: 13px;
+    color: ${Colors.midGray};
+  }
+
+  .none {
+    font-size: 13px;
+    font-weight: 650;
+    color: ${Colors.brand.accentLight};
+  }
+
+  @media (min-width: 640px) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) 96px;
+    grid-template-areas: "who what badge";
+  }
+`;
+
+const Empty = styled.div`
+  padding: 24px;
+  border: 1px dashed rgba(242, 238, 232, 0.2);
+  border-radius: 8px;
+
+  h2 {
+    margin: 0 0 6px;
+    font-size: 18px;
+  }
+
+  p {
+    margin: 0;
+    color: ${Colors.midGray};
+  }
+`;
+
+export default ClientsPage;

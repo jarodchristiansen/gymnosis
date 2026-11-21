@@ -10,7 +10,7 @@
  * - Creates the gym (or reuses one with that name) and puts every non-admin user without a
  *   gym into it.
  * - Assigns clients without a trainer to --trainer.
- * - Makes --owner the gym's owner, if given.
+ * - Makes --owner the gym's owner, if given. An admin keeps the admin role.
  * - Copies each workoutHistory entry into a delivered plan with source "legacy". The old array
  *   is left in place; drop it once the plans look right.
  */
@@ -99,10 +99,17 @@ const main = async () => {
   );
 
   if (owner) {
-    await write(`Make ${ownerEmail} the owner`, async () => {
+    // An admin keeps admin rights (which already cover every gym) and is recorded as the owner.
+    const role = owner.role === "admin" ? "admin" : "owner";
+    const label =
+      role === "admin"
+        ? `Make ${ownerEmail} the owner (stays admin)`
+        : `Make ${ownerEmail} the owner (was ${owner.role})`;
+    await write(label, async () => {
+      // Owners aren't anyone's client, even if an earlier step assigned them a trainer.
       await User.updateOne(
         { _id: owner._id },
-        { $set: { role: "owner", gym: gym._id } }
+        { $set: { role, gym: gym._id }, $unset: { trainer: "" } }
       );
       await Gym.updateOne({ _id: gym._id }, { $set: { owner: owner._id } });
     });

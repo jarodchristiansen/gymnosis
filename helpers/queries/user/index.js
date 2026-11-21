@@ -9,6 +9,7 @@ export const GET_USER = gql`
       username
       image
       createAt
+      role
     }
   }
 `;

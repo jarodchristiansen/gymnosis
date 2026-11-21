@@ -1,11 +1,9 @@
 import FlagList from "@/components/plans/FlagList";
 import PlanDays from "@/components/plans/PlanDays";
-import PlanEditor, {
-  PrimaryButton,
-  SecondaryButton,
-} from "@/components/plans/PlanEditor";
+import PlanEditor from "@/components/plans/PlanEditor";
 import PlanTimeline from "@/components/plans/PlanTimeline";
-import StatusBadge from "@/components/plans/StatusBadge";
+import StatusStepper from "@/components/plans/StatusStepper";
+import { Button, DisplayHeading, Eyebrow, Sheet } from "@/components/ui";
 import {
   errorCode,
   errorMessage,
@@ -22,7 +20,7 @@ import {
   UPDATE_PLAN_DAYS,
 } from "@/helpers/mutations/plans";
 import { GET_PLAN } from "@/helpers/queries/plans";
-import { Colors, MediaQueries } from "@/styles/variables";
+import { Colors, FontFamily, MediaQueries } from "@/styles/variables";
 import { useMutation, useQuery } from "@apollo/client";
 import { getSession, useSession } from "next-auth/react";
 import Link from "next/link";
@@ -73,13 +71,13 @@ const PlanPage = () => {
     }
   };
 
-  if (loading) return <Page aria-busy="true">Loading plan…</Page>;
+  if (loading) return <Wrap aria-busy="true">Loading plan…</Wrap>;
   if (error || !plan) {
     return (
-      <Page>
-        <h1>Plan not found</h1>
-        <p>It may have been removed, or you may not have access to it.</p>
-      </Page>
+      <Wrap>
+        <Title>Plan not found</Title>
+        <Sub>It may have been removed, or you may not have access to it.</Sub>
+      </Wrap>
     );
   }
 
@@ -89,30 +87,30 @@ const PlanPage = () => {
 
   if (!isStaff) {
     return (
-      <Page>
+      <Wrap>
         <Header>
-          <h1>Your workout plan</h1>
+          <Eyebrow>Your plan</Eyebrow>
+          <Title>Your week of training</Title>
           <Sub>
             From {plan.trainer?.name ?? "your trainer"}
-            {plan.deliveredAt ? `, ${formatDate(plan.deliveredAt)}` : ""}
+            {plan.deliveredAt ? `, sent ${formatDate(plan.deliveredAt)}` : ""}
           </Sub>
         </Header>
         <PlanDays days={plan.days} />
-      </Page>
+      </Wrap>
     );
   }
 
   return (
-    <Page>
+    <Wrap>
       <BackLink href={`/client/${plan.client?.id ?? ""}`}>
         ← {plan.client?.name ?? "Client"}
       </BackLink>
 
       <Header>
-        <TitleRow>
-          <h1>Plan for {plan.client?.name ?? "client"}</h1>
-          <StatusBadge status={plan.status} />
-        </TitleRow>
+        <Eyebrow>Plan for</Eyebrow>
+        <Title>{plan.client?.name ?? "Client"}</Title>
+        <StatusStepper status={plan.status} />
         <Sub>
           {SOURCE_LABELS[plan.source.kind]}
           {plan.source.model ? ` · ${plan.source.model}` : ""}
@@ -135,143 +133,146 @@ const PlanPage = () => {
       </p>
 
       <Layout>
-        <Main>
-          <Section aria-labelledby="week-heading">
-            <h2 id="week-heading">The week</h2>
-            {isDraft ? (
-              <PlanEditor
-                key={`${plan.id}-${plan.version}`}
-                days={plan.days}
-                saving={saving}
-                onSave={(days: PlanDay[]) =>
-                  run(
-                    () => updateDays({ variables: { ...vars, days } }),
-                    "Saved."
-                  )
+        <NextStep
+          as="section"
+          className="next"
+          aria-labelledby="actions-heading"
+        >
+          <h2 id="actions-heading">Next step</h2>
+          {isDraft && (
+            <>
+              <p>
+                Approving is your sign-off that this plan is right for{" "}
+                {plan.client?.name ?? "the client"}. The client won&apos;t see
+                it until you send it.
+              </p>
+              {!ready && (
+                <Problems>
+                  {plan.approvalProblems.map((p) => (
+                    <li key={p}>{p}</li>
+                  ))}
+                </Problems>
+              )}
+              <Button
+                type="button"
+                disabled={!ready || approving}
+                onClick={() =>
+                  run(() => approve({ variables: vars }), "Approved.")
                 }
-              />
-            ) : (
-              <PlanDays days={plan.days} />
-            )}
-          </Section>
-        </Main>
+              >
+                Approve plan
+              </Button>
+            </>
+          )}
 
-        <Side>
-          <Section aria-labelledby="actions-heading">
-            <h2 id="actions-heading">Next step</h2>
-            {isDraft && (
-              <>
-                <p>
-                  Approving is your sign-off that this plan is right for{" "}
-                  {plan.client?.name ?? "the client"}. The client won&apos;t see
-                  it until you send it.
-                </p>
-                {!ready && (
-                  <Problems>
-                    {plan.approvalProblems.map((p) => (
-                      <li key={p}>{p}</li>
-                    ))}
-                  </Problems>
-                )}
-                <PrimaryButton
+          {plan.status === "approved" && (
+            <>
+              <p>
+                Approved {formatDate(plan.approvedAt, true)}. Send it when
+                you&apos;re ready, or reopen it to make changes.
+              </p>
+              <ButtonRow>
+                <Button
                   type="button"
-                  disabled={!ready || approving}
+                  disabled={delivering}
                   onClick={() =>
-                    run(() => approve({ variables: vars }), "Approved.")
+                    run(
+                      () => deliver({ variables: vars }),
+                      "Sent to the client."
+                    )
                   }
                 >
-                  Approve plan
-                </PrimaryButton>
-              </>
-            )}
+                  Send to client
+                </Button>
+                <Button
+                  variant="secondary"
+                  type="button"
+                  onClick={() => setReopening((v) => !v)}
+                  aria-expanded={reopening}
+                >
+                  Reopen for edits
+                </Button>
+              </ButtonRow>
+              {reopening && (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    run(
+                      () =>
+                        reopen({ variables: { ...vars, note: reopenNote } }),
+                      "Reopened."
+                    ).then(() => setReopenNote(""));
+                  }}
+                >
+                  <label htmlFor="reopen-note">What needs to change?</label>
+                  <NoteRow>
+                    <input
+                      id="reopen-note"
+                      value={reopenNote}
+                      onChange={(e) => setReopenNote(e.target.value)}
+                      required
+                    />
+                    <Button
+                      variant="secondary"
+                      type="submit"
+                      disabled={reopeningBusy || !reopenNote.trim()}
+                    >
+                      Reopen
+                    </Button>
+                  </NoteRow>
+                </form>
+              )}
+            </>
+          )}
 
-            {plan.status === "approved" && (
-              <>
-                <p>
-                  Approved {formatDate(plan.approvedAt, true)}. Send it when
-                  you&apos;re ready, or reopen it to make changes.
-                </p>
-                <ButtonRow>
-                  <PrimaryButton
-                    type="button"
-                    disabled={delivering}
-                    onClick={() =>
-                      run(
-                        () => deliver({ variables: vars }),
-                        "Sent to the client."
-                      )
-                    }
-                  >
-                    Send to client
-                  </PrimaryButton>
-                  <SecondaryButton
-                    type="button"
-                    onClick={() => setReopening((v) => !v)}
-                    aria-expanded={reopening}
-                  >
-                    Reopen for edits
-                  </SecondaryButton>
-                </ButtonRow>
-                {reopening && (
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      run(
-                        () =>
-                          reopen({ variables: { ...vars, note: reopenNote } }),
-                        "Reopened."
-                      ).then(() => setReopenNote(""));
-                    }}
-                  >
-                    <label htmlFor="reopen-note">What needs to change?</label>
-                    <NoteRow>
-                      <input
-                        id="reopen-note"
-                        value={reopenNote}
-                        onChange={(e) => setReopenNote(e.target.value)}
-                        required
-                      />
-                      <SecondaryButton
-                        type="submit"
-                        disabled={reopeningBusy || !reopenNote.trim()}
-                      >
-                        Reopen
-                      </SecondaryButton>
-                    </NoteRow>
-                  </form>
-                )}
-              </>
-            )}
+          {plan.status === "delivered" && (
+            <p>
+              Sent to the client {formatDate(plan.deliveredAt, true)}. To change
+              it, start a new plan from the client&apos;s page.
+            </p>
+          )}
+        </NextStep>
 
-            {plan.status === "delivered" && (
-              <p>
-                Sent to the client {formatDate(plan.deliveredAt, true)}. To
-                change it, start a new plan from the client&apos;s page.
-              </p>
-            )}
-          </Section>
+        <Section className="flags" aria-labelledby="flags-heading">
+          <h2 id="flags-heading">Safety flags</h2>
+          <FlagList
+            flags={plan.flags}
+            canAcknowledge={isDraft}
+            onAcknowledge={(flagId, note) =>
+              run(
+                () => acknowledge({ variables: { ...vars, flagId, note } }),
+                "Flag acknowledged."
+              )
+            }
+          />
+        </Section>
 
-          <Section aria-labelledby="flags-heading">
-            <h2 id="flags-heading">Safety flags</h2>
-            <FlagList
+        <Section className="week" aria-labelledby="week-heading">
+          <h2 id="week-heading">The week</h2>
+          {isDraft ? (
+            <PlanEditor
+              key={`${plan.id}-${plan.version}`}
+              days={plan.days}
               flags={plan.flags}
-              canAcknowledge={isDraft}
-              onAcknowledge={(flagId, note) =>
+              saving={saving}
+              onSave={(days: PlanDay[]) =>
                 run(
-                  () => acknowledge({ variables: { ...vars, flagId, note } }),
-                  "Flag acknowledged."
+                  () => updateDays({ variables: { ...vars, days } }),
+                  "Saved."
                 )
               }
             />
-          </Section>
+          ) : (
+            <PlanDays days={plan.days} />
+          )}
+        </Section>
 
-          <Section aria-labelledby="history-heading">
-            <h2 id="history-heading">History</h2>
-            <PlanTimeline events={plan.events} />
-          </Section>
-        </Side>
+        <Section className="history" aria-labelledby="history-heading">
+          <h2 id="history-heading">History</h2>
+          <PlanTimeline events={plan.events} />
+        </Section>
       </Layout>
-    </Page>
+    </Wrap>
   );
 };
 
@@ -283,16 +284,14 @@ export async function getServerSideProps(context) {
   return { props: { session } };
 }
 
-const Page = styled.div`
+const Wrap = styled.div`
   max-width: 1100px;
   margin: 0 auto;
-  padding: 32px 16px 64px;
+  padding: 24px 16px 72px;
   color: ${Colors.lightGray};
 
-  h1 {
-    margin: 0;
-    font-size: 26px;
-    color: ${Colors.brand.white};
+  @media ${MediaQueries.MD} {
+    padding: 40px 24px 96px;
   }
 
   .notice {
@@ -304,67 +303,91 @@ const Page = styled.div`
 `;
 
 const BackLink = styled(Link)`
-  display: inline-block;
-  margin-bottom: 16px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   color: ${Colors.midGray};
   font-size: 14px;
   text-decoration: none;
 
   &:hover {
-    color: ${Colors.brand.white};
+    color: ${Colors.lightGray};
   }
 `;
 
 const Header = styled.header`
-  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  > p:first-child {
+    margin-bottom: -6px;
+  }
 `;
 
-const TitleRow = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
+const Title = styled(DisplayHeading)`
+  font-size: clamp(40px, 8vw, 64px);
 `;
 
 const Sub = styled.p`
-  margin: 6px 0 0;
+  margin: 0;
   font-size: 14px;
   color: ${Colors.midGray};
 `;
 
 const Callout = styled.div`
   padding: 12px 14px;
-  border-radius: 8px;
-  background: rgba(255, 107, 43, 0.1);
-  border: 1px solid rgba(255, 107, 43, 0.35);
+  border-left: 3px solid ${Colors.brand.accent};
+  border-radius: 0 6px 6px 0;
+  background: rgba(255, 107, 43, 0.08);
   font-size: 14px;
 `;
 
+// Phones read top to bottom: what to do next, what's blocking it, the week, its history. Wider
+// screens put the week on the left and the rest beside it.
 const Layout = styled.div`
   display: grid;
-  gap: 32px;
+  gap: 28px;
 
   @media ${MediaQueries.LG} {
     grid-template-columns: minmax(0, 1fr) 340px;
+    grid-template-areas:
+      "week next"
+      "week flags"
+      "week history";
+    grid-template-rows: auto auto 1fr;
+    column-gap: 32px;
+
+    .week {
+      grid-area: week;
+    }
+    .next {
+      grid-area: next;
+    }
+    .flags {
+      grid-area: flags;
+    }
+    .history {
+      grid-area: history;
+    }
   }
 `;
 
-const Main = styled.div`
-  min-width: 0;
-`;
-
-const Side = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
+const sectionHeading = `
+  h2 {
+    margin: 0 0 12px;
+    font-family: ${FontFamily.display};
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: ${Colors.lightGray};
+  }
 `;
 
 const Section = styled.section`
-  h2 {
-    margin: 0 0 12px;
-    font-size: 16px;
-    color: ${Colors.brand.white};
-  }
+  ${sectionHeading}
 
   p {
     font-size: 14px;
@@ -379,11 +402,30 @@ const Section = styled.section`
   }
 `;
 
+const NextStep = styled(Sheet)`
+  ${sectionHeading}
+  padding: 18px;
+  border-top: 3px solid ${Colors.brand.accent};
+
+  p {
+    margin: 0 0 12px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  label {
+    display: block;
+    margin: 12px 0 4px;
+    font-size: 13px;
+    color: ${Colors.midGray};
+  }
+`;
+
 const Problems = styled.ul`
-  margin: 0 0 12px;
+  margin: 0 0 14px;
   padding-left: 18px;
   font-size: 14px;
-  color: #ffd08a;
+  color: ${Colors.flag.warn};
 `;
 
 const ButtonRow = styled.div`
@@ -400,9 +442,11 @@ const NoteRow = styled.div`
     flex: 1;
     padding: 8px 10px;
     border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    background: rgba(255, 255, 255, 0.04);
-    color: ${Colors.brand.white};
+    min-height: 44px;
+    border: 1px solid rgba(242, 238, 232, 0.2);
+    background: rgba(242, 238, 232, 0.04);
+    color: ${Colors.lightGray};
+    font: inherit;
   }
 `;
 
