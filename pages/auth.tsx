@@ -49,8 +49,9 @@ const AuthPage = ({ providers, initialTab }: AuthPageProps) => {
         </DemoSection>
 
         <FooterNote>
-          Gymnosis is a portfolio project.{" "}
-          <Link href="/terms-of-service">About and terms</Link>.
+          Gymnosis is a portfolio project. Signing in stores your name, email,
+          and profile picture; see{" "}
+          <Link href="/terms-of-service#privacy">privacy and terms</Link>.
         </FooterNote>
       </PageInner>
     </PageWrapper>

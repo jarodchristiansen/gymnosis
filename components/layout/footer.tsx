@@ -47,7 +47,7 @@ const Footer = () => {
             <FooterExternal href="https://github.com/jarodchristiansen/gymnosis">
               Source on GitHub
             </FooterExternal>
-            <FooterLink href="/terms-of-service">About and terms</FooterLink>
+            <FooterLink href="/terms-of-service">Privacy and terms</FooterLink>
           </LinkColumn>
         </LinksBlock>
       </FooterInner>
