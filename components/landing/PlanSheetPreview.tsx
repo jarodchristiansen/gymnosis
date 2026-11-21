@@ -301,14 +301,14 @@ const Foot = styled.div`
   color: ${Colors.midGray};
 `;
 
+// Locked until the flag is resolved: drawn as an outline in muted text, which still passes AA.
 const FakeButton = styled.span`
-  padding: 9px 14px;
+  padding: 8px 13px;
   border-radius: 6px;
-  background: ${Colors.brand.accent};
-  color: ${Colors.ink};
+  border: 1px dashed rgba(242, 238, 232, 0.28);
+  color: ${Colors.midGray};
   font-size: 14px;
   font-weight: 650;
-  opacity: 0.45;
 `;
 
 export default PlanSheetPreview;
