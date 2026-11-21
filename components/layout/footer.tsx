@@ -19,13 +19,6 @@ const Footer = () => {
             AI drafts the workout plan. Safety rules check it. A trainer signs
             it off.
           </BrandTagline>
-          <Credit>
-            A portfolio project by{" "}
-            <a href="https://jarod-christiansen.vercel.app">
-              Jarod Christiansen
-            </a>
-            .
-          </Credit>
         </BrandBlock>
 
         <LinksBlock aria-label="Footer">
@@ -102,17 +95,6 @@ const BrandTagline = styled.p`
   margin: 0;
   font-size: 15px;
   color: ${Colors.lightGray};
-`;
-
-const Credit = styled.p`
-  margin: 0;
-  font-size: 14px;
-
-  a {
-    color: ${Colors.brand.accentLight};
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
 `;
 
 const LinksBlock = styled.nav`
