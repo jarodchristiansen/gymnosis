@@ -1,6 +1,7 @@
 import WorkoutView from "@/components/client_dashboard/WorkoutView";
-import { DisplayHeading, Eyebrow } from "@/components/ui";
-import { checkIsStaff } from "@/helpers/auth/auth";
+import { DisplayHeading, Eyebrow, Sheet } from "@/components/ui";
+import AssignTrainer from "@/components/user/AssignTrainer";
+import { checkIsStaff, checkSeesWholeGym } from "@/helpers/auth/auth";
 import { GET_USER } from "@/helpers/queries/user";
 import { Colors, MediaQueries } from "@/styles/variables";
 import { useQuery } from "@apollo/client";
@@ -19,6 +20,8 @@ const ClientPlansPage = () => {
   const { data: session } = useSession();
   // @ts-expect-error next-auth user extended with role
   const isStaff = checkIsStaff(session?.user?.role);
+  // @ts-expect-error next-auth user extended with role
+  const wholeGym = checkSeesWholeGym(session?.user?.role);
 
   const { data, loading, error } = useQuery(GET_USER, {
     variables: { id: clientId },
@@ -55,9 +58,29 @@ const ClientPlansPage = () => {
             {client.email ? ` · ${client.email}` : ""}
           </Sub>
         )}
+        {wholeGym && client && (
+          <AssignTrainer clientId={client.id} current={client.trainer} />
+        )}
       </Header>
 
-      <WorkoutView clientId={clientId} canBuild={isStaff} />
+      {/* A client's page waits for their account, so someone not in a gym never sees an empty plan list first. */}
+      {!isStaff && !client ? null : !isStaff && client.inGym === false ? (
+        <NoGym>
+          <h2>You&apos;re not in a gym yet</h2>
+          <p>
+            Plans come from a trainer. When your trainer adds you
+            {client.email ? (
+              <>
+                {" "}
+                with <strong>{client.email}</strong>
+              </>
+            ) : null}
+            , your plans will show up here.
+          </p>
+        </NoGym>
+      ) : (
+        <WorkoutView clientId={clientId} canBuild={isStaff} />
+      )}
     </Page>
   );
 };
@@ -91,6 +114,25 @@ const Header = styled.header`
 
 const Title = styled(DisplayHeading)`
   font-size: clamp(40px, 8vw, 64px);
+`;
+
+const NoGym = styled(Sheet)`
+  padding: 20px 16px;
+
+  h2 {
+    margin: 0 0 6px;
+    font-size: 18px;
+  }
+
+  p {
+    margin: 0;
+    color: ${Colors.midGray};
+  }
+
+  strong {
+    color: ${Colors.lightGray};
+    overflow-wrap: anywhere;
+  }
 `;
 
 const Sub = styled.p`

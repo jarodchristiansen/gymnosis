@@ -4,6 +4,7 @@ export const GET_USER = gql`
   query GET_USER($email: String, $id: String, $username: String) {
     getUser(email: $email, id: $id, username: $username) {
       id
+      inGym
       email
       name
       username
@@ -32,6 +33,15 @@ export const GET_USERS = gql`
         id
         name
       }
+    }
+  }
+`;
+
+export const GET_TRAINERS = gql`
+  query GET_TRAINERS {
+    trainers {
+      id
+      name
     }
   }
 `;

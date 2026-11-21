@@ -2,7 +2,10 @@
  * @jest-environment node
  */
 import { UserResolver } from "./index";
+import Gym from "../../models/gym";
 import User from "../../models/user";
+
+jest.mock("../../models/gym", () => ({ findById: jest.fn() }));
 
 jest.mock("../../models/user", () => ({
   find: jest.fn(),
@@ -10,6 +13,7 @@ jest.mock("../../models/user", () => ({
   exists: jest.fn(),
   findOneAndUpdate: jest.fn(),
   findById: jest.fn(),
+  create: jest.fn(),
 }));
 
 const { queries, mutations, fields } = UserResolver;
@@ -216,5 +220,169 @@ describe("User.trainer", () => {
       ),
     ]);
     expect(User.findById).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("addClient", () => {
+  const OWNER = { id: "a00000000000000000000005", role: "owner", gym: GYM };
+  const realGym = { _id: GYM, name: "Gymnosis", isDemo: false };
+  const add = (viewer, input) =>
+    mutations.addClient(null, { input }, as(viewer));
+
+  beforeEach(() => {
+    Gym.findById.mockReturnValue(lean(realGym));
+    User.create.mockImplementation((doc) => Promise.resolve(doc));
+  });
+
+  it("adds a trainer's client to their gym, under them", async () => {
+    User.findOne.mockReturnValue(lean(null));
+
+    await add(TRAINER, { name: " Dana Ruiz ", email: " Dana@Example.com " });
+
+    expect(User.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: "Dana Ruiz",
+        email: "dana@example.com",
+        role: "client",
+        gym: GYM,
+        trainer: TRAINER.id,
+        username: expect.stringMatching(/^user-[0-9a-f]{8}$/),
+      })
+    );
+  });
+
+  it("makes owners choose a trainer from their own gym", async () => {
+    expect(
+      await codeOf(add(OWNER, { name: "Dana", email: "dana@example.com" }))
+    ).toBe("BAD_USER_INPUT");
+
+    User.findOne.mockReturnValue(
+      lean({
+        _id: "a00000000000000000000006",
+        role: "trainer",
+        gym: "b00000000000000000000002",
+      })
+    );
+    expect(
+      await codeOf(
+        add(OWNER, {
+          name: "Dana",
+          email: "dana@example.com",
+          trainerId: "a00000000000000000000006",
+        })
+      )
+    ).toBe("BAD_USER_INPUT");
+    expect(User.create).not.toHaveBeenCalled();
+  });
+
+  it("never takes a real address in a demo gym", async () => {
+    const expiresAt = new Date("2026-11-22T00:00:00Z");
+    Gym.findById.mockReturnValue(lean({ _id: GYM, isDemo: true, expiresAt }));
+
+    await add(TRAINER, { name: "Dana", email: "someone@gmail.com" });
+
+    expect(User.findOne).not.toHaveBeenCalled();
+    expect(User.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        email: expect.stringMatching(/@demo\.invalid$/),
+        expiresAt,
+      })
+    );
+  });
+
+  it("brings in someone who signed up on their own", async () => {
+    User.findOne.mockReturnValue(
+      lean({ _id: OTHER_CLIENT_ID, role: "client", email: "dana@example.com" })
+    );
+    User.findOneAndUpdate.mockResolvedValue({ _id: OTHER_CLIENT_ID });
+
+    await add(TRAINER, { name: "Dana", email: "dana@example.com" });
+
+    expect(User.findOneAndUpdate).toHaveBeenCalledWith(
+      { _id: OTHER_CLIENT_ID, gym: null },
+      { $set: { gym: GYM, trainer: TRAINER.id } },
+      { new: true }
+    );
+    expect(User.create).not.toHaveBeenCalled();
+  });
+
+  it("refuses an address that's already in a gym, and clients can't add anyone", async () => {
+    User.findOne.mockReturnValue(
+      lean(theirClient({ email: "dana@example.com" }))
+    );
+    expect(
+      await codeOf(add(TRAINER, { name: "Dana", email: "dana@example.com" }))
+    ).toBe("BAD_USER_INPUT");
+    expect(
+      await codeOf(add(CLIENT, { name: "Dana", email: "dana@example.com" }))
+    ).toBe("FORBIDDEN");
+    expect(User.create).not.toHaveBeenCalled();
+  });
+});
+
+describe("assignTrainer", () => {
+  const OWNER = { id: "a00000000000000000000005", role: "owner", gym: GYM };
+  const JORDAN = "a00000000000000000000007";
+  const assign = (viewer, trainerId = JORDAN) =>
+    mutations.assignTrainer(
+      null,
+      { clientId: OTHER_CLIENT_ID, trainerId },
+      as(viewer)
+    );
+
+  it("lets an owner move a client to another trainer in the gym", async () => {
+    User.findOne
+      .mockReturnValueOnce(lean(theirClient()))
+      .mockReturnValueOnce(lean({ _id: JORDAN, role: "trainer", gym: GYM }));
+    User.findOneAndUpdate.mockResolvedValue({});
+
+    expect(await codeOf(assign(OWNER))).toBe("resolved");
+    expect(User.findOneAndUpdate).toHaveBeenCalledWith(
+      { _id: OTHER_CLIENT_ID },
+      { $set: { trainer: JORDAN } },
+      { new: true }
+    );
+  });
+
+  it("is for owners and admins only, within the client's gym", async () => {
+    expect(await codeOf(assign(TRAINER))).toBe("FORBIDDEN");
+
+    User.findOne.mockReturnValueOnce(
+      lean(theirClient({ gym: "b00000000000000000000002" }))
+    );
+    expect(await codeOf(assign(OWNER))).toBe("NOT_FOUND");
+
+    User.findOne
+      .mockReturnValueOnce(lean(theirClient()))
+      .mockReturnValueOnce(
+        lean({ _id: JORDAN, role: "trainer", gym: "b00000000000000000000002" })
+      );
+    expect(await codeOf(assign(OWNER))).toBe("BAD_USER_INPUT");
+    expect(User.findOneAndUpdate).not.toHaveBeenCalled();
+  });
+});
+
+describe("trainers", () => {
+  const chain = (people) => ({
+    select: () => ({ sort: () => ({ lean: () => Promise.resolve(people) }) }),
+  });
+
+  it("lists an owner's own gym, and only real gyms for admins", async () => {
+    User.find.mockReturnValue(chain([{ _id: TRAINER.id, name: "Sam Rivera" }]));
+
+    const OWNER = { id: "a00000000000000000000005", role: "owner", gym: GYM };
+    expect(await queries.trainers(null, {}, as(OWNER))).toEqual([
+      { id: TRAINER.id, name: "Sam Rivera", image: undefined },
+    ]);
+    expect(User.find).toHaveBeenLastCalledWith({
+      role: { $in: ["trainer", "owner"] },
+      gym: GYM,
+    });
+
+    await queries.trainers(null, {}, as(ADMIN));
+    expect(User.find).toHaveBeenLastCalledWith({
+      role: { $in: ["trainer", "owner"] },
+      expiresAt: { $exists: false },
+    });
   });
 });

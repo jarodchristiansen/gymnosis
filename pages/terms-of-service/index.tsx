@@ -39,6 +39,10 @@ const AboutAndTermsPage = () => (
           profile picture from that provider, and a username.
         </li>
         <li>
+          If a trainer adds you as a client: the name and email address they
+          entered, and which trainer and gym you belong to.
+        </li>
+        <li>
           Workout plans and the history of changes to each plan. Questionnaire
           answers include age, height, weight, goals, equipment, and injuries,
           which count as health information, so only enter them for yourself or

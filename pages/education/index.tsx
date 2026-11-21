@@ -37,13 +37,14 @@ const features = [
       "Owners see their whole gym: every trainer's clients and plans",
       "Trainers see and write plans for their own clients",
       "Clients see only the plans they were sent",
+      "Trainers add clients by email; owners move clients between trainers",
       "Try each role in a private demo gym, no sign-up",
     ],
   },
 ];
 
 const roadmap = [
-  "Inviting clients and assigning them to trainers (today the demo gym comes set up)",
+  "Invite links, for adding trainers and for clients who sign in with a different email",
   "Progress tracking: logging sessions against a plan",
   "Class scheduling, memberships, and owner analytics",
   "Meal plans",

@@ -87,6 +87,10 @@ export const authOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_ID,
       clientSecret: process.env.GOOGLE_SECRET,
+      // A trainer adds a client by email before they've ever signed in, so the client's first
+      // Google sign-in has to attach to that account. Safe here because Google verifies the
+      // address; GitHub doesn't always, so it stays unlinked.
+      allowDangerousEmailAccountLinking: true,
     }),
   ],
   session: {
