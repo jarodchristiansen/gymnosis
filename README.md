@@ -16,13 +16,14 @@ Gymnosis is a portfolio project. No gyms use it, and the numbers on the site des
 - **Safety rules.** Deterministic checks on every draft and every edit: equipment the client doesn't have, movements their injuries rule out (jumps with a knee injury, spinal loading with a back injury, overhead work with a shoulder injury), Olympic lifts and high volume for beginners, a schedule that doesn't match what was asked, no rest day. Blocking flags stop approval until the plan is fixed or the trainer keeps it with a note.
 - **Review loop.** Plans move draft → approved → delivered. Approval is the trainer's recorded sign-off; reopening an approved plan needs a reason; only delivered plans reach the client. Every change is a single conditional write against the version the trainer saw, so concurrent edits can't overwrite each other, and each one appends to the plan's audit trail with a readable diff ("Day 1: Squat 3×5 → Squat 4×5").
 - **Gyms and roles, enforced by the API.** Owners see their gym, trainers see their assigned clients, clients see only plans sent to them. Every GraphQL resolver checks the signed-in user.
+- **Adding clients.** Trainers add a client by name and email, and owners move clients between trainers. A client's first Google sign-in with that email lands on their account. Demo gyms never take a real address.
 - **Eval harness.** `npm run eval` drafts ten fixture questionnaires, runs the safety rules, and scores the batch (usable, clean, flags per draft, flags by rule) per model and prompt version into `evals/results/`.
 - **Demo mode.** A private sandbox gym per visitor, with plans in every state. Capped per IP and overall; Mongo's TTL index deletes it after a day.
 - **Sign-in** with Google, GitHub, or email and password (email accounts are created with `scripts/create-user.ts`).
 
 ## Roadmap
 
-- Inviting clients and assigning them to trainers in the app (today: the demo gym, or `scripts/migrate-to-plans.js` for existing accounts)
+- Invite links, for adding trainers and for clients who sign in with a different email
 - Progress tracking against a delivered plan
 - Later: class scheduling, memberships, owner analytics, meal plans
 
