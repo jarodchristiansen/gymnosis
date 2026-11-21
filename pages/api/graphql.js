@@ -5,8 +5,6 @@ import resolvers from "../../db/resolvers/index";
 import typeDefs from "../../db/schema";
 import { viewerFromRequest } from "../../lib/viewer";
 
-connectDb();
-
 export const config = {
   api: {
     bodyParser: false,
@@ -27,6 +25,6 @@ const startServer = server.start();
 
 // Same-origin only: the app is the only client, so there are no CORS headers to send.
 export default async function handler(req, res) {
-  await startServer;
+  await Promise.all([startServer, connectDb()]);
   await server.createHandler({ path: "/api/graphql" })(req, res);
 }
